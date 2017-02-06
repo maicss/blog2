@@ -19,10 +19,11 @@ let insertDocuments = function (collectionName, data, callback) {
             try {
                 col.insertMany(data, function (err, docs) {
                     if (err) {
-                        console.log({err: err});
+                        callback && callback({err: err});
+                    } else {
+                        callback && callback({res: docs});
                     }
                     db.close();
-                    callback && callback({res: docs});
                 })
             } catch (e) {
                 callback && callback({ fault: e })
@@ -33,12 +34,12 @@ let insertDocuments = function (collectionName, data, callback) {
     }
 };
 
-let findDocuments = function (collectionName, queryObj, limit, callback) {
+let findDocuments = function (collectionName, queryObj, options, callback) {
     try {
         MongoClient.connect(url, function (err, db) {
             let col = db.collection(collectionName);
             try {
-                col.find(queryObj).limit(limit).toArray(function (err, docs) {
+                col.find(queryObj).sort(options.sort).limit(options.limit).toArray(function (err, docs) {
                     if (err) {
                         callback && callback({ err: err })
                     } else {
@@ -94,13 +95,14 @@ module.exports = {
     },
 
     readWeather: function (location, callback) {
-        findDocuments('weather', { location }, 1, function (d) {
+        findDocuments('weather', {location, date: moment().format('YYYY-MM-DD')}, {limit: 1}, function (d) {
             callback(d.res);
         });
     },
 
     getShuoshuoList: function (condition, callback) {
         let queryObj = {};
+        let options = {sort: {'date': -1}, limit: Number(condition.limit)};
         for (let a in condition) {
             switch (a) {
                 case 'time':
@@ -111,11 +113,13 @@ module.exports = {
                     break;
             }
         }
-        findDocuments('shuoshuo', queryObj, Number(condition.limit), callback);
+        findDocuments('shuoshuo', queryObj, options, callback);
     },
 
     saveOneShuoshuo: function (data, callback) {
-        console.log(data);
+        insertDocuments('shuoshuo', [data], function (d) {
+            callback && callback(d);
+        });
     },
 
     findLog: function (level, date, callback) {

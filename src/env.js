@@ -28,13 +28,11 @@ let testConfig = {
 
 
 if (osName === 'Windows_NT') {
-    Object.assign(testConfig, {
-        ssl: {
-            keyFile: 'E:\\ssl\\server.key',
-            certFile: 'E:\\ssl\\server.crt',
-            ca: 'E:\\ssl\\root.crt'
-        }
-    })
+    testConfig.ssl = {
+        keyFile: 'E:\\ssl\\server.key',
+        certFile: 'E:\\ssl\\server.crt',
+        ca: 'E:\\ssl\\root.crt'
+    };
 }
 
 

@@ -88,3 +88,6 @@ $RECYCLE.BIN/
 test.js
 
 
+/public/lib/semantic/src/
+/public/lib/semantic/tasks/
+/public/lib/semantic/gulpfile.js

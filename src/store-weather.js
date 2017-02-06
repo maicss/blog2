@@ -127,7 +127,3 @@ let job = new CronJob({
 //         }
 //     }
 // });
-
-new Api().getLocation('116.246.19.150').then(function (d) {
-    console.log(d)
-});

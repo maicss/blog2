@@ -79,3 +79,9 @@ app.use('*', function (req, res, next) {
 httpServer.listen(ports['non-secure']);
 httpsServer.listen(ports.secure);
 console.log('server on https://localhost:' + ports.secure);
+
+/*
+ * node like python single file internal test
+ * if __name__ == '__main__'
+ * if (require.main === module)
+ * */

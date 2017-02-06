@@ -12,6 +12,10 @@
             margin-bottom: 5px;
             background-color: #fffcf4;
         }
+
+        img {
+            vertical-align: middle;
+        }
     </style>
     <script src="../lib/jquery-3.1.1.js"></script>
     <script src="../lib/moment-2.17.1.js"></script>
@@ -32,11 +36,11 @@
         </section>
         <article class="ten wide column">
             <div class="ui fluid massive icon input">
-                <textarea
-                        style="padding: 0.5em;border-radius: 4px;border: 1px solid rgba(34, 36, 38, 0.15);overflow: scroll;height: 64px;max-width: 100%;max-height: 64px;margin: 0; resize: none;outline: 0;flex: 1 0 auto;line-height: 1em;"></textarea>
-                <button onclick="document.querySelector('input[type=\'file\']').click()"><input type="file" hidden><i
-                        class="icon image"></i></button>
-                <button><i class="send icon"></i></button>
+                <textarea id="s_content"
+                          style="padding: 0.5em;border-radius: 4px;border: 1px solid rgba(34, 36, 38, 0.15);overflow: scroll;height: 64px;max-width: 100%;max-height: 64px;margin: 0; resize: none;outline: 0;flex: 1 0 auto;line-height: 1em;"></textarea>
+                <button><label for="photo"><i class="icon image"></i></label><input type="file" id="photo" hidden>
+                </button>
+                <button id="s_poster"><i class="send icon"></i></button>
             </div>
             <p id="weather"></p>
             <ul id="shuoshuo-ul">
@@ -62,48 +66,49 @@
 <script>
     let timeMark = 0;
     let index = 0;
-//    let location = '';
+    let locationName = '';
+    let weatherInfo = {};
     let vistorInfo = {};
-    $(function () {
-        $.ajax({
-            url: '/getShuoshuoList',
-            method: 'POST',
-            data: {limit: 20}
-        }).done(function (res) {
-            let st = '';
-            res.forEach(function (v, i) {
-                let im = '';
+
+    let getInitList = function () {
+        $(function () {
+            $.ajax({
+                url: '/getShuoshuoList',
+                method: 'POST',
+                data: {limit: 20}
+            }).done(function (res) {
+                let st = '';
+                res.forEach(function (v, i) {
+                    let im = '';
 //                v.img.forEach(function (iv) {
 //                    im += `<img style="width: 200px;" src="${iv}">`
 //                });
-                st += `<li>${i + 1}: <time>${v.dateStr}</time><p>${v.content}</p><p>${im}</p><p>${v.weather}</p><p>${v.isPublic}</p></li>`;
-                if (i === res.length - 1) {
-                    timeMark = v.date;
-                }
+                    st += `<li>${i + 1}: <time>${v.dateStr}</time><p>${v.content}</p><p>${im}</p><p><i class="icon location arrow"></i>${v.weather.location}: <img src="./assert/weather-icon/${v.weather.code[0]}.png"> ~ <img src="./assert/weather-icon/${v.weather.code[1]}.png"> ${v.weather.temperature[0]}&#8451; ~ ${v.weather.temperature[1]}&#8451; </p><p>${v.isPublic}</p></li>`;
+                    if (i === res.length - 1) {
+                        timeMark = v.date;
+                    }
+                });
+                index = res.length;
+                $('#shuoshuo-ul').html(st);
+
+            }).fail(function (jqxhr) {
+                $('#shuoshuo-ul').html(`<p>${jqxhr.status}: ${jqxhr.responseText}</p>`)
             });
-            index = res.length;
-            $('#shuoshuo-ul').html(st);
-
-        }).fail(function (jqxhr) {
-            $('#shuoshuo-ul').html(`<p>${jqxhr.status}: ${jqxhr.responseText}</p>`)
         });
-
-
+    };
+    let getWeather = function () {
         $.ajax({
             method: 'POST',
             url: '/getWeather'
         }).done(function (d) {
-            $('#weather').html(`${d.location}: <img src="./assert/weather-icon/${d.code_day}.png"> ~ <img src="./assert/weather-icon/${d.code_night}.png">${d.code_day === d.code_night ? d.text_day : d.text_day + ' 转 ' + d.text_night} ${d.low}&#8451; ~ ${d.high}&#8451; <small>timestamp: ${moment(d.queryTime).format('YYYY-MM-DD HH:mm:ss')}</small>`);
+            weatherInfo = d;
+            $('#weather').html(`<i class="icon location arrow"></i>${d.location}: <img src="./assert/weather-icon/${d.code_day}.png"> ~ <img src="./assert/weather-icon/${d.code_night}.png">${d.code_day === d.code_night ? d.text_day : d.text_day + ' 转 ' + d.text_night} ${d.low}&#8451; ~ ${d.high}&#8451; <small>timestamp: ${moment(d.queryTime).format('YYYY-MM-DD HH:mm:ss')}</small>`);
             //<img src="${d.icon}"
         }).fail(function (e) {
             $('#weather').html(e.responseText)
         });
+    };
 
-        $.ajax({
-            url: ''
-        })
-
-    });
     let loadMore = function () {
         $.ajax({
             url: '/getShuoshuoList',
@@ -130,8 +135,32 @@
             $('#shuoshuo-ul').append(`<p>${xhr.status}: ${xhr.responseText}</p>`);
         })
     };
-    let postShuoshuo = function () {
 
-    }
+    let postShuoshuo = function () {
+        let s = {
+            content: $('#s_content').val(),
+            weather: {
+                temperature: [weatherInfo.low, weatherInfo.high],
+                code: [weatherInfo.code_day, weatherInfo.code_night],
+                location: weatherInfo.location
+            }
+        };
+        $.post('./postShuoshuo', s, function (d) {
+            if (d.res.status === 'success') {
+                alert('post success.');
+                getInitList();
+            } else {
+                alert(`status: ${d.err.status}, type:${ d.err.type}`)
+            }
+        })
+    };
+
+    getInitList();
+    getWeather();
+
+
+    $('#s_poster').click(function () {
+        postShuoshuo();
+    })
 
 </script>

@@ -34,7 +34,6 @@ module.exports = function (req, res, next) {
         console.log(e)
     }).then(function () {
         readWeather(l, function (w) {
-            // logger.info('');
             if (w.length) {
                 res.json(w[0])
             } else {
@@ -44,7 +43,7 @@ module.exports = function (req, res, next) {
                     let result = d.results[0];
 
                     saveWeather([Object.assign({location: result.location.name}, result.daily[0], {queryTime: new Date() * 1})], function (d) {
-                        console.log('weather -> saveWeather', e);
+                        console.log('weather -> saveWeather', d);
                         if(d.result.ok && d.result.n === 1) {
                             logger.info('save %s weather success', result.location.name);
                             res.json(result.daily[0]);
