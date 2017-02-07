@@ -3,20 +3,25 @@ const moment = require('moment');
 
 exports.postShuoshuo = function (req, res, next) {
     let d = moment();
+    let body = JSON.parse(req.body.obj);
     let content = {
         "date": d * 1,
         "dateStr": d.format(),
-        "weather": req.body.weather,
-        "content": req.body.content,
-        "images": req.files || [],
+        "weather": body.weather,
+        "content": body.content,
+        "images": [],
         "isPublic": true
     };
+    console.log(req.files);
 
-    if (req.body.content.startsWith('赖龙帝都')) {
+    req.files.forEach(function (v) {
+        content.images.push(v.path.substring('public'.length))
+    });
+
+    if (body.content.startsWith('赖龙帝都')) {
         content.isPublic = false;
-        content.content = req.body.content.substring('赖龙帝都'.length);
+        content.content = body.content.substring('赖龙帝都'.length);
     }
-    // console.log('save content: ', content);
 
     saveOneShuoshuo(content, function (d) {
         if (d.res) {

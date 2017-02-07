@@ -86,6 +86,7 @@ $RECYCLE.BIN/
 .idea/
 
 test.js
+test.html
 
 
 /public/lib/semantic/src/

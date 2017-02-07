@@ -21,20 +21,22 @@
             let file = {
                 fileName: v.name,
                 fileSize: v.size,
-                fileType: v.type,
-                fileBin: ''
+                fileType: v.type
             };
             let fileReader = new FileReader();
             fileReader.onloadend = function (event) {
-                file.fileBin = event.target.result;
                 let data = new FormData().append('photo', v);
-                let xhr = new XMLHttpRequest();
-                xhr.open('POST', '/postShuoshuo');
-                xhr.onreadystatechange = function (data) {
-                    console.log(data)
-                };
-                xhr.setRequestHeader("Accept", "application/json");
-                xhr.send(data)
+
+                $.post('/', data, function (d) {
+                    console.log(d)
+                });
+//                let xhr = new XMLHttpRequest();
+//                xhr.open('POST', '/postShuoshuo');
+//                xhr.onreadystatechange = function (data) {
+//                    console.log(data)
+//                };
+//                xhr.setRequestHeader("Accept", "application/json");
+//                xhr.send(data)
 
             };
             fileReader.readAsBinaryString(v);

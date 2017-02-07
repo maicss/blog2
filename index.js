@@ -19,7 +19,16 @@ const router = {
 
 let bodyParser = require('body-parser');
 let multer = require('multer');
-let upload = multer({dest: './public'});
+let storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './public/img/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname)
+    }
+});
+
+let upload = multer({ storage: storage });
 
 let app = express();
 
@@ -69,7 +78,7 @@ app.use('*', function (req, res, next) {
     next();
 })
     .post('/getShuoshuoList', router.getShuoshuoList)
-    .post('/postShuoshuo', router.postShuoshuo)
+    .post('/postShuoshuo',upload.any(), router.postShuoshuo)
     .post('/getWeather', router.getWeather)
     .use(express.static(__dirname + '/public'))
     .use(function (req, res) {

@@ -37,10 +37,12 @@
         <article class="ten wide column">
             <div class="ui fluid massive icon input">
                 <textarea id="s_content"
-                          style="padding: 0.5em;border-radius: 4px;border: 1px solid rgba(34, 36, 38, 0.15);overflow: scroll;height: 64px;max-width: 100%;max-height: 64px;margin: 0; resize: none;outline: 0;flex: 1 0 auto;line-height: 1em;"></textarea>
-                <button><label for="photo"><i class="icon image"></i></label><input type="file" id="photo" hidden>
+                          style="padding: 0.5em;border-radius: 4px;border: 1px solid rgba(34, 36, 38, 0.15);overflow: scroll;height: 64px;max-width: 100%;max-height: 64px;margin: 0; resize: none;outline: 0;flex: 1 0 auto;line-height: 1em;"> 图片测试</textarea>
+                <button><label for="photo"><i class="icon image"></i></label><input type="file" id="photo" multiple hidden accept="image/*">
                 </button>
                 <button id="s_poster"><i class="send icon"></i></button>
+            </div>
+            <div class="ui four column doubling stackable grid container" id="frame">
             </div>
             <p id="weather"></p>
             <ul id="shuoshuo-ul">
@@ -64,6 +66,36 @@
 </body>
 </html>
 <script>
+    let imgFormData = new FormData();
+    $('#photo').change(function (e) {
+
+        [].forEach.call(e.target.files, function (file) {
+            console.log(file.size);
+            let nBytes = file.size,
+                aMultiples = ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"],
+                nMultiple = 0, nApprox = nBytes / 1024;
+
+            sOutput = nBytes + " bytes";
+            // optional code for multiples approximation
+            for ( ; nApprox > 1; nApprox /= 1024, nMultiple++) {
+                sOutput = nApprox.toFixed(2) + " " + aMultiples[nMultiple];
+            }
+
+            let img = $('<img style="width: 100%;">');
+            let reader = new FileReader();
+            reader.onloadend = (function(oImg) {
+                imgFormData.append('photo', file);
+                return function(e) {
+
+                    oImg.src = e.target.result;
+                };
+            })(img.get(0));
+            reader.readAsDataURL(file);
+            $('#frame').append($('<div class="column" style="position: relative;"><p style="position:absolute; bottom: 0; width: 84%;height: 1em;line-height: 1em;background: rgba(165,68,68,.7)">size: ' + sOutput + '</p></div>').append(img));
+        });
+    })
+</script>
+<script>
     let timeMark = 0;
     let index = 0;
     let locationName = '';
@@ -80,9 +112,9 @@
                 let st = '';
                 res.forEach(function (v, i) {
                     let im = '';
-//                v.img.forEach(function (iv) {
-//                    im += `<img style="width: 200px;" src="${iv}">`
-//                });
+                v.images.forEach(function (iv) {
+                    im += `<img style="width: 200px;" src="${iv}">`
+                });
                     st += `<li>${i + 1}: <time>${v.dateStr}</time><p>${v.content}</p><p>${im}</p><p><i class="icon location arrow"></i>${v.weather.location}: <img src="./assert/weather-icon/${v.weather.code[0]}.png"> ~ <img src="./assert/weather-icon/${v.weather.code[1]}.png"> ${v.weather.temperature[0]}&#8451; ~ ${v.weather.temperature[1]}&#8451; </p><p>${v.isPublic}</p></li>`;
                     if (i === res.length - 1) {
                         timeMark = v.date;
@@ -121,9 +153,9 @@
             let st = '';
             res.forEach(function (v, i) {
                 let im = '';
-//                v.img.forEach(function (iv) {
-//                    im += `<img style="width: 200px;" src="${iv}">`
-//                });
+                v.images.forEach(function (iv) {
+                    im += `<img style="width: 200px;" src="${iv}">`
+                });
                 index++;
                 st += `<li>${index}: <time>${v.dateStr}</time><p>${v.content}</p><p>${im}</p><p>${v.weather}</p><p>${v.isPublic}</p></li>`;
                 if (i === res.length - 1) {
@@ -137,22 +169,33 @@
     };
 
     let postShuoshuo = function () {
-        let s = {
-            content: $('#s_content').val(),
-            weather: {
-                temperature: [weatherInfo.low, weatherInfo.high],
-                code: [weatherInfo.code_day, weatherInfo.code_night],
-                location: weatherInfo.location
-            }
-        };
-        $.post('./postShuoshuo', s, function (d) {
-            if (d.res.status === 'success') {
-                alert('post success.');
-                getInitList();
-            } else {
-                alert(`status: ${d.err.status}, type:${ d.err.type}`)
-            }
-        })
+        if ($('#s_content').val().trim()) {
+            let s = {
+                content: $('#s_content').val(),
+                weather: {
+                    temperature: [weatherInfo.low, weatherInfo.high],
+                    code: [weatherInfo.code_day, weatherInfo.code_night],
+                    location: weatherInfo.location
+                }
+            };
+            imgFormData.append('obj', JSON.stringify(s));
+            $.ajax({
+                url: '/postShuoshuo',
+                method: 'POST',
+                processData: false,
+                contentType: false,
+                data: imgFormData
+            }).done(function (d) {
+                if (d.res.status === 'success') {
+                    alert('post success.');
+                    getInitList();
+                } else {
+                    alert(`status: ${d.err.status}, type:${ d.err.type}`)
+                }
+            }).fail(function (e) {
+                console.log(e.responseText)
+            })
+        }
     };
 
     getInitList();
