@@ -28,7 +28,7 @@ let storage = multer.diskStorage({
     }
 });
 
-let upload = multer({ storage: storage });
+let upload = multer({storage: storage});
 
 let app = express();
 
@@ -43,6 +43,14 @@ let httpServer = http.createServer(app);
 let httpsServer = https.createServer(credentials, app);
 
 app.use('*', function (req, res, next) {
+    // let body = [];
+    // req.on('data', function(chunk) {
+    //     body.push(chunk);
+    // }).on('end', function() {
+    //     body = Buffer.concat(body).toString();
+    //     console.log(body);
+    //     console.log('end');
+    // });
     if (!req.secure) {
         res.redirect('https://maicss.com' + req.path)
     } else {
@@ -64,21 +72,12 @@ app.use('*', function (req, res, next) {
         default:
             next();
     }
-}).post('/', upload.any(), function (req, res, next) {
-    // todo rawBody
-    // console.log(req.file);
-    // var body = [];
-    // req.on('data', function(chunk) {
-    //     body.push(chunk);
-    // }).on('end', function() {
-    //     body = Buffer.concat(body).toString();
-    //     console.log('end');
-    //     res.status(200).send('request body: ', body);
-    // });
-    next();
 })
+    .post('/', upload.any(), function (req, res, next) {
+        next();
+    })
     .post('/getShuoshuoList', router.getShuoshuoList)
-    .post('/postShuoshuo',upload.any(), router.postShuoshuo)
+    .post('/postShuoshuo', upload.any(), router.postShuoshuo)
     .post('/getWeather', router.getWeather)
     .use(express.static(__dirname + '/public'))
     .use(function (req, res) {

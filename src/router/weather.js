@@ -30,12 +30,12 @@ module.exports = function (req, res, next) {
     // todo 缓存一个IP数据库，不必每次都去线上查询了。
     api.getLocation(ip).then(function (d) {
         l = d.results[0].name;
-    }, function (e) {
-        console.log(e)
+    }).catch(function (err) {
+        res.status(500).send(err)
     }).then(function () {
-        readWeather(l, function (w) {
-            if (w.length) {
-                res.json(w[0])
+        readWeather(l, function (d) {
+            if (d.opResStr === 'success' && d.results.length) {
+                res.json(d.results[0]);
             } else {
                 // 去线上查询天气，存储到数据库之后再返回
                 // 这要不要做一个函数，传个参数，直接返回结果
@@ -43,14 +43,27 @@ module.exports = function (req, res, next) {
                     let result = d.results[0];
 
                     saveWeather([Object.assign({location: result.location.name}, result.daily[0], {queryTime: new Date() * 1})], function (d) {
-                        console.log('weather -> saveWeather', d);
-                        if(d.result.ok && d.result.n === 1) {
-                            logger.info('save %s weather success', result.location.name);
-                            res.json(result.daily[0]);
-                        } else {
-                            console.warn('router weather get a new location weather error: ', d)
+                        switch (d.opResStr) {
+                            case 'success':
+                                if (d.results.result.ok === 1 && d.results.result.n === 1) {
+                                    res.json(d.results.ops[0]);
+                                    logger.info('save %s weather success', result.location.name);
+                                }
+                                break;
+                            case 'error':
+                                logger.warn('router weather get a new location weather error: ', d.results[0]);
+                                res.status(500).send(d.results[0]);
+                                break;
+                            case 'fault':
+                                logger.warn('router weather get a new location weather error: ', d.results[0]);
+                                res.status(400).send(d.results[0]);
+                                break;
                         }
                     });
+                }).catch(function (err) {
+                    // 这里是断网或者网络无法正常链接之后的错误
+                    // console.log(err);
+                    // res.send(err)
                 });
             }
         })

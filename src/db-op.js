@@ -6,54 +6,95 @@ let url = 'mongodb://localhost:27017/blog-test';
 // todo: 线上的数据库的用户名和密码的创建和使用
 
 /*
-* 所有数据库的返回结果的格式：
-* res：正确的结果，包含了需要的数据或者是个空数组
-* err：查询的参数不正确之类的
-* fault：能导致mongodb挂掉的操作
-* */
+ * 所有数据库的返回结果的格式：
+ * res：正确的结果，包含了需要的数据或者是个空数组
+ * err：查询的参数不正确之类的
+ * fault：能导致mongodb挂掉的操作
+ * */
 
-let insertDocuments = function (collectionName, data, callback) {
+const insertDocuments = function (collectionName, data, callback) {
     try {
         MongoClient.connect(url, function (err, db) {
             let col = db.collection(collectionName);
             try {
                 col.insertMany(data, function (err, docs) {
                     if (err) {
-                        callback && callback({err: err});
+                        callback && callback({opResStr: 'error', results: [{name: err.name, message: err.message}]});
                     } else {
-                        callback && callback({res: docs});
+                        callback && callback({opResStr: 'success', results: docs});
                     }
                     db.close();
                 })
             } catch (e) {
-                callback && callback({ fault: e })
+                callback && callback({opResStr: 'fault', results: [{name: err.name, message: err.message}]})
             }
         });
     } catch (e) {
-        callback && callback({ fault: e })
+        callback && callback({opResStr: 'fault', results: [{name: e.name, message: e.message}]})
     }
 };
 
-let findDocuments = function (collectionName, queryObj, options, callback) {
+const findDocuments = function (collectionName, queryObj, options, callback) {
+    options.limit = options.limit || 1;
     try {
         MongoClient.connect(url, function (err, db) {
             let col = db.collection(collectionName);
             try {
                 col.find(queryObj).sort(options.sort).limit(options.limit).toArray(function (err, docs) {
                     if (err) {
-                        callback && callback({ err: err })
+                        callback && callback({opResStr: 'fault', results: [{name: err.name, message: err.message}]})
                     } else {
-                        callback && callback({ res: docs })
+                        callback && callback({opResStr: 'success', results: docs});
                     }
                 });
             } catch (e) {
-                callback && callback({ fault: e })
+                callback && callback({opResStr: 'fault', results: [{name: e.name, message: e.message}]})
             }
         });
     } catch (e) {
-        callback && callback({ fault: e })
+        callback && callback({opResStr: 'fault', results: [{name: e.name, message: e.message}]})
     }
 };
+
+const updateDocuments = function (collectionName, query, newData, callback) {
+    try {
+        MongoClient.connect(url, function (err, db) {
+            let col = db.collection(collectionName);
+            try {
+                // 这个还不会写过滤规则，先查询出来全部的，然后用js过滤好了
+                // col.findAndModify()
+                col.find({}).toArray(function (err, docs) {
+                    docs.forEach(v => {
+                        let aa = v;
+                        if (aa.images && aa.images.length) {
+                            aa.images.forEach((bb, i) => {
+                                if (bb.startsWith('public')) {
+                                    aa.images[i] = bb.substring('public'.length);
+                                    col.findOneAndUpdate({_id: aa._id}, {$set: aa}, function (err, r) {
+                                        // 这里返回为空的时候意味着没有匹配项，这样返回400类错误
+                                        // 默认返回r.upsertedCount
+                                        console.log(r)
+                                    })
+                                }
+
+                            });
+
+                        }
+                    })
+                })
+
+            } catch (e) {
+                console.error(e);
+                // callback && callback({opResStr: 'fault', results: [{name: e.name, message: e.message}]});
+            }
+        })
+    } catch (e) {
+        console.error(e);
+        // callback && callback({opResStr: 'fault', results: [{name: e.name, message: e.message}]});
+    }
+};
+
+updateDocuments('shuoshuo');
 
 
 // let now = new Date() * 1;
@@ -96,7 +137,7 @@ module.exports = {
 
     readWeather: function (location, callback) {
         findDocuments('weather', {location, date: moment().format('YYYY-MM-DD')}, {limit: 1}, function (d) {
-            callback(d.res);
+            callback && callback(d);
         });
     },
 
@@ -106,10 +147,10 @@ module.exports = {
         for (let a in condition) {
             switch (a) {
                 case 'time':
-                    queryObj = Object.assign(queryObj, { date: { $lt: Number(condition.time) } });
+                    queryObj = Object.assign(queryObj, {date: {$lt: Number(condition.time)}});
                     break;
                 case 'isPublic':
-                    queryObj = condition.isPublic ? Object.assign(queryObj, { isPublic: true }) : queryObj;
+                    queryObj = condition.isPublic ? Object.assign(queryObj, {isPublic: true}) : queryObj;
                     break;
             }
         }
