@@ -11,8 +11,7 @@ moment.defaultFormat = 'YYYY-MM-DD HH:mm:ss';
 const credentials = require('./src/env').credentials;
 const ports = require('./src/env').ports;
 const router = {
-    getShuoshuoList: require('./src/router/get-shuoshuo-list').getShuoshuoList,
-    postShuoshuo: require('./src/router/post-shuoshuo').postShuoshuo,
+    shuoshuo: require('./src/router/shuoshuo'),
     getWeather: require('./src/router/weather'),
 };
 
@@ -76,8 +75,9 @@ app.use('*', function (req, res, next) {
     .post('/', upload.any(), function (req, res, next) {
         next();
     })
-    .post('/getShuoshuoList', router.getShuoshuoList)
-    .post('/postShuoshuo', upload.any(), router.postShuoshuo)
+    .post('/getShuoshuoList', router.shuoshuo.getShuoshuoList)
+    .post('/postShuoshuo', upload.any(), router.shuoshuo.postShuoshuo)
+    .post('/getSummary', router.shuoshuo.getSummary)
     .post('/getWeather', router.getWeather)
     .use(express.static(__dirname + '/public'))
     .use(function (req, res) {

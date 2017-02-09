@@ -1,6 +1,7 @@
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const moment = require('moment');
+const logger = require('./mongo-logger');
 
 let url = 'mongodb://localhost:27017/blog-test';
 // todo: 线上的数据库的用户名和密码的创建和使用
@@ -76,9 +77,7 @@ const updateDocuments = function (collectionName, query, newData, callback) {
                                         console.log(r)
                                     })
                                 }
-
                             });
-
                         }
                     })
                 })
@@ -94,40 +93,74 @@ const updateDocuments = function (collectionName, query, newData, callback) {
     }
 };
 
-updateDocuments('shuoshuo');
+const updateShuoshuoSummary = function (dateStr) {
+    try{
+        MongoClient.connect(url, function (err, db) {
+            let col = db.collection('shuoshuo');
+            try {
+                col.findOne({name: 'summary'}, function (err, doc) {
+                    if (err) {
+                        logger.error('updateShuoshuoSummary find summary document error', err)
+                    } else {
+                        let summary = doc.summary;
+                        summary.all ++;
+                        let year = dateStr.substring(0, 4);
+                        if (summary[year]) {
+                            summary[year] ++;
+                        } else {
+                            summary[year] = 1;
+                        }
+                        col.updateOne({_id: doc._id}, {$set: {summary}}, function (err, r) {
+                            if (err) {
+                                logger.error('updateShuoshuoSummary update summary document error', err)
+                            } else {
+                                if (r.upsertedCount === 1) {
+                                    logger.info('updateShuoshuoSummary update summary document success')
+                                }
+                            }
+                            db.close();
+                        });
+                    }
+                });
+            } catch (e) {
+                logger.error('updateShuoshuoSummary find summary fault', e)
+            }
+        })
+    } catch (e) {
+        logger.error('updateShuoshuoSummary connect db fault', e)
+    }
+};
 
 
-// let now = new Date() * 1;
-// let weathers = ['Rainy', 'Stormy', 'Sunny', 'Cloudy', 'Hot', 'Cold', 'Dry', 'Wet', 'Windy', 'Hurricanes', 'typhoons', 'Sand-storms', 'Snow-storms', 'Tornados', 'Humid', 'Foggy', 'Snow', 'Thundersnow', 'Hail', 'Sleet', 'drought', 'wildfire', 'blizzard', 'avalanche', 'Mist'];
-//
-// let sb = [];
-//
-// let strs = 'From the gutters of the right lobe, that hefty plum muscle with veins installed like threads of a stubborn sweater, from the base of that small croissant, wet, lodged between ribs nine and eleven, from the gaps between colonic crypts, the end curves of test tube walls, from the capsule tissue of each gluey node along collarbones, from the crooked pulp of every shifting tooth, from the pulsating straw soaked with saliva and food, from the innermost coat of jelly-filled holes, animating color images of a visual world, from a pair of whitish pills tethered to elastic curbs, from the vocal butterfly stationed in the neck, from the bump of each bud behind every bitter bite, from the bed beneath plates of nails served on twisted fingertips, from the delicate film of each sac, sipping oxygen, from the snail swirl fixed in echoing channels, from the tapered rim of a bile-storing pear, from the visceral zone of a pyramid piece atop filtering seeds, from the secret ribbons of thick yellow from heel to toe, from the crowded tail of a sugar manager, from the fourth membrane of bowed upper lip, and from every pore and pit and crack and cave; never just from the bottom of my heart, but from the root of spongy marrow, the gentle dip of each red blood cell leaping, the sweaty pocket of every follicle, and even where there are no grooves or turns, no soft nook or fibrous layers, no valley of vessels, just the shapeless light still connected to my body —  the rise of affection, for you, the tender core of love’s beginning — I mean from the endless ends of my soul; from there, too Mehrnoosh was born and raised in New York. Her poetry has appeared in The Missing Slate, Passages North, HEArt Journal Online, Chiron Review, and is forthcoming in Natural Bridge, Painted Bride Quarterly, and Pinch Journal. She is a 2016 Best of the Net nominee. Mehrnoosh currently lives in New York and practices matrimonial law.'.split(' ').map(function (a) {
-//     return a.replace(/[;,.!]/)
-// });
-// let imgs = ['../img/chun.jpg', '../img/deng1.jpg', '../img/girl.jpg', '../img/heart.jpeg', '../img/icemonten.jpg', '../img/iceriver.jpg', '../img/icetree.jpg', '../img/icetree1.jpg', '../img/snow.jpg', '../img/snow1.jpg', '../img/snow2.jpg'];
-//
-// for (let i = 0; i < 500; i++) {
-//     let img = [];
-//     // 每次减20到70小时，生成300条数据
-//     now -= (Math.floor(Math.random() * 50 + 20) * 3567 * 1000);
-//     let start = Math.floor(Math.random() * strs.length);
-//     let imgCount = Math.floor(Math.random() * 3);
-//     for (let a = 0; a <= imgCount; a++) {
-//         img.push(imgs[Math.floor(Math.random() * imgs.length)])
-//     }
-//     sb.push({
-//         date: now,
-//         dateStr: moment(now).format('YYYY-MM-DD HH:mm:ss'),
-//         weather: weathers[Math.floor(Math.random() * weathers.length)],
-//         // 从一个已知范围内随机出来一个10-20个连续单词长度的"一句话"
-//         content: strs.slice(start, start + Math.floor(Math.random() * 10 + 20)).join(' '),
-//         img,
-//         location: '',
-//         isPublic: Math.random() < 0.9
-//     })
-//
-// }
+let now = new Date() * 1;
+
+let sb = [];
+
+const fs = require('fs');
+
+let strs = fs.readFileSync('../songci.txt').toString().split('。');
+
+let len = strs.length;
+for (let i = 0; i < 500; i++) {
+    // 每次减20到70小时，生成300条数据
+    now -= (Math.floor(Math.random() * 50 + 20) * 3567 * 1000);
+    let start = Math.floor(Math.random() * len);
+    let temperatureLow = Math.random();
+    sb.push({
+        date: now,
+        dateStr: moment(now).format('YYYY-MM-DD HH:mm:ss'),
+        weather: {
+            temperature: [],
+            code: []
+        },
+        // 从一个已知范围内随机出来一个10-20个连续单词长度的"一句话"
+        content: strs.slice(start, start + Math.floor(Math.random() * 10 + 20)).join(' '),
+        location: strs[Math.floor(Math.random() * len)],
+        images: [],
+        isPublic: Math.random() < 0.95
+    })
+
+}
 
 module.exports = {
 
@@ -159,6 +192,7 @@ module.exports = {
 
     saveOneShuoshuo: function (data, callback) {
         insertDocuments('shuoshuo', [data], function (d) {
+            updateShuoshuoSummary(data.dateStr);
             callback && callback(d);
         });
     },
@@ -171,11 +205,9 @@ module.exports = {
         insertDocuments('blogLog', date, callback)
     },
 
-    updateShuoshuoSumary: function () {
-
-    },
-
-    getShuoshuoSumary: function () {
-
+    getShuoshuoSummary: function (callback) {
+        findDocuments('shuoshuo', {name: 'summary'}, {}, function (d) {
+            callback && callback(d)
+        })
     }
 };
