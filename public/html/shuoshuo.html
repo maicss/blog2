@@ -12,11 +12,13 @@
             border-top-left-radius: 4px;
             border-top-right-radius: 4px;
         }
+
         .list-group-item:last-child {
             border-bottom-left-radius: 4px;
             border-bottom-right-radius: 4px;
         }
-        .list-group-item{
+
+        .list-group-item {
             position: relative;
             display: block;
             padding: 10px 15px;
@@ -24,13 +26,14 @@
             background-color: #fff;
             border: 1px solid #ddd;
         }
-        .badge{
+
+        .badge {
             float: right;
             display: inline-block;
-            min-width:10px;
-            padding:3px 7px;
-            font-size:12px;
-            font-weight:700;
+            min-width: 10px;
+            padding: 3px 7px;
+            font-size: 12px;
+            font-weight: 700;
             color: #fff4e4;
             text-align: center;
             vertical-align: middle;
@@ -78,6 +81,15 @@
 </body>
 </html>
 <script>
+    if (!fetch) {
+        alert('not support fetch API!')
+    }
+    if (!document.body.prepend) {
+        alert('not support prepend')
+    }
+    if (!document.body.append) {
+        alert('not support append')
+    }
     let readableSize = function (size) {
         return size / 1024 > 1024 ? (~~(10 * size / 1024 / 1024)) / 10 + "MB" : ~~(size / 1024) + "KB"
     };
@@ -194,6 +206,8 @@
 <script>
     let timeMark = 0;
     let weatherInfo = {};
+    let index = 0;
+    let filter = 'all';
 
     let renderContent = function (res) {
         let st = '';
@@ -207,7 +221,7 @@
                                 <h3 class="header"><time>${v.dateStr}</time></h3>
                                 <div class="description">
                                     <p>${v.content}</p>
-                                    <p><i class="icon location arrow"></i>${v.weather.location}: <img class="aligned image mini spaced ui" src="./assert/weather-icon/${v.weather.code[0]}.png"> ~ <img class="aligned image mini spaced ui" src="./assert/weather-icon/${v.weather.code[1]}.png"> ${v.weather.temperature[0]}&#8451; ~ ${v.weather.temperature[1]}&#8451; </p>
+                                    <p><i class="icon location arrow"></i>${v.weather.location || v.location}: <img class="aligned image mini spaced ui" src="./assert/weather-icon/${v.weather.code[0]}.png"> ~ <img class="aligned image mini spaced ui" src="./assert/weather-icon/${v.weather.code[1]}.png"> ${v.weather.temperature[0]}&#8451; ~ ${v.weather.temperature[1]}&#8451; </p>
                                      <div class="images ui small">${im}</div>
 
                                 </div>
@@ -230,17 +244,13 @@
             if (d.ok) {
                 d.json().then(function (s) {
                     let data = s[0].summary;
-                    Object.keys(data).forEach(v => {
+                    Object.keys(data).sort((a, b) => a < b).forEach(v => {
                         let a = document.createElement('a');
-                        let arg = {year: v};
 //                        a.onclick = loadList(arg);
+                        a.dataset.year = v;
                         a.classList.add('list-group-item');
                         a.innerHTML = `${v} <span class="badge">${data[v]}</span>`;
-                        if (v === 'all') {
-                            summary.prepend(a)
-                        } else {
-                            summary.appendChild(a);
-                        }
+                        summary.appendChild(a);
                     });
                 })
             }
@@ -249,18 +259,16 @@
         })
     };
     let getInitList = function () {
-        $(function () {
-            $.ajax({
-                url: '/getShuoshuoList',
-                method: 'POST',
-                data: {limit: 20}
-            }).done(function (res) {
-                let template = renderContent(res);
-                $('#shuoshuo-ul').html(template);
-                getSummary();
-            }).fail(function (jqxhr) {
-                $('#shuoshuo-ul').html(`<p>${jqxhr.status}: ${jqxhr.responseText}</p>`)
-            });
+        $.ajax({
+            url: '/getShuoshuoList',
+            method: 'POST',
+            data: {limit: 20, filter}
+        }).done(function (res) {
+            let template = renderContent(res);
+            $('#shuoshuo-ul').html(template);
+            getSummary();
+        }).fail(function (jqxhr) {
+            $('#shuoshuo-ul').html(`<p>${jqxhr.status}: ${jqxhr.responseText}</p>`)
         });
     };
 
@@ -277,21 +285,20 @@
         });
     };
 
-    let loadList = function (options) {
+    let loadList = function () {
         $.ajax({
             url: '/getShuoshuoList',
             method: 'POST',
-            data: options
+            data: {
+                filter,
+                timeMark
+            }
         }).done(function (res) {
             if (!res.length) {
                 alert('就这么多啦～～')
             }
             let template = renderContent(res);
-            if (options.year) {
-                $('#shuoshuo-ul').html(template);
-            } else {
-                $('#shuoshuo-ul').append(template);
-            }
+            $('#shuoshuo-ul').html(template);
         }).fail(function (xhr) {
             $('#shuoshuo-ul').append(`<p>${xhr.status}: ${xhr.responseText}</p>`);
         })
@@ -321,6 +328,7 @@
                     $('#frame').html('');
                     $('#s_content').val('');
                     imgFormData = new FormData();
+                    filter = 'all';
                     getInitList();
                 } else {
                     alert(`status: ${d.err.status}, type:${ d.err.type}`)
@@ -331,12 +339,25 @@
         }
     };
 
-    getInitList();
-    getWeather();
+    $(function () {
+        getInitList();
+        getWeather();
+        $('#summary').click(function (e) {
+            if (e.target.localName === 'a') {
+                filter = e.target.dataset.year;
+            } else if (e.target.localName === 'span'){
+                filter = e.target.parentElement.dataset.year;
+            }
+            loadList({year: filter});
+        });
+    });
+
 
 
     $('#s_poster').click(function () {
         postShuoshuo();
     });
 
+
 </script>
+

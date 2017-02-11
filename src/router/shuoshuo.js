@@ -8,8 +8,8 @@ module.exports = {
         let condition = {limit: 10};
         condition.isPublic = !req.client.authorized;
         console.log('check authorized in router get shuoshuo list: ', req.client.authorized);
-        if (req.body.year) {
-            condition.dateStr = /^2017/
+        if (req.body.filter && req.body.filter !== 'all') {
+            condition.dateStr = new RegExp("^" + req.body.filter);
         } else {
             condition = Object.assign(condition, req.body);
         }
@@ -28,6 +28,7 @@ module.exports = {
         })
     },
     postShuoshuo: function (req, res, next) {
+        if (req.client.authorized)
         let d = moment();
         let body;
         try {

@@ -1,9 +1,17 @@
+const f = require('util').format;
+
+const user = encodeURIComponent('blog');
+const password = encodeURIComponent('blog:test');
+const authMechanism = 'DEFAULT';
+const authSource = 'blog-test';
+
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const moment = require('moment');
 const logger = require('./mongo-logger');
 
-let url = 'mongodb://localhost:27017/blog-test';
+let url = f('mongodb://%s:%s@localhost:27017/blog-test?authMechanism=%s',
+    user, password, authMechanism);
 // todo: 线上的数据库的用户名和密码的创建和使用
 
 /*
@@ -94,7 +102,7 @@ const updateDocuments = function (collectionName, query, newData, callback) {
 };
 
 const updateShuoshuoSummary = function (dateStr) {
-    try{
+    try {
         MongoClient.connect(url, function (err, db) {
             let col = db.collection('shuoshuo');
             try {
@@ -103,10 +111,10 @@ const updateShuoshuoSummary = function (dateStr) {
                         logger.error('updateShuoshuoSummary find summary document error', err)
                     } else {
                         let summary = doc.summary;
-                        summary.all ++;
+                        summary.all++;
                         let year = dateStr.substring(0, 4);
                         if (summary[year]) {
-                            summary[year] ++;
+                            summary[year]++;
                         } else {
                             summary[year] = 1;
                         }
@@ -132,35 +140,47 @@ const updateShuoshuoSummary = function (dateStr) {
 };
 
 
-let now = new Date() * 1;
+// let now = new Date() * 1;
+//
+// let sb = [];
+//
+// const fs = require('fs');
+//
+// let strs = fs.readFileSync('../songci.txt').toString().split('。');
+//
+// function randomBetween(low, high) {
+//     return Math.floor(Math.random() * (high - low) + low)
+// }
+//
+// let len = strs.length;
+// for (let i = 0; i < 1000; i++) {
+//     // 每次减20到70小时，生成300条数据
+//     now -= (Math.floor(Math.random() * 50 + 20) * 3567 * 1000);
+//     let start = Math.floor(Math.random() * len);
+//     let temperatureLow = randomBetween(-5, 40);
+//     let temperatureHigh = randomBetween(temperatureLow, (temperatureLow + 10 > 40 ? 40 : temperatureLow + 10));
+//     // -5 ~ 40
+//     let codeLow = randomBetween(0, 38);
+//     let codeHigh = randomBetween(codeLow, (codeLow + 20 > 38 ? 38 : codeLow + 20));
+//
+//     sb.push({
+//         date: now,
+//         dateStr: moment(now).format('YYYY-MM-DD HH:mm:ss'),
+//         weather: {
+//             location: Math.random() > 0.8 ? '上海' : '苏州',
+//             temperature: [temperatureLow, temperatureHigh],
+//             code: [codeLow , codeHigh]
+//         },
+//         // 从一个已知范围内随机出来一个10-20个连续单词长度的"一句话"
+//         content: strs.slice(start, start + Math.floor(Math.random() * 3 + 2)).join('。'),
+//         images: [],
+//         isPublic: Math.random() < 0.95
+//     });
+// }
+// insertDocuments('shuoshuo', sb, function (d) {
+//     console.log(d)
+// });
 
-let sb = [];
-
-const fs = require('fs');
-
-let strs = fs.readFileSync('../songci.txt').toString().split('。');
-
-let len = strs.length;
-for (let i = 0; i < 500; i++) {
-    // 每次减20到70小时，生成300条数据
-    now -= (Math.floor(Math.random() * 50 + 20) * 3567 * 1000);
-    let start = Math.floor(Math.random() * len);
-    let temperatureLow = Math.random();
-    sb.push({
-        date: now,
-        dateStr: moment(now).format('YYYY-MM-DD HH:mm:ss'),
-        weather: {
-            temperature: [],
-            code: []
-        },
-        // 从一个已知范围内随机出来一个10-20个连续单词长度的"一句话"
-        content: strs.slice(start, start + Math.floor(Math.random() * 10 + 20)).join(' '),
-        location: strs[Math.floor(Math.random() * len)],
-        images: [],
-        isPublic: Math.random() < 0.95
-    })
-
-}
 
 module.exports = {
 
@@ -185,6 +205,8 @@ module.exports = {
                 case 'isPublic':
                     queryObj = condition.isPublic ? Object.assign(queryObj, {isPublic: true}) : queryObj;
                     break;
+                case 'dateStr':
+                    queryObj.dateStr = condition.dateStr
             }
         }
         findDocuments('shuoshuo', queryObj, options, callback);
@@ -211,3 +233,29 @@ module.exports = {
         })
     }
 };
+
+// let update = function () {
+//     MongoClient.connect(url, function (err, db) {
+//         let col = db.collection('shuoshuo');
+//         let summary = {all: 0};
+//         col.find({date: {$exists: 1}}).toArray(function (err, docs) {
+//             if (err) console.error(err);
+//             docs.forEach(function (v) {
+//                 console.log(v);
+//                 let year = v.dateStr.substring(0, 4);
+//                 summary.all ++;
+//                 if (summary[year]) {
+//                     summary[year] ++;
+//                 } else {
+//                     summary[year] = 1;
+//                 }
+//             });
+//             col.findOneAndUpdate({name: 'summary'}, {$set: {name: 'summary', summary}}, function (err, c) {
+//                 if (err) console.error(err);
+//                 console.log(c)
+//             })
+//         });
+//     })
+// };
+//
+// update();

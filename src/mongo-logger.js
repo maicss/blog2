@@ -7,6 +7,8 @@ require('winston-mongodb').MongoDB;
 let options = {
     db:'mongodb://127.0.0.1:27017/blog-test',
     collection:'logger',
+    username: 'blog',
+    password: 'blog:test'
 };
 // todo: 线上的数据库的用户名和密码的创建和使用
 winston.add(winston.transports.MongoDB, options);

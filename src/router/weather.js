@@ -25,14 +25,23 @@ const api = new WeatherApi();
 
 module.exports = function (req, res, next) {
     // return last cached weather by IP city address
-    let ip = req.ip === '::1' ? '116.246.19.150' : req.ip;
+    let ip = req.ip === '::1' ? (Math.random() > 0.9 ? '116.246.19.150' : '112.22.233.200'): req.ip;
     let l = '';
     // todo 缓存一个IP数据库，不必每次都去线上查询了。
     api.getLocation(ip).then(function (d) {
         l = d.results[0].name;
+        if (!l) {
+            logger.warn('Didn\'t get location info');
+            // todo terminate this promise
+        }
+
     }).catch(function (err) {
-        res.status(500).send(err)
+        // res.status(500).send(err)
     }).then(function () {
+        if (l === '' && process.platform === 'darwin') {
+            // todo: 本地测试没网络链接的时候即使有缓存天气信息，但是由于location为空也查询不到。这样写太局限了。
+            l = '上海'
+        }
         readWeather(l, function (d) {
             if (d.opResStr === 'success' && d.results.length) {
                 res.json(d.results[0]);
@@ -51,19 +60,17 @@ module.exports = function (req, res, next) {
                                 }
                                 break;
                             case 'error':
-                                logger.warn('router weather get a new location weather error: ', d.results[0]);
+                                logger.warn('router weather error when get a new location: ', d.results[0]);
                                 res.status(500).send(d.results[0]);
                                 break;
                             case 'fault':
-                                logger.warn('router weather get a new location weather error: ', d.results[0]);
+                                logger.error('router weather fault when get a new location: ', d.results[0]);
                                 res.status(400).send(d.results[0]);
                                 break;
                         }
                     });
                 }).catch(function (err) {
-                    // 这里是断网或者网络无法正常链接之后的错误
-                    // console.log(err);
-                    // res.send(err)
+                    res.status(500).send(err);
                 });
             }
         })

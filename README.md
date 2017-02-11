@@ -31,20 +31,22 @@
     - [x] 数据库操作后的数据统一返回结果`{opResStr: success, results: []}`, `opResStr: success, error, fault`
     - [x] 从网页端的增删改查
     - [ ] 日志数据库
-    - [ ] 说说的summary自动更新
+    - [x] 说说的summary自动更新
     - [ ] 说说的Markdown解析
     - [x] 关键字权限控制
     - [x] 每天定时从心知天气的API获取几个城市的天气信息，然后存储到数据库，网页传入地理位置，然后加入天气信息。
     - [ ] 修改界面到semantic-ui
     - [ ] 修改页面结构到react
     - [ ] mongoose(选作)
+    - [ ] mongodb中文检索
     - [ ] webpack(选作)
     - [x] 图片的存储和显示
-    - [ ] 图片的压缩上传
+    - [x] 图片的压缩上传
     - [ ] 图片的压缩显示(也就是存两份图片，选作)
     - [ ] 去jQuery化
     - [ ] 用react重构
  - [ ] 实现blog页面
+    - [ ] 用Google drive的API同步网盘文件试试
     - [ ] 用marked解析MD文件
     - [ ] 从网盘定时同步MD文件
 
