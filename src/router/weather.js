@@ -61,11 +61,11 @@ module.exports = function (req, res, next) {
                                 break;
                             case 'error':
                                 logger.warn('router weather error when get a new location: ', d.results[0]);
-                                res.status(500).send(d.results[0]);
+                                res.status(400).send(d.results[0]);
                                 break;
                             case 'fault':
                                 logger.error('router weather fault when get a new location: ', d.results[0]);
-                                res.status(400).send(d.results[0]);
+                                res.status(500).send(d.results[0]);
                                 break;
                         }
                     });

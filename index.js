@@ -4,6 +4,7 @@ const http = require('http');
 const https = require('https');
 // this is just add a default format to moment, because this file always load first
 const moment = require('moment');
+const cookieParser = require('cookie-parser');
 
 moment.defaultFormat = 'YYYY-MM-DD HH:mm:ss';
 
@@ -13,6 +14,7 @@ const ports = require('./src/env').ports;
 const router = {
     shuoshuo: require('./src/router/shuoshuo'),
     getWeather: require('./src/router/weather'),
+    getUser: require('./src/router/user'),
 };
 
 
@@ -32,6 +34,7 @@ let upload = multer({storage: storage});
 let app = express();
 
 app.use(compression());
+app.use(cookieParser());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -41,7 +44,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 let httpServer = http.createServer(app);
 let httpsServer = https.createServer(credentials, app);
 
-app.use('*', function (req, res, next) {
+app.use(function (req, res, next) {
     // let body = [];
     // req.on('data', function(chunk) {
     //     body.push(chunk);
@@ -50,6 +53,7 @@ app.use('*', function (req, res, next) {
     //     console.log(body);
     //     console.log('end');
     // });
+    // console.log(req.headers['user-agent']);
     if (!req.secure) {
         res.redirect('https://maicss.com' + req.path)
     } else {
@@ -79,6 +83,7 @@ app.use('*', function (req, res, next) {
     .post('/postShuoshuo', upload.any(), router.shuoshuo.postShuoshuo)
     .post('/getSummary', router.shuoshuo.getSummary)
     .post('/getWeather', router.getWeather)
+    .post('/getUser', router.getUser)
     .use(express.static(__dirname + '/public'))
     .use(function (req, res) {
         res.status(404).sendFile(__dirname + '/public/html/404.html')

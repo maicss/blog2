@@ -7,47 +7,70 @@
     <script src="../lib/moment-2.17.1.js"></script>
     <script src="../lib/semantic/dist/semantic.min.js"></script>
     <link rel="stylesheet" href="../lib/semantic/dist/semantic.min.css">
-    <style>
-        .list-group-item:first-child {
-            border-top-left-radius: 4px;
-            border-top-right-radius: 4px;
-        }
-
-        .list-group-item:last-child {
-            border-bottom-left-radius: 4px;
-            border-bottom-right-radius: 4px;
-        }
-
-        .list-group-item {
-            position: relative;
-            display: block;
-            padding: 10px 15px;
-            margin-bottom: -1px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-        }
-
-        .badge {
-            float: right;
-            display: inline-block;
-            min-width: 10px;
-            padding: 3px 7px;
-            font-size: 12px;
-            font-weight: 700;
-            color: #fff4e4;
-            text-align: center;
-            vertical-align: middle;
-            background-color: #777;
-            border-radius: 10px;
-        }
-    </style>
 </head>
 <body style="padding: 30px;">
+<div class="ui attached stackable menu tabular" style="margin-bottom: 20px;">
+    <div class="ui container">
+        <a class="item">
+            <i class="home icon"></i> Blog
+        </a>
+        <a class="item">
+            <i class="grid layout icon"></i> ShuoShuo
+        </a>
+        <a class="item">
+            <i class="mail icon"></i> About
+        </a>
+        <div class="ui simple dropdown item">
+            More
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <a class="item"><i class="edit icon"></i> Edit Profile</a>
+                <a class="item"><i class="globe icon"></i> Choose Language</a>
+                <a class="item"><i class="settings icon"></i> Account Settings</a>
+            </div>
+        </div>
+        <div class="right item">
+            <div class="ui input"><input type="text" placeholder="Search..."></div>
+            <button class="button ui positive" id="login">Login</button>
+            <button class="button ui" style="display: none;" id="logout">Logout</button>
+        </div>
+    </div>
+</div>
+<!--login frame -->
+<div class="ui small modal login">
+    <i class="close icon"></i>
+    <div class="header ui aligned center">
+        Login
+    </div>
+    <div class="content">
+        <div class="ui form">
+            <!--todo: form validator-->
+            <div class="field">
+                <label for="username">Username</label>
+                <input type="text" name="username" autocomplete="false" id="username">
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password">
+            </div>
+            <div class="field">
+                <div class="ui checkbox">
+                    <input type="checkbox" tabindex="0" id="rememberMe" class="hidden">
+                    <label for="rememberMe">remember me</label>
+                </div>
+            </div>
+            <div class="field" style="overflow: hidden;">
+                <button class="ui right floated button primary" id="submitLogin">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--login frame end-->
 <div class="ui container">
     <div class="ui grid">
         <section class="four wide column">
             <h2>Summary</h2>
-            <div id="summary" class="list-group">
+            <div id="summary" class="menu ui vertical">
             </div>
 
         </section>
@@ -62,6 +85,10 @@
                 </button>
                 <button id="s_poster"><i class="send icon"></i></button>
             </div>
+            <div class="ui negative message hidden">
+                <i class="close icon"></i>
+                <div class="header" id="shuoshuoOpMsg"></div>
+            </div>
             <div class="ui cards four doubling" style="margin: 0;" id="frame">
             </div>
             <p id="weather"></p>
@@ -69,7 +96,7 @@
 
             </ul>
             <p>
-                <button class="fluid ui button" onclick="loadList({time: timeMark})">更多
+                <button class="fluid ui button" onclick="loadList()">更多
                 </button>
             </p>
             <a href="#"
@@ -89,6 +116,9 @@
     }
     if (!document.body.append) {
         alert('not support append')
+    }
+    if (!$.fn) {
+        alert('jquery not processed')
     }
     let readableSize = function (size) {
         return size / 1024 > 1024 ? (~~(10 * size / 1024 / 1024)) / 10 + "MB" : ~~(size / 1024) + "KB"
@@ -204,9 +234,9 @@
     };
 </script>
 <script>
+    $('.ui.checkbox').checkbox();
     let timeMark = 0;
     let weatherInfo = {};
-    let index = 0;
     let filter = 'all';
 
     let renderContent = function (res) {
@@ -248,8 +278,11 @@
                         let a = document.createElement('a');
 //                        a.onclick = loadList(arg);
                         a.dataset.year = v;
-                        a.classList.add('list-group-item');
-                        a.innerHTML = `${v} <span class="badge">${data[v]}</span>`;
+                        a.classList = 'teal item';
+                        if (v === filter) {
+                            a.classList.add('active');
+                        }
+                        a.innerHTML = `${v} <div class="ui teal label">${data[v]}</div>`;
                         summary.appendChild(a);
                     });
                 })
@@ -258,6 +291,7 @@
             console.log(e)
         })
     };
+
     let getInitList = function () {
         $.ajax({
             url: '/getShuoshuoList',
@@ -298,6 +332,7 @@
                 alert('就这么多啦～～')
             }
             let template = renderContent(res);
+
             $('#shuoshuo-ul').html(template);
         }).fail(function (xhr) {
             $('#shuoshuo-ul').append(`<p>${xhr.status}: ${xhr.responseText}</p>`);
@@ -306,6 +341,9 @@
 
     let postShuoshuo = function () {
         if ($('#s_content').val().trim()) {
+            if (moment().format('YYYY-MM-DD') !== weatherInfo.date) {
+                getWeather();
+            }
             let s = {
                 content: $('#s_content').val(),
                 weather: {
@@ -323,18 +361,38 @@
                 contentType: false,
                 data: imgFormData
             }).done(function (d) {
+                imgFormData = new FormData();
                 if (d.result.ok === 1 && d.result.n === 1) {
                     alert('post success.');
                     $('#frame').html('');
                     $('#s_content').val('');
-                    imgFormData = new FormData();
                     filter = 'all';
                     getInitList();
                 } else {
-                    alert(`status: ${d.err.status}, type:${ d.err.type}`)
+                    console.log(d)
                 }
             }).fail(function (e) {
-                console.log(e.responseText)
+                $('#shuoshuoOpMsg').html(e.responseText).parent('div').removeClass('hidden');
+            })
+        }
+    };
+
+    let _login = function (user, callback) {
+        // todo: 这个留着测试一下
+//        let form = new FormData();
+//        let data=form.append('json',  JSON.stringify(user));
+        if (user.username && user.password) {
+//            fetch('/getUser', {
+//                method: "POST",
+//                headers: {
+//                    'Content-Type': 'application/json'
+//                },
+//                body: JSON.stringify(user)
+//            }).then(function (d) {
+//                callback(d)
+//            })
+            $.post('./getUser', user, function (d) {
+                callback(d)
             })
         }
     };
@@ -343,20 +401,66 @@
         getInitList();
         getWeather();
         $('#summary').click(function (e) {
+            let targetA = '';
             if (e.target.localName === 'a') {
-                filter = e.target.dataset.year;
-            } else if (e.target.localName === 'span'){
-                filter = e.target.parentElement.dataset.year;
+                targetA = e.target;
+            } else if (e.target.localName === 'span') {
+                targetA = e.target.parentElement;
             }
-            loadList({year: filter});
+            targetA.classList.add('active');
+            let as = this.children;
+            for (let i = 0; i < as.length; i++) {
+                if (as[i].localName === 'a') {
+                    if (as[i] !== targetA) {
+                        as[i].classList.remove('active');
+                    }
+                }
+            }
+
+            filter = targetA.dataset.year;
+            loadList();
         });
     });
-
 
 
     $('#s_poster').click(function () {
         postShuoshuo();
     });
+
+    $('#login').click(function () {
+        $('.ui.modal').modal('show');
+        $('#submitLogin').click(function () {
+            let user = {
+                username: $('#username').val().trim(),
+                password: $('#password').val().trim(),
+                rememberMe: $('#rememberMe').prop('checked')
+            };
+            _login(user, function (res) {
+//                if (res.ok) {
+//                    res.text().then(function (text) {
+//                        if (text === 'succeed') {
+//                            $('.ui.modal.login').modal('hide');
+//                            $('#login').hide();
+//                            $('#logout').show();
+//                        }
+//                    })
+//                } else {
+//                    console.log(res.status)
+//                }
+                if (res === 'succeed') {
+                    $('.ui.modal.login').modal('hide');
+                    $('#login').hide();
+                    $('#logout').show();
+                } else {
+                    console.log(res)
+                }
+            });
+        });
+    });
+
+    $('#logout').click(function () {
+        $('.ui.modal')
+    })
 
 
 </script>

@@ -44,6 +44,7 @@ const insertDocuments = function (collectionName, data, callback) {
 };
 
 const findDocuments = function (collectionName, queryObj, options, callback) {
+    // console.log('queryObj: ', queryObj);
     options.limit = options.limit || 1;
     try {
         MongoClient.connect(url, function (err, db) {
@@ -229,6 +230,12 @@ module.exports = {
 
     getShuoshuoSummary: function (callback) {
         findDocuments('shuoshuo', {name: 'summary'}, {}, function (d) {
+            callback && callback(d)
+        })
+    },
+
+    getUser: function (username, callback) {
+        findDocuments('user', username, {}, function (d) {
             callback && callback(d)
         })
     }
