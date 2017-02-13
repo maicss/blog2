@@ -14,7 +14,7 @@ const ports = require('./src/env').ports;
 const router = {
     shuoshuo: require('./src/router/shuoshuo'),
     getWeather: require('./src/router/weather'),
-    getUser: require('./src/router/user'),
+    user: require('./src/router/user'),
 };
 
 
@@ -83,7 +83,8 @@ app.use(function (req, res, next) {
     .post('/postShuoshuo', upload.any(), router.shuoshuo.postShuoshuo)
     .post('/getSummary', router.shuoshuo.getSummary)
     .post('/getWeather', router.getWeather)
-    .post('/getUser', router.getUser)
+    .post('/getUser', router.user.login)
+    .post('/logout', router.user.logout)
     .use(express.static(__dirname + '/public'))
     .use(function (req, res) {
         res.status(404).sendFile(__dirname + '/public/html/404.html')

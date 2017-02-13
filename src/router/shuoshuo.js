@@ -11,8 +11,9 @@ module.exports = {
         console.log('check authorized in router get shuoshuo list: ', req.client.authorized);
         if (req.body.filter && req.body.filter !== 'all') {
             condition.dateStr = new RegExp("^" + req.body.filter);
-        } else {
-            condition = Object.assign(condition, req.body);
+        }
+        if (req.body.timeMark && req.body.timeMark !== '0') {
+            condition.timeMark = req.body.timeMark;
         }
         getShuoshuoList(condition, function (d) {
             switch (d.opResStr) {

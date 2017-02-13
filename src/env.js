@@ -1,4 +1,20 @@
 const fs = require('fs');
+const f = require('util').format;
+
+const user = encodeURIComponent('blog');
+const password = encodeURIComponent('blog:test');
+const authMechanism = 'DEFAULT';
+
+
+let url = f('mongodb://%s:%s@localhost:27017/blog-test?authMechanism=%s',
+    user, password, authMechanism);
+
+let loggerConfig = {
+    db:'mongodb://127.0.0.1:27017/blog-test',
+    collection:'logger',
+    username: user,
+    password: 'blog:test'
+};
 const os = require('os');
 
 let osName = os.type();
@@ -46,11 +62,15 @@ if (1) {
     env = DEFAULT
 }
 
-
-exports.credentials = Object.assign(credentials, {
-    cert: fs.readFileSync(env.ssl.certFile),
-    key: fs.readFileSync(env.ssl.keyFile),
-    requestCert: true,
-    rejectUnauthorized: false
-});
-exports.ports = env.port;
+module.exports = {
+    credentials: Object.assign(credentials, {
+        cert: fs.readFileSync(env.ssl.certFile),
+        key: fs.readFileSync(env.ssl.keyFile),
+        requestCert: true,
+        rejectUnauthorized: false
+    }),
+    ports: env.port,
+    mongoConfig: {
+        url, loggerConfig
+    }
+};

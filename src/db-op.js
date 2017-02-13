@@ -1,17 +1,12 @@
-const f = require('util').format;
-
-const user = encodeURIComponent('blog');
-const password = encodeURIComponent('blog:test');
-const authMechanism = 'DEFAULT';
-const authSource = 'blog-test';
-
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const moment = require('moment');
 const logger = require('./mongo-logger');
 
-let url = f('mongodb://%s:%s@localhost:27017/blog-test?authMechanism=%s',
-    user, password, authMechanism);
+const url = require('./env').mongoConfig.url;
+
+console.log(url);
+
 // todo: 线上的数据库的用户名和密码的创建和使用
 
 /*
@@ -200,8 +195,8 @@ module.exports = {
         let options = {sort: {'date': -1}, limit: Number(condition.limit)};
         for (let a in condition) {
             switch (a) {
-                case 'time':
-                    queryObj = Object.assign(queryObj, {date: {$lt: Number(condition.time)}});
+                case 'timeMark':
+                    queryObj = Object.assign(queryObj, {date: {$lt: Number(condition.timeMark)}});
                     break;
                 case 'isPublic':
                     queryObj = condition.isPublic ? Object.assign(queryObj, {isPublic: true}) : queryObj;

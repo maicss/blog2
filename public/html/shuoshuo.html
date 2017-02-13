@@ -65,7 +65,21 @@
         </div>
     </div>
 </div>
+
 <!--login frame end-->
+<!--logout-->
+<div class="ui small modal logout">
+    <div class="header">Logout</div>
+    <div class="content">
+        <p>Are you sure you want to Logout?</p>
+    </div>
+    <div class="actions">
+        <div class="ui negative button">No</div>
+        <div class="ui logout positive right button">Yes</div>
+    </div>
+</div>
+<!--logout frame end-->
+
 <div class="ui container">
     <div class="ui grid">
         <section class="four wide column">
@@ -75,7 +89,7 @@
 
         </section>
         <article class="twelve wide column">
-            <div class="ui fluid massive icon input">
+            <div id="shuoshuoArea" style="display: none" class="ui fluid massive icon input">
                 <textarea id="s_content"
                           style="padding: 0.5em;border-radius: 4px;border: 1px solid rgba(34, 36, 38, 0.15);overflow: scroll;height: 64px;max-width: 100%;max-height: 64px;margin: 0; resize: none;outline: 0;flex: 1 0 auto;line-height: 1em;"
                           placeholder="lalala"> </textarea>
@@ -96,7 +110,7 @@
 
             </ul>
             <p>
-                <button class="fluid ui button" onclick="loadList()">更多
+                <button class="fluid ui button" onclick="loadList('more')">更多
                 </button>
             </p>
             <a href="#"
@@ -293,10 +307,11 @@
     };
 
     let getInitList = function () {
+        timeMark = 0;
         $.ajax({
             url: '/getShuoshuoList',
             method: 'POST',
-            data: {limit: 20, filter}
+            data: {limit: 20, filter, timeMark}
         }).done(function (res) {
             let template = renderContent(res);
             $('#shuoshuo-ul').html(template);
@@ -319,7 +334,7 @@
         });
     };
 
-    let loadList = function () {
+    let loadList = function (mark) {
         $.ajax({
             url: '/getShuoshuoList',
             method: 'POST',
@@ -330,10 +345,15 @@
         }).done(function (res) {
             if (!res.length) {
                 alert('就这么多啦～～')
+            } else {
+                let template = renderContent(res);
+                if (mark === 'more') {
+                    $('#shuoshuo-ul').append(template);
+                } else {
+                    $('#shuoshuo-ul').html(template);
+                }
             }
-            let template = renderContent(res);
 
-            $('#shuoshuo-ul').html(template);
         }).fail(function (xhr) {
             $('#shuoshuo-ul').append(`<p>${xhr.status}: ${xhr.responseText}</p>`);
         })
@@ -418,8 +438,15 @@
             }
 
             filter = targetA.dataset.year;
+            timeMark = 0;
             loadList();
         });
+        if (document.cookie.indexOf('login=bingo') > -1) {
+            $('#logout').show();
+            $('#login').hide();
+            $('#shuoshuoArea').show();
+        }
+
     });
 
 
@@ -428,8 +455,9 @@
     });
 
     $('#login').click(function () {
-        $('.ui.modal').modal('show');
+        $('.ui.modal.login').modal('show');
         $('#submitLogin').click(function () {
+            $(this).addClass('loading');
             let user = {
                 username: $('#username').val().trim(),
                 password: $('#password').val().trim(),
@@ -448,8 +476,11 @@
 //                    console.log(res.status)
 //                }
                 if (res === 'succeed') {
+                    $(this).removeClass('loading');
                     $('.ui.modal.login').modal('hide');
                     $('#login').hide();
+                    $('#shuoshuoArea').show();
+                    $('#shuoshuoOpMsg').html('').parent('div').hide();
                     $('#logout').show();
                 } else {
                     console.log(res)
@@ -459,7 +490,21 @@
     });
 
     $('#logout').click(function () {
-        $('.ui.modal')
+
+        $('.ui.modal.logout').modal('show');
+
+        $('.logout .positive').click(function () {
+            $.post('/logout', function (d) {
+                if (d === 'succeed') {
+                    $('#login').show();
+                    $('#logout').hide();
+                    $('#shuoshuoArea').hide();
+                } else {
+
+                }
+            });
+        })
+
     })
 
 

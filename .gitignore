@@ -84,7 +84,7 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 .idea/
-
+env.js
 test.js
 test.html
 
@@ -92,3 +92,4 @@ test.html
 /public/lib/semantic/src/
 /public/lib/semantic/tasks/
 /public/lib/semantic/gulpfile.js
+envProduct.js
