@@ -25,7 +25,14 @@ const api = new WeatherApi();
 
 module.exports = function (req, res, next) {
     // return last cached weather by IP city address
-    let ip = req.ip === '::1' ? (Math.random() > 0.9 ? '116.246.19.150' : '112.22.233.200'): req.ip;
+    let ip = '';
+    if (req.ip === '::1') {
+        ip = Math.random() > 0.9 ? '116.246.19.150' : '112.22.233.200';
+    } else if (req.ip.startsWith('::ffff:')){
+        ip = req.ip.substring('::ffff:'.length)
+    } else {
+        throw new Error ('IP exception: ', req.ip)
+    }
     let l = '';
     // todo 缓存一个IP数据库，不必每次都去线上查询了。
     api.getLocation(ip).then(function (d) {
