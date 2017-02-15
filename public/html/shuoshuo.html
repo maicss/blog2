@@ -267,6 +267,7 @@
     let renderContent = function (res) {
         let st = '';
         res.forEach(function (v, i) {
+            if (!v.content) return;
             let im = '';
             v.images.forEach(function (iv) {
                 im += `<img src="${iv}">`
