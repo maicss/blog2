@@ -39,11 +39,9 @@ module.exports = function (req, res, next) {
         l = d.results[0].name;
         if (!l) {
             logger.warn('Didn\'t get location info');
-            // todo terminate this promise
+            // todo: terminate this promise
         }
 
-    }).catch(function (err) {
-        // res.status(500).send(err)
     }).then(function () {
         if (l === '' && process.platform === 'darwin') {
             // todo: 本地测试没网络链接的时候即使有缓存天气信息，但是由于location为空也查询不到。这样写太局限了。

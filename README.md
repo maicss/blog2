@@ -45,6 +45,8 @@
     - [ ] 图片的压缩显示(也就是存两份图片，选作)
     - [x] 去jQuery化(semantic居然也是基于jQuery的，我输了)
     - [ ] 用react重构
+    - [x] 用co库把所有的callback干掉！！！！
+
  - [ ] 实现blog页面
     - [ ] 用Google drive的API同步网盘文件试试
     - [ ] 用marked解析MD文件

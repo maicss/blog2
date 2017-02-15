@@ -5,8 +5,6 @@ const logger = require('./mongo-logger');
 
 const url = require('./env').mongoConfig.url;
 
-console.log(url);
-
 // todo: 线上的数据库的用户名和密码的创建和使用
 
 /*
@@ -106,24 +104,31 @@ const updateShuoshuoSummary = function (dateStr) {
                     if (err) {
                         logger.error('updateShuoshuoSummary find summary document error', err)
                     } else {
-                        let summary = doc.summary;
-                        summary.all++;
-                        let year = dateStr.substring(0, 4);
-                        if (summary[year]) {
-                            summary[year]++;
+                        let summary = {};
+                        if (doc === null) {
+                            // summary not exists, rebuild summary
+                            rebuildSummary()
                         } else {
-                            summary[year] = 1;
-                        }
-                        col.updateOne({_id: doc._id}, {$set: {summary}}, function (err, r) {
-                            if (err) {
-                                logger.error('updateShuoshuoSummary update summary document error', err)
+                            summary = doc.summary;
+                            summary.all++;
+                            let year = dateStr.substring(0, 4);
+                            if (summary[year]) {
+                                summary[year]++;
                             } else {
-                                if (r.upsertedCount === 1) {
-                                    logger.info('updateShuoshuoSummary update summary document success')
-                                }
+                                summary[year] = 1;
                             }
-                            db.close();
-                        });
+                            col.updateOne({_id: doc._id}, {$set: {summary}}, function (err, r) {
+                                if (err) {
+                                    logger.error('updateShuoshuoSummary update summary document error', err)
+                                } else {
+                                    if (r.upsertedCount === 1) {
+                                        logger.info('updateShuoshuoSummary update summary document success')
+                                    }
+                                }
+                                db.close();
+                            });
+                        }
+
                     }
                 });
             } catch (e) {
@@ -135,6 +140,46 @@ const updateShuoshuoSummary = function (dateStr) {
     }
 };
 
+
+const rebuildSummary = function (callback) {
+    let summary = {all: 0};
+    try {
+        MongoClient.connect(url, function (err, db) {
+            let col = db.collection('shuoshuo');
+            try {
+                col.find().toArray(function (err, docs) {
+                    if (err) {
+                        logger.error('updateShuoshuoSummary no summary, findAll documents error: ', err)
+                    } else {
+                        docs.forEach(v => {
+                            summary.all ++;
+                            let year = v.dateStr.substring(0, 4);
+                            if (summary[year]) {
+                                summary[year]++;
+                            } else {
+                                summary[year] = 1;
+                            }
+                        });
+                        col.insertOne({name: 'summary', summary}, function (err, r) {
+                            if (err) {
+                                logger.error('updateShuoshuoSummary rebuild summary insert into col failed: ', err)
+                            } else {
+                                if (r.insertedCount === 1) {
+                                    logger.info('updateShuoshuoSummary rebuild summary and insert success.')
+                                }
+                            }
+                        });
+                        callback && callback(summary)
+                    }
+                })
+            } catch (e) {
+                logger.error('rebuild summary fault: ', e)
+            }
+        })
+    } catch (e) {
+        logger.error('rebuild summary connect to db fault: ', e)
+    }
+};
 
 // let now = new Date() * 1;
 //
@@ -225,7 +270,14 @@ module.exports = {
 
     getShuoshuoSummary: function (callback) {
         findDocuments('shuoshuo', {name: 'summary'}, {}, function (d) {
-            callback && callback(d)
+            if (d.results.length === 0) {
+                rebuildSummary(function (summary) {
+                    d.results.push({summary});
+                    callback && callback(d);
+                });
+            } else {
+                callback && callback(d);
+            }
         })
     },
 
