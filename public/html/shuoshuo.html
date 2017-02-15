@@ -109,9 +109,8 @@
             <ul class="ui divided items" id="shuoshuo-ul">
 
             </ul>
-            <p>
-                <button class="fluid ui button" onclick="loadList('more')">更多
-                </button>
+            <p id="loadMore">
+                <button class="fluid ui button" onclick="loadList('more')">更多</button>
             </p>
             <a href="#"
                style="width: 30px; height: 30px; text-decoration: none;position: fixed; right: 20px; bottom: 30px; background-color:#61FF61;">top</a>
@@ -219,8 +218,8 @@
             let ctx = canvas.getContext('2d');
 
             let initSize = img.src.length;
-            let width = img.width;
-            let height = img.height;
+            let width = img.width * 10;
+            let height = img.height * 10;
             let ratio = width * height / 4000000;
             if (ratio > 1) {
                 ratio = Math.sqrt(ratio);
@@ -263,6 +262,7 @@
     let timeMark = 0;
     let weatherInfo = {};
     let filter = 'all';
+    let hasMore = false;
 
     let renderContent = function (res) {
         let st = '';
@@ -325,6 +325,12 @@
             data: {limit: 20, filter, timeMark}
         }).done(function (res) {
             let template = renderContent(res);
+            if (res.length < 20) {
+//                hasMore = true;
+                $('#loadMore').hide();
+            } else {
+                $('#loadMore').show();
+            }
             $('#shuoshuo-ul').html(template);
             getSummary();
         }).fail(function (jqxhr) {
@@ -357,6 +363,11 @@
             if (!res.length) {
                 alert('就这么多啦～～')
             } else {
+                if (res.length < 10) {
+                    $('#loadMore').hide();
+                } else {
+                    $('#loadMore').show();
+                }
                 let template = renderContent(res);
                 if (mark === 'more') {
                     $('#shuoshuo-ul').append(template);

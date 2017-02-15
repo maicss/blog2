@@ -6,15 +6,19 @@ const getShuoshuoSummary = db.getShuoshuoSummary;
 const getuser = db.getUser;
 module.exports = {
     getShuoshuoList: function (req, res, next) {
-        let condition = {limit: 10};
-        condition.isPublic = !req.client.authorized;
-        console.log('check authorized in router get shuoshuo list: ', req.client.authorized);
+        let condition = {};
+        // condition.isPublic = !req.client.authorized;
+        // console.log('check authorized in router get shuoshuo list: ', req.client.authorized);
+        // condition.isPublic = req.cookies();
+        condition.isPublic = !(req.cookies.login === 'bingo');
+        console.log(condition);
         if (req.body.filter && req.body.filter !== 'all') {
             condition.dateStr = new RegExp("^" + req.body.filter);
         }
         if (req.body.timeMark && req.body.timeMark !== '0') {
             condition.timeMark = req.body.timeMark;
         }
+        condition.limit = Number(req.body.limit) || 10;
         getShuoshuoList(condition, function (d) {
             switch (d.opResStr) {
                 case 'success':
