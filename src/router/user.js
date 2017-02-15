@@ -20,7 +20,7 @@ module.exports = {
                     // let str = [d.results[0].username, d.results[0].password, d.results[0].createTime].join(salt);
                     // let uid = crypto.createHmac('sha256', str).digest('hex').toString();
                     // uid = '03d586e45633a254db46bdbb62b4e97abe1f074786eb50ddbe9dba009f2e1f82';
-                    res.cookie('uid', d.results[0].createTime, {maxAge: 10 * 24 * 60 * 60 * 1000, httpOnly: true});
+                    res.cookie('uid', d.results[0].createTime, {maxAge: 10 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true});
                     res.cookie('login', 'bingo', {maxAge: 10 * 24 * 60 * 60 * 1000});
                 } else {
                     res.cookie('uid', d.results[0].createTime, {httpOnly: true});

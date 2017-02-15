@@ -11,7 +11,6 @@ module.exports = {
         // console.log('check authorized in router get shuoshuo list: ', req.client.authorized);
         // condition.isPublic = req.cookies();
         condition.isPublic = !(req.cookies.login === 'bingo');
-        console.log(condition);
         if (req.body.filter && req.body.filter !== 'all') {
             condition.dateStr = new RegExp("^" + req.body.filter);
         }
