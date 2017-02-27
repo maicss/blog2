@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>shuoshuo</title>
     <script src="../lib/jquery-3.1.1.js"></script>
     <script src="../lib/moment-2.17.1.js"></script>
@@ -47,7 +49,7 @@
             <!--todo: form validator-->
             <div class="field">
                 <label for="username">Username</label>
-                <input type="text" name="username" autocomplete="false" id="username">
+                <input type="text" name="username" autocomplete="off" id="username">
             </div>
             <div class="field">
                 <label for="password">Password</label>
@@ -80,41 +82,44 @@
 </div>
 <!--logout frame end-->
 
-<div class="ui container">
-    <div class="ui grid">
-        <section class="four wide column">
-            <h2>Summary</h2>
-            <div id="summary" class="menu ui vertical">
-            </div>
-
-        </section>
-        <article class="twelve wide column">
-            <div id="shuoshuoArea" style="display: none" class="ui fluid massive icon input">
+<div class="ui grid">
+    <div class="two column row">
+        <div class="four wide computer five wide tablet sixteen wide mobile column">
+            <section class="ui segment">
+                <h2>Summary</h2>
+                <div id="summary" class="menu ui vertical" style="width: auto">
+                </div>
+            </section>
+        </div>
+        <div class="twelve wide computer eleven wide tablet sixteen wide mobile column">
+            <article class="ui segment">
+                <div id="shuoshuoArea" style="display: none" class="ui fluid massive icon input">
                 <textarea id="s_content"
                           style="padding: 0.5em;border-radius: 4px;border: 1px solid rgba(34, 36, 38, 0.15);overflow: scroll;height: 64px;max-width: 100%;max-height: 64px;margin: 0; resize: none;outline: 0;flex: 1 0 auto;line-height: 1em;"
                           placeholder="lalala"> </textarea>
-                <button>
-                    <label for="photo"><i class="icon image"></i></label>
-                    <input type="file" hidden id="photo" multiple accept="image/*">
-                </button>
-                <button id="s_poster"><i class="send icon"></i></button>
-            </div>
-            <div class="ui negative message hidden">
-                <i class="close icon"></i>
-                <div class="header" id="shuoshuoOpMsg"></div>
-            </div>
-            <div class="ui cards four doubling" style="margin: 0;" id="frame">
-            </div>
-            <p id="weather"></p>
-            <ul class="ui divided items" id="shuoshuo-ul">
+                    <button>
+                        <label for="photo"><i class="icon image"></i></label>
+                        <input type="file" hidden id="photo" multiple accept="image/*">
+                    </button>
+                    <button id="s_poster"><i class="send icon"></i></button>
+                </div>
+                <div class="ui negative message hidden">
+                    <i class="close icon"></i>
+                    <div class="header" id="shuoshuoOpMsg"></div>
+                </div>
+                <div class="ui cards four doubling" style="margin: 0;" id="frame">
+                </div>
+                <p id="weather"></p>
+                <ul class="ui divided items" id="shuoshuo-ul">
 
-            </ul>
-            <p id="loadMore">
-                <button class="fluid ui button" onclick="loadList('more')">更多</button>
-            </p>
-            <a href="#"
-               style="width: 30px; height: 30px; text-decoration: none;position: fixed; right: 20px; bottom: 30px; background-color:#61FF61;">top</a>
-        </article>
+                </ul>
+                <p id="loadMore">
+                    <button class="fluid ui button" onclick="loadList('more')">更多</button>
+                </p>
+                <a href="#"
+                   style="width: 30px; height: 30px; text-decoration: none;position: fixed; right: 20px; bottom: 30px; background-color:#61FF61;">top</a>
+            </article>
+        </div>
     </div>
 </div>
 
@@ -128,7 +133,7 @@
 
     ga('create', 'UA-70116787-3', 'auto');
     ga('send', 'pageview');
-    ga('set', 'userId', '140507308'); // 使用已登录的 user_id 来设置用户 ID。
+//    ga('set', 'userId', '140507308'); // 使用已登录的 user_id 来设置用户 ID。
 
 </script>
 <script>
@@ -277,13 +282,11 @@
                                 <h3 class="header"><time>${v.dateStr}</time></h3>
                                 <div class="description">
                                     <p>${v.content}</p>
-                                    <p><i class="icon location arrow"></i>${v.weather.location || v.location}: <img class="aligned image mini spaced ui" src="./assert/weather-icon/${v.weather.code[0]}.png"> ~ <img class="aligned image mini spaced ui" src="./assert/weather-icon/${v.weather.code[1]}.png"> ${v.weather.temperature[0]}&#8451; ~ ${v.weather.temperature[1]}&#8451; </p>
+                                    <p><i class="icon location arrow"></i>${v.weather.location || v.location}: <img class="aligned image mini spaced ui" src="../assert/weather-icon/${v.weather.code[0]}.png"> ~ <img class="aligned image mini spaced ui" src="../assert/weather-icon/${v.weather.code[1]}.png"> ${v.weather.temperature[0]}&#8451; ~ ${v.weather.temperature[1]}&#8451; </p>
                                      <div class="images ui small">${im}</div>
 
                                 </div>
-                                <div class="extra">
-                                    <div class="ui label">${v.isPublic ? 'Public' : 'Private'}</div>
-                                </div>
+                                ${v.isPublic ? '' : '<div class="extra"><div class="ui label red">Private</div> </div>'}
                             </div>
                         </div>`;
             if (i === res.length - 1) {
@@ -345,7 +348,7 @@
             url: '/getWeather'
         }).done(function (d) {
             weatherInfo = d;
-            $('#weather').html(`<div class="ui info message"><i class="icon location arrow"></i>${d.location}: <img class="aligned image mini spaced ui" src="./assert/weather-icon/${d.code_day}.png"> ~ <img class="aligned image mini spaced ui" src="./assert/weather-icon/${d.code_night}.png">${d.code_day === d.code_night ? d.text_day : d.text_day + ' 转 ' + d.text_night} ${d.low}&#8451; ~ ${d.high}&#8451; <small>timestamp: ${moment(d.queryTime).format('YYYY-MM-DD HH:mm:ss')}</small></div>`);
+            $('#weather').html(`<div class="ui info message"><i class="icon location arrow"></i>${d.location}: <img class="aligned image mini spaced ui" src="../assert/weather-icon/${d.code_day}.png"> ~ <img class="aligned image mini spaced ui" src="../assert/weather-icon/${d.code_night}.png">${d.code_day === d.code_night ? d.text_day : d.text_day + ' 转 ' + d.text_night} ${d.low}&#8451; ~ ${d.high}&#8451; <small>timestamp: ${moment(d.queryTime).format('YYYY-MM-DD HH:mm:ss')}</small></div>`);
         }).fail(function (e) {
             let err = JSON.parse(e.responseText);
             $('#weather').html(`<div class="ui error message"><p>err: ${err.name}:</p><p>message: ${err.message}</p></div>`);
