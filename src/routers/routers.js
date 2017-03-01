@@ -24,6 +24,7 @@ const routerList = {
     shuoshuo: require('./shuoshuo'),
     getWeather: require('./weather'),
     user: require('./user'),
+    post: require('./post')
 };
 
 router
@@ -59,7 +60,7 @@ router
             default:
                 next();
         }
-    })
+    }).get('/post/*', routerList.post)
     .post('/', upload.any(), function (req, res, next) {
         next();
     })

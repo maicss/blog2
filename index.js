@@ -9,8 +9,8 @@ const cookieParser = require('cookie-parser');
 moment.defaultFormat = 'YYYY-MM-DD HH:mm:ss';
 
 
-const credentials = require('./src/env').credentials;
-const ports = require('./src/env').ports;
+const credentials = require('./env').credentials;
+const ports = require('./env').ports;
 
 const routers = require('./src/routers/routers');
 

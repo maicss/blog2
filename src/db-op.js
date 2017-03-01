@@ -3,9 +3,8 @@ const MongoClient = mongo.MongoClient;
 const moment = require('moment');
 const logger = require('./mongo-logger');
 
-const url = require('./env').mongoConfig.url;
+const url = require('../env').mongoConfig.url;
 
-// todo: 线上的数据库的用户名和密码的创建和使用
 
 /*
  * 所有数据库的返回结果的格式：
@@ -38,7 +37,8 @@ const insertDocuments = function (collectionName, data, callback) {
 
 const findDocuments = function (collectionName, queryObj, options, callback) {
     // console.log('queryObj: ', queryObj);
-    options.limit = options.limit || 1;
+    // todo: 这里的参数设计不好，queryObj和options可以设置为默认参数，放到最后面
+    options.limit = options.limit || 0;
     try {
         MongoClient.connect(url, function (err, db) {
             let col = db.collection(collectionName);
@@ -140,7 +140,6 @@ const updateShuoshuoSummary = function (dateStr) {
     }
 };
 
-
 const rebuildSummary = function (callback) {
     let summary = {all: 0};
     try {
@@ -222,7 +221,6 @@ const rebuildSummary = function (callback) {
 //     console.log(d)
 // });
 
-
 module.exports = {
 
     saveWeather: function (data, callback) {
@@ -285,7 +283,32 @@ module.exports = {
         findDocuments('user', username, {}, function (d) {
             callback && callback(d)
         })
-    }
+    },
+
+    savePostsSha: function (data, callback) {
+        insertDocuments('postssha', data, callback)
+    },
+    getPostsSha: function (callback) {
+        findDocuments('postssha', {}, {}, callback)
+    },
+
+    savePostInfo: function (data, callback) {
+        // todo: 保存post预览的地方
+        insertDocuments('posts', [data.info], callback);
+
+    },
+
+    getPostInfo: function (post, callback) {
+        findDocuments('posts', post, {}, callback)
+    },
+
+    savePostAbstract: function (data, callback) {
+        insertDocuments('postabstract', [data.abstract], callback)
+    },
+
+    getPostAbstract: function (callback) {
+        findDocuments('postabstract', {}, {limit: 10}, callback)
+    },
 };
 
 // let update = function () {

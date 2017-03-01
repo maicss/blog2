@@ -4,7 +4,7 @@
 
 const winston = require('winston');
 require('winston-mongodb').MongoDB;
-let options = require('./env').mongoConfig.loggerConfig;
+let options = require('../env').mongoConfig.loggerConfig;
 winston.add(winston.transports.MongoDB, options);
 
 module.exports = winston;
