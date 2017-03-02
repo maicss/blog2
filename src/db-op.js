@@ -294,16 +294,12 @@ module.exports = {
 
     savePostInfo: function (data, callback) {
         // todo: 保存post预览的地方
-        insertDocuments('posts', [data.info], callback);
+        insertDocuments('posts', [data], callback);
 
     },
 
-    getPostInfo: function (post, callback) {
+    getPosts: function (post, callback) {
         findDocuments('posts', post, {}, callback)
-    },
-
-    savePostAbstract: function (data, callback) {
-        insertDocuments('postabstract', [data.abstract], callback)
     },
 
     getPostAbstract: function (callback) {

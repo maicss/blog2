@@ -8,21 +8,24 @@
  * 跟数据库的sha值做对比
  * 用新的列表覆盖旧的列表
  * 返回有变化的文件列表
+ * 这个模块跟网站逻辑没关系，是个定时执行的模块
  * */
 
 const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
+const moment = require('moment');
 
 const getHash = require('./db-op').getPostsSha;
 const saveHash = require('./db-op').savePostsSha;
+const savePostInfo = require('./db-op').savePostInfo;
 const logger = require('./mongo-logger');
 const pull = require('./gitPull');
 const renderer = require('./render');
 
 const MD_DIR = require('../env').MD_DIR;
 const ALGORITHM = 'sha256';
-const fileNameRegExp = /([\u4e00-\u9fa5\w() -]+)+\.md/;
+const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/;
 
 
 let pullRes = new Promise(function (resolve, reject) {
@@ -32,7 +35,7 @@ let pullRes = new Promise(function (resolve, reject) {
 });
 
 let readFileSha = new Promise(function (resolve, reject) {
-    fs.readdir(MD_DIR, function (err, files) {
+    fs.readdir(path.resolve(__dirname, MD_DIR), function (err, files) {
         if (err) {
             logger.error('scanMD module, read dir error: ', err);
             reject(err);
@@ -40,7 +43,8 @@ let readFileSha = new Promise(function (resolve, reject) {
             let fileInfos = [];
             files.forEach((file, i) => {
                 // 检测文件名称。文件名称只允许有空格和中划线，而且中划线只能用于特殊名词。
-                if (!fileNameRegExp.match(file)) {
+                if (!fileNameRegExp.test(file)) {
+                    console.log(file, ' is not match given format');
                     return
                 }
                 let abs_file = path.resolve(__dirname, MD_DIR, file);
@@ -51,7 +55,8 @@ let readFileSha = new Promise(function (resolve, reject) {
                         reject(err);
                     } else {
                         fileInfos.push({
-                            name: path.parse(file).name,
+                            originalFileName: path.parse(file).name,
+                            escapeName: path.parse(file).name.replace(/[ _]/g, '-'),
                             sha: sha.update(content).digest('hex')
                         });
                     }
@@ -74,27 +79,47 @@ let readDBSha = new Promise(function (resolve, reject) {
     })
 });
 
-pullRes.then(Promise.all([readDBSha, readFileSha]).then(function (res) {
+pullRes.then(() => {
+    Promise.all([readDBSha, readFileSha]).then(function (res) {
         let [{results: dbRes}, fileRes] = res;
         let copy = [...fileRes];
-        for (let index in fileRes) {
-            let fileInfo = fileRes[index];
+        for (let fileInfo of fileRes) {
             for (let dbInfo of dbRes) {
-                if (dbInfo.name === fileInfo.name) {
-                    if (dbInfo.sha === fileInfo.sha) {
-                        copy.splice(index, i)
-                    }
-                    break
+                if (dbInfo.escapeName === fileInfo.escapeName && dbInfo.sha === fileInfo.sha) {
+                    copy.splice(copy.indexOf(fileInfo), 1);
+                    break;
                 }
             }
         }
 
         if (copy.length) {
+            // save name 的时候空格要换成-
             saveHash(copy, function (d) {
                 if (d.opResStr === 'success' && d.results.result.ok === 1) {
                     // render md
                     copy.forEach(info => {
-                        renderer(info.name)
+                        renderer(info, function (renderResult) {
+                            let publicInfo = {
+                                title: renderResult.title,
+                                originalFileName: info.originalFileName,
+                                escapeName: info.escapeName,
+                                createDateStr: renderResult.date,
+                                createDate: new Date(renderResult.date) * 1,
+                                tags: renderResult.tags,
+                                readCount: 0,
+                                commentCount: 0
+                            };
+                            let postInfo = Object.assign({abstract: renderResult.abstract}, publicInfo);
+
+                            savePostInfo(postInfo, function (d) {
+                                if (d.opResStr === 'success') {
+                                    logger.info('scan and render and save post success.')
+                                } else {
+                                    logger.error('save post error: ', d.error || d.fault)
+                                }
+                            });
+                        });
+
                     });
                 } else {
                     logger('scanMD module, save hash error: ', d);
@@ -106,8 +131,11 @@ pullRes.then(Promise.all([readDBSha, readFileSha]).then(function (res) {
         // 这个logger没必要
         // logger.error('scanMD module, Promise all error: ', err);
         console.log(err)
-    })
-);
+    });
+}).catch(e => {
+    // todo: retry
+    logger.error('pull error or failed: ', e)
+});
 
 
 

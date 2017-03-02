@@ -24,7 +24,7 @@
     "highlight.js": "^9.9.0",
     "jquery": "^3.1.1",
     "koa": "^2.0.1",
-    "maic-marked": "^0.3.9",
+    "maic-marked": "^0.3.10",
     "markdown-it": "^8.3.0",
     "marked": "^0.3.6",
     "moment": "^2.17.1",
@@ -35,6 +35,6 @@
     "request-promise": "^4.1.1",
     "webpack": "^1.14.0",
     "winston": "^2.3.1",
-    "winston-mongodb": "^2.0.7"
+    "winston-mongodb": "^2.0.8"
   }
 }

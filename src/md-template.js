@@ -6,8 +6,8 @@ module.exports = function (marked, fileName, postLink) {
                 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
                 <title>${fileName}</title>
-                <link rel="stylesheet" href="./public/lib/semantic/dist/semantic.min.css">
-                <link rel="stylesheet" href="./public/lib/highlight-github.css">
+                <link rel="stylesheet" href="../lib/semantic/dist/semantic.min.css">
+                <link rel="stylesheet" href="../lib/highlight-github.css">
                 <style>
                     #toc_container {
                         position: absolute;
@@ -19,8 +19,9 @@ module.exports = function (marked, fileName, postLink) {
                 </style>
             </head>
             <body class="ui main text container">
-                <a href="#disqus_thread">count</a>
+                <a href="${postLink}#disqus_thread">count</a>
                 ${marked}
+                <p><a href="../MD/${fileName}.md">查看本文Markdown版本</a></p>
                 <div id="disqus_thread"></div>
                 <script>
                 
@@ -29,8 +30,8 @@ module.exports = function (marked, fileName, postLink) {
                 *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
                 
                 var disqus_config = function () {
-                this.page.url = ${postLink};  // Replace PAGE_URL with your page's canonical URL variable
-                this.page.identifier = ${fileName}; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+                this.page.url = '${postLink}';  // Replace PAGE_URL with your page's canonical URL variable
+                this.page.identifier = '${fileName}'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
                 };
                 
                 (function() { // DON'T EDIT BELOW THIS LINE

@@ -8,12 +8,12 @@
     - [x] 实现图片版
     - [x] 数据库操作后的数据统一返回结果`{opResStr: success, results: []}`, `opResStr: success, error, fault`
     - [x] 从网页端的增删改查
-    - [ ] 日志数据库
+    - [x] 日志数据库
     - [x] 说说的summary自动更新
     - [x] 说说的Markdown解析
     - [x] 关键字权限控制
     - [x] 从心知天气的API获取城市的天气信息，然后存储到数据库，网页传入地理位置，然后加入天气信息。
-    - [ ] 修改界面到semantic-ui
+    - [x] 修改界面到semantic-ui
     - [ ] 修改页面结构到react
     - [ ] mongoose(选作)
     - [ ] mongodb中文检索
@@ -23,13 +23,15 @@
     - [ ] 图片的压缩显示(也就是存两份图片，选作)
     - [x] 去jQuery化(semantic居然也是基于jQuery的，我输了)
     - [ ] 用react重构
-    - [x] 用co库把所有的callback干掉！！！！
+    - [ ] 先把Disqus的评论框加载跟ququ弄的一样之后，做一个简单的评论框试试。
+    - [ ] ~~用co库把所有的callback干掉！！！！~~等node8出来用原生等async吧
     - [ ] 添加一个日历，标记处来每个月的活动状况，用颜色表示，鼠标移入的时候显示详情
-    - [ ] 用js实现git的管理。线上的一般是pull，然后如果有新增加的MD文件，渲染文件，然后增加路由（这个比较大，可以跟热更新网站放在一块弄）
+    - [x] 用js实现git的管理。如果有新增加的MD文件，渲染文件，存数据库。
     
 
  - [ ] 实现blog页面
     - [ ] 用Google drive的API同步网盘文件试试
+    - [ ] 一个字符串的Unicode编码
     - [x] 用marked解析MD文件
     - [ ] marked 不支持标签解析
     - [ ] markdown添加tag解析，添加时间解析，添加more，添加TOC。前面三个自己写，后面用库或者参考别人的库写一份。

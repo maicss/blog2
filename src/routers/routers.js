@@ -37,12 +37,10 @@ router
         //     console.log(body);
         //     console.log('end');
         // });
-        // console.log(req.headers['user-agent']);
         if (!req.secure) {
             res.redirect('https://maicss.com' + req.path)
         } else {
             next();
-            // console.log(req.method, req.path, req.params);
         }
     })
     .get('*', function (req, res, next) {
@@ -60,10 +58,8 @@ router
             default:
                 next();
         }
-    }).get('/post/*', routerList.post)
-    .post('/', upload.any(), function (req, res, next) {
-        next();
     })
+    .use('/post/*', routerList.post)
     .post('/getShuoshuoList', routerList.shuoshuo.getShuoshuoList)
     .post('/postShuoshuo', upload.any(), routerList.shuoshuo.postShuoshuo)
     .post('/getSummary', routerList.shuoshuo.getSummary)
