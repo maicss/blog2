@@ -7,7 +7,7 @@ const getShuoshuoSummary = db.getShuoshuoSummary;
 const getuser = db.getUser;
 module.exports = {
     getShuoshuoList: function (req, res, next) {
-        let condition = {content: {$exists: true}};
+        let condition = {content: true};
         // condition.isPublic = !req.client.authorized;
         // console.log('check authorized in router get shuoshuo list: ', req.client.authorized);
         // condition.isPublic = req.cookies();

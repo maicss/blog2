@@ -43,7 +43,7 @@ const findDocuments = function (collectionName, queryObj, options, callback) {
         MongoClient.connect(url, function (err, db) {
             let col = db.collection(collectionName);
             try {
-                col.find(queryObj).sort(options.sort).limit(options.limit).toArray(function (err, docs) {
+                col.find(queryObj, {'_id': 0}).sort(options.sort).limit(options.limit).toArray(function (err, docs) {
                     if (err) {
                         callback && callback({opResStr: 'fault', results: [{name: err.name, message: err.message}]})
                     } else {
@@ -245,7 +245,9 @@ module.exports = {
                     queryObj = condition.isPublic ? Object.assign(queryObj, {isPublic: true}) : queryObj;
                     break;
                 case 'dateStr':
-                    queryObj.dateStr = condition.dateStr
+                    queryObj.dateStr = condition.dateStr;
+                case 'content':
+                    queryObj = condition.content ?  Object.assign(queryObj, {content: {$exists: true}} ) : queryObj;
             }
         }
         findDocuments('shuoshuo', queryObj, options, callback);

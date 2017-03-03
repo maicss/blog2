@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="utf-8">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+                <title>use-docker</title>
+                <link rel="stylesheet" href="../lib/semantic/dist/semantic.min.css">
+                <link rel="stylesheet" href="../lib/highlight-github.css">
+                <style>
+                    #toc_container {
+                        position: absolute;
+                        top: 10px;
+                        width: 250px;
+                        right: 10px;
+                        word-break: break-word;
+                    }
+                </style>
+            </head>
+            <body class="ui main text container">
+                <a href="https://maicss.com/archives/use-docker.html#disqus_thread">count</a>
+                <h1 id="-docker">开始使用 Docker</h1><p>一年前，我在《<a href="https://imququ.com/post/vagrantup.html">开始使用 Vagrant</a>》一文中写到：使用虚拟化软件安装 Linux，有着「统一线下线上环境、不受升级宿主系统的影响、容易备份和恢复」等几大优点，非常适用于搭建 WEB 开发环境。</p>
+<p>但 Vagrant 这种依赖 VirtualBox/VMWare/Parallels Desktop 等软件虚拟完整操作系统的方案有几个硬伤，例如占用大量系统资源、新建或启动虚拟机不够迅速等。Docker 是操作系统级虚拟化，它虚拟出来的环境一般被称为 Docker 容器，而不是虚拟机。Docker 容器直接运行在宿主系统的操作系统内核之上，启动一个新的 Docker 容器能在秒级完成。&lt;!--more--&gt;</p>
+<p>由于 Docker 轻量、快速和高效，除了用于搭建开发环境，Docker 容器也非常适合用来部署线上服务。最近我将本博客程序改用 Docker 部署，你现在看到的页面正是由 Docker 容器提供服务。本文介绍这一过程。</p>
+<h3 id="-docker">安装 Docker</h3><p><a href="https://www.docker.com/products/overview#/install_the_platform">Docker 官方文档</a>详尽地列出了各个系统下的 Docker 安装说明，请直接点过去看，本文不做搬运。</p>
+<p>对于 Windows/Mac 用户而言，推荐安装 Docker for Window/Mac，而不是 Docker Toolbox。前者可以直接利用宿主系统的虚拟化机制，拥有更好的性能；后者需要借助 VirtualBox 运行的 Linux 虚拟机。</p>
+<h3 id="-">镜像和容器</h3><p>Docker 基于 Docker 镜像运行容器，通常我们所需大部分镜像都可以在 <a href="https://hub.docker.com/">hub.docker.com</a> 找到。</p>
+<p>在装好 Docker 的终端中，运行以下命令就可以启动容器：</p>
+<div class="ui message"><pre><code class="lang-">docker <span class="hljs-keyword">run</span><span class="bash"> ubuntu uname <span class="hljs-_">-a</span></span>
+</code></pre></div><p>不出意外，可以看到这样的输出：</p>
+<div class="ui message"><pre><code class="">Unable <span class="hljs-keyword">to</span> <span class="hljs-keyword">find</span> image <span class="hljs-string">'ubuntu:latest'</span> locally
+lates<span class="hljs-variable">t:</span> Pulling from library/ubuntu
+<span class="hljs-number">2</span>f0243478e1f: Pull <span class="hljs-built_in">complete</span>
+d8909ae88469: Pull <span class="hljs-built_in">complete</span>
+<span class="hljs-number">820</span>f09abed29: Pull <span class="hljs-built_in">complete</span>
+<span class="hljs-number">01193</span>a8f3d88: Pull <span class="hljs-built_in">complete</span>
+Diges<span class="hljs-variable">t:</span> <span class="hljs-built_in">sha256</span>:<span class="hljs-number">8</span>e2324f2288c26e1393b63e680ee7844202391414dbd48497e9a4fd997cd3cbf
+Statu<span class="hljs-variable">s:</span> Downloaded newer image <span class="hljs-keyword">for</span> ubuntu:latest
+Linux <span class="hljs-number">99</span>bebffc2678 <span class="hljs-number">4.4</span>.<span class="hljs-number">16</span>-moby #<span class="hljs-number">1</span> SMP Tue Aug <span class="hljs-number">9</span> <span class="hljs-number">17</span>:<span class="hljs-number">20</span>:<span class="hljs-number">17</span> UTC <span class="hljs-number">2016</span> x86_64 x86_64 x86_64 GNU/Linux
+</code></pre></div><p><code>docker run</code> 命令用来从指定镜像启动容器。由于我本地没有 ubuntu 镜像，Docker 首先会从官方 Hub 下载它；然后启动容器并执行 <code>uname -a</code> 命令。这个命令是在 Docker 容器内执行，输出的是容器系统信息。</p>
+<p>查看和管理 Docker 镜像及容器，主要有这些命令：</p>
+<ul>
+<li><code>docker images</code>：查看本地已经存在的镜像，<code>-a</code> 列出所有（默认不包括中间镜像）；</li>
+<li><code>docker rmi IMAGE</code>：删除指定的镜像，<code>-f</code> 强制删除；</li>
+<li><code>docker ps</code>：查看运行中的 Docker 容器，<code>-a</code> 列出所有（默认不包括未运行的容器）；</li>
+<li><code>docker rm CONTAINER</code>：删除指定的容器，<code>-f</code> 强制删除；</li>
+</ul>
+<p>使用 Docker 的最佳实践是保持职责单一，一个容器只提供一个服务。我的博客主要有这些服务：</p>
+<ul>
+<li>Nginx（80/443）；</li>
+<li>MySQL（3306）；</li>
+<li>Memcached（11211）；</li>
+<li>ElasticSearch（9200）；</li>
+<li>ThinkJS（8085）；</li>
+</ul>
+<p>考虑到我经常折腾 Nginx，我选择把它留在宿主系统，剩余四个服务则改用 Docker 容器来运行。</p>
+<h3 id="-">构建镜像</h3><p>我需要的 Mysql、Memcache、ElasticSearch 容器都可以使用官方镜像来运行。但我的博客系统，使用官方 Node.js 镜像存在两个问题：1）官方镜像中的 npm 是 v2，我希望换成 v3；2）官方镜像没有 libvips 库，无法安装本博客程序所依赖的 sharp npm 包。</p>
+<p>遇到这种情况，可以在 Docker Hub 看看有无第三方 Docker 镜像能够满足需求，也可以构造自己的镜像。我选择后者。</p>
+<p>要构建自己的 Docker 镜像，一般都会选定一个已有的镜像做为基础，再在上面增加自己的修改。我的 DockerFile 如下：</p>
+<div class="ui message"><pre><code class="lang-"><span class="hljs-keyword">FROM</span> marcbachmann/libvips
+<span class="hljs-keyword">MAINTAINER</span> quguangyu@gmail.com
+
+<span class="hljs-keyword">RUN</span><span class="bash"> apt-get update
+</span>
+<span class="hljs-comment"># 修改时区</span>
+<span class="hljs-keyword">RUN</span><span class="bash"> ln -sf /usr/share/zoneinfo/Asia/Shanghai  /etc/localtime
+</span>
+<span class="hljs-comment"># 安装依赖</span>
+<span class="hljs-keyword">RUN</span><span class="bash"> apt-get install -y \
+  python \
+  curl \
+  build-essential
+</span>
+<span class="hljs-comment"># 安装 Node.js v4.x.x LTS</span>
+<span class="hljs-keyword">RUN</span><span class="bash"> curl <span class="hljs-_">-s</span>L https://deb.nodesource.com/setup_4.x | bash -
+</span><span class="hljs-keyword">RUN</span><span class="bash"> apt-get install -y nodejs
+</span>
+<span class="hljs-comment"># 安装 npm v3 和 pm2</span>
+<span class="hljs-keyword">RUN</span><span class="bash"> npm install -g npm@3 pm2
+</span>
+<span class="hljs-comment"># 解决 npm 在 docker 下经常 rename 失败的问题。详见：</span>
+<span class="hljs-comment"># https://forums.docker.com/t/npm-install-doesnt-complete-inside-docker-container/12640/3</span>
+<span class="hljs-keyword">RUN</span><span class="bash"> <span class="hljs-built_in">cd</span> $(npm root -g)/npm \
+  &amp;&amp; npm install fs-extra \
+  &amp;&amp; sed -i <span class="hljs-_">-e</span> s/graceful-fs/fs-extra/ <span class="hljs-_">-e</span> s/fs\.rename/fs.move/ ./lib/utils/rename.js</span>
+</code></pre></div><p>这份 DockerFile 作用是在 <code>marcbachmann/libvips</code> 镜像上增加了我需要的 Node.js，将 npm 升级到了 v3，还安装了 pm2。</p>
+<p>在 DockerFile 所在目录，执行以下命令就可以构建镜像，并将其推送至 <a href="https://hub.docker.com/">Docker Hub</a>（这里略过注册和登录过程）：</p>
+<div class="ui message"><pre><code class="lang-">docker build -t qgy18/<span class="hljs-keyword">node</span> <span class="hljs-title">.
+docker</span> push qgy18/<span class="hljs-keyword">node</span><span class="hljs-title"></span>
+</code></pre></div><h3 id="docker-compose">Docker Compose</h3><p>Docker Compose 是一个小工具。我们可以在一个文件里定义多个容器，使用 <code>docker-compose</code> 命令让它们全部运行就绪。Docker Compose 非常适合用来部署 WEB 系统这种需要多个容器配合工作的服务。</p>
+<p>如果你使用的是 Docker for Windows/Mac，<code>docker-compose</code> 命令应该直接可用。对于 Linux 平台，请参考<a href="https://docs.docker.com/compose/install/">官方文档</a>安装 Docker Compose。</p>
+<p>当前，我的博客系统目录结构如下：</p>
+<div class="ui message"><pre><code class="">├── blog
+│   ├── app
+│   ├── node_modules
+│   ├── package<span class="hljs-selector-class">.json</span>
+│   ├── pm2<span class="hljs-selector-class">.json</span>
+│   ├── view
+│   └── www
+├── db
+│   ├── ...
+│   ├── ququ_blog
+│   └── sys
+├── docker-compose<span class="hljs-selector-class">.yml</span>
+├── esroot
+│   ├── config
+│   ├── data
+│   └── plugins
+└── shell
+    ├── backup_blog_database<span class="hljs-selector-class">.sh</span>
+    └── install_blog_package.sh
+</code></pre></div><p>我将所有需要持久化存储的文件都放在了宿主系统，例如代码目录（blog），数据库文件（db），ElasticSearch 配置、插件及数据文件（esroot）。这样数据更加安全，也更易于管理。</p>
+<p>shell 目录下的 <code>install_blog_package.sh</code> 用来安装博客 npm 依赖，我的宿主系统没有安装 Node.js，运行 <code>npm install</code> 也需要借助 Docker 容器，一行命令搞定：</p>
+<div class="ui message"><pre><code class="lang-">docker run -it --rm -v <span class="hljs-string">"$PWD/../blog"</span>:/app -w <span class="hljs-string">"/app"</span> qgy18/<span class="hljs-keyword">node</span> <span class="hljs-title">npm</span> install --<span class="hljs-attr">registry=</span>http://registry.npm.taobao.org --production
+</code></pre></div><p>这行命令首先基于前面构建好的镜像运行了一个拥有 Node.js 和 npm3 的容器；然后将宿主系统的 <code>blog</code> 目录映射为容器的 <code>/app</code> 目录；再将容器的工作目录设置为 <code>/app</code>；最后执行 <code>npm install</code> 安装依赖。最为神奇的是，由于指定了 <code>--rm</code> 参数，这个容器在完成工作之后就会被彻底销毁，不留任何痕迹。</p>
+<p>类似的，由于宿主系统不再需要安装 MySQL，备份数据库也需要在容器内完成，这时候可以使用 <code>docker exec</code> 命令在已经运行的容器内执行指令。以下是 <code>backup_blog_database.sh</code> 文件的内容：</p>
+<div class="ui message"><pre><code class="lang-">docker exec imququ_db mysqldump -uroot -p****** ququ_blog | gzip &gt; ../backup/ququblog.`date +%H`.sql.gz
+</code></pre></div><p><code>docker-compose.yml</code> 文件内容如下，它定义了每个容器基于什么镜像运行，映射哪些目录，开放哪些端口：</p>
+<div class="ui message"><pre><code class="lang-">version: '2'
+services:
+  es:
+    image: elasticsearch:2.3.0
+    container_name: imququ_es
+    volumes:
+      -<span class="ruby"> ./esroot/data/<span class="hljs-symbol">:/usr/share/elasticsearch/data</span>
+</span>      -<span class="ruby"> ./esroot/config/<span class="hljs-symbol">:/usr/share/elasticsearch/config</span>
+</span>      -<span class="ruby"> ./esroot/plugins/<span class="hljs-symbol">:/usr/share/elasticsearch/plugins</span>
+</span>    restart: always
+    expose:
+      -<span class="ruby"> <span class="hljs-string">"9200"</span>
+</span>
+  cache:
+    image: memcached:1.4.29
+    container_name: imququ_cache
+    restart: always
+    expose:
+      -<span class="ruby"> <span class="hljs-string">"11211"</span>
+</span>
+  db:
+    image: mysql:5.7.14
+    container_name: imququ_db
+    volumes:
+      -<span class="ruby"> <span class="hljs-string">"./db:/var/lib/mysql"</span>
+</span>    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ******
+    expose:
+      -<span class="ruby"> <span class="hljs-string">"3306"</span>
+</span>    ports:
+      -<span class="ruby"> <span class="hljs-string">"127.0.0.1:3306:3306"</span>
+</span>
+  blog:
+    depends_on:
+      -<span class="ruby"> es
+</span>      -<span class="ruby"> cache
+</span>      -<span class="ruby"> db
+</span>    image: qgy18/node
+    container_name: imququ_blog
+    volumes:
+      -<span class="ruby"> ./<span class="hljs-symbol">blog:</span>/app
+</span>    restart: always
+    working_dir:
+<span class="hljs-comment">      /app</span>
+    entrypoint:
+      -<span class="ruby"> pm2
+</span>      -<span class="ruby"> start
+</span>      -<span class="ruby"> pm2.json
+</span>      -<span class="ruby"> --no-daemon
+</span>    links:
+      -<span class="ruby"> <span class="hljs-symbol">es:</span>es
+</span>      -<span class="ruby"> <span class="hljs-symbol">cache:</span>cache
+</span>      -<span class="ruby"> <span class="hljs-symbol">db:</span>db
+</span>    ports:
+      -<span class="ruby"> <span class="hljs-string">"127.0.0.1:8085:8085"</span></span>
+</code></pre></div><p>在 blog 容器中，我通过 <code>links</code> 配置连接了前面几个容器。这样在代码中，就可以使用 <code>es</code> 做为 HOST 连接到 Elasticsearch 容器，使用 <code>db</code> 做为 HOST 连接到 MySQL，依此类推。</p>
+<p>我定义了 db 容器的 <code>ports</code> 配置，将宿主系统的 3306 端口映射到了 db 容器内，这样我就可以在宿主系统管理 MySQL 服务。同样地，使用宿主系统的 8085 端口可以访问到 blog 容器提供的 WEB 服务。</p>
+<p>通过 <code>docker-compose up -d</code> 命令就可以在后台启动所有容器。<code>docker ps</code> 可以用来查看各个容器的运行状态：</p>
+<div class="ui message"><pre><code class="">IMAGE                 COMMAND                  PORTS                      NAMES
+qgy18/node            <span class="hljs-string">"pm2 start pm2.json -"</span>   <span class="hljs-number">127.0</span><span class="hljs-meta">.0</span><span class="hljs-meta">.1</span>:<span class="hljs-number">8085</span>-&gt;<span class="hljs-number">8085</span>/tcp   imququ_blog
+<span class="hljs-symbol">elasticsearch:</span><span class="hljs-number">2.3</span><span class="hljs-meta">.0</span>   <span class="hljs-string">"/docker-entrypoint.s"</span>   <span class="hljs-number">9200</span>/tcp, <span class="hljs-number">9300</span>/tcp         imququ_es
+<span class="hljs-symbol">mysql:</span><span class="hljs-number">5.7</span><span class="hljs-meta">.14</span>          <span class="hljs-string">"docker-entrypoint.sh"</span>   <span class="hljs-number">127.0</span><span class="hljs-meta">.0</span><span class="hljs-meta">.1</span>:<span class="hljs-number">3306</span>-&gt;<span class="hljs-number">3306</span>/tcp   imququ_db
+<span class="hljs-symbol">memcached:</span><span class="hljs-number">1.4</span><span class="hljs-meta">.29</span>      <span class="hljs-string">"docker-entrypoint.sh"</span>   <span class="hljs-number">11211</span>/tcp                  imququ_cache
+</code></pre></div><p>本博客基于 Docker 容器运行了将近一周，非常稳定。宿主系统整体资源占用跟之前相比，也没有明显变化。前几天我把宿主系统升级到了 Ubuntu 16.04.1 LTS，博客服务没受任何影响，这种体验实在是美妙。</p>
+<p>原文链接：<a href="https://imququ.com/post/use-docker.html">https://imququ.com/post/use-docker.html</a>，<a href="https://imququ.com/post/use-docker.html#comments">前往原文评论 »</a></p>
+
+                <p><a href="../MD/use-docker.md">查看本文Markdown版本</a></p>
+                <div id="disqus_thread"></div>
+                <script>
+                
+                /**
+                *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+                *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+                
+                var disqus_config = function () {
+                this.page.url = 'https://maicss.com/archives/use-docker.html';  // Replace PAGE_URL with your page's canonical URL variable
+                this.page.identifier = 'use-docker'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+                };
+                
+                (function() { // DON'T EDIT BELOW THIS LINE
+                var d = document, s = d.createElement('script');
+                s.src = '//https-www-maicss-com.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+                })();
+                </script>
+                <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+                <script id="dsq-count-scr" src="//https-www-maicss-com.disqus.com/count.js" async></script>
+            </body>
+        </html>

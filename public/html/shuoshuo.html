@@ -117,7 +117,7 @@
                     <button class="fluid ui button" onclick="loadList('more')">更多</button>
                 </p>
                 <a href="#"
-                   style="width: 30px; height: 30px; text-decoration: none;position: fixed; right: 20px; bottom: 30px; background-color:#61FF61;">top</a>
+                   style="width: 30px; height: 30px; text-align: center; border: #898989 1px solid; border-radius: 3px; background-color: #acacac; line-height: 30px; text-decoration: none;position: fixed; right: 20px; bottom: 30px;"><i class="chevron up icon"></i></a>
             </article>
         </div>
     </div>
@@ -365,7 +365,8 @@
             }
         }).done(function (res) {
             if (!res.length) {
-                alert('就这么多啦～～')
+                alert('就这么多啦～～');
+                $('#loadMore').hide();
             } else {
                 if (res.length < 10) {
                     $('#loadMore').hide();

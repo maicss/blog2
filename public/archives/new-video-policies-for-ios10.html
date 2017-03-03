@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="utf-8">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+                <title>new-video-policies-for-ios10</title>
+                <link rel="stylesheet" href="../lib/semantic/dist/semantic.min.css">
+                <link rel="stylesheet" href="../lib/highlight-github.css">
+                <style>
+                    #toc_container {
+                        position: absolute;
+                        top: 10px;
+                        width: 250px;
+                        right: 10px;
+                        word-break: break-word;
+                    }
+                </style>
+            </head>
+            <body class="ui main text container">
+                <a href="https://maicss.com/archives/new-video-policies-for-ios10.html#disqus_thread">count</a>
+                <h1 id="ios-10-safari-">iOS 10 Safari 视频播放新政策</h1><p>随着 iOS 10 的正式发布，Safari 也迎来了大量更新，例如新增了对 ES6、CSP2.0、Shadow DOM 等功能和特性的支持。本文为大家介绍 iOS10 自带 Safari 浏览器在视频播放政策上的最新变化。首先划出重点：1）iOS 10 Safari 支持特定视频自动播放；2）iOS 10 Safari 支持视频内联播放。想了解更多细节的同学请接着往下看。&lt;!--more--&gt;</p>
+<h3 id="-">之前的政策？</h3><p>在 iPhoneOS 3（没错，当时 iOS 还不叫 iOS）Safari 开始支持 <code>&lt;video&gt;</code> 标签时，苹果人为设置了很多限制，例如视频无法自动播放 —— 甚至连 Meta 信息预加载都被禁用。显然，这是为了避免给用户造成高额流量费用而作出的妥协，顺便还能节省用户手机电量。</p>
+<p>随着视频的普及，在 iOS 8 中，苹果放宽了对 Safari 视频播放的限制：允许使用 <code>preload=&quot;metadata&quot;</code> 来预加载视频 Meta 信息。但仅此而已，Safari 中的 <code>&lt;video&gt;</code> 元素仍然无法自动播放，也无法内联播放 —— 这意味着视频只能在用户主动操作后才能播放，且播放时必须全屏。</p>
+<p>至于「用户主动操作」具体指的是哪些行为，苹果官方有详细的说明：</p>
+<ul>
+<li>点击视频播放按钮；</li>
+<li>触发 <code>touchend</code>、<code>click</code>、<code>doubleclick</code> 或 <code>keydown</code> 事件，且在事件处理函数中直接调用 <code>video.play()</code> 方法。显然，<code>button.addEventListener(&#39;click&#39;, () =&gt; { video.play(); })</code> 满足要求；而 <code>video.addEventListener(&#39;canplaythrough&#39;, () =&gt; { video.play(); })</code> 不满足要求；</li>
+</ul>
+<p>值得注意的是，上面讨论的是 iOS 自带 Safari 的视频播放政策。对于 iOS APP 而言，开发者在给 webview 设置 <code>mediaPlaybackRequiresUserAction</code> 和 <code>allowsInlineMediaPlayback</code> 属性之后，页面中的 <code>&lt;video&gt;</code> 标签就可以通过 <code>autoplay</code> 和 <code>webkit-playsinline</code> 属性来启用自动播放和内联播放功能。</p>
+<h3 id="ios-10-">iOS 10 新政策</h3><p>随着视频的进一步普及，在 iOS 10 中，苹果终于进一步放松了 Safari 视频播放政策。</p>
+<h4 id="-">自动播放</h4><p>iOS 10 Safari 允许自动播放以下两种视频：</p>
+<ul>
+<li>无音轨视频；</li>
+<li>无声音视频（设置了 <code>muted</code> 属性）；</li>
+</ul>
+<p>对于这两种类型的视频，可以通过 <code>&lt;video autoplay&gt;</code> 或 <code>video.play()</code> 两种方式来自动播放，无需用户主动操作。但是，如果它们在播放时变得有声音（获取了音轨，或者 <code>muted</code> 属性被取消），Safari 会暂停播放。</p>
+<p>通过 <code>&lt;video autoplay&gt;</code> 自动播放的视频元素还需要满足一个条件：在可视区域内。同样，如果它们在播放时因为页面滚动等原因导致不可见，Safari 也会暂停播放。</p>
+<p>通过 <code>video.play()</code> 自动播放的视频元素无需可见。<code>video.play()</code> 返回的是 <code>Promise</code>，如果不满足自动播放条件，会触发 <code>reject</code> 行为。</p>
+<h4 id="-">内联播放</h4><p>在 iOS 10 Safari 中，通过 <code>&lt;video playsinline&gt;</code> 可以让视频内联播放。设置了 <code>playsinline</code> 属性的视频在播放时不会自动全屏，但用户可以点击全屏按钮来手动全屏；没有设置 <code>playsinline</code> 的视频会在播放时自动全屏。无论是否设置 <code>playsinline</code> 属性，退出全屏后视频都会继续播放。</p>
+<p><code>playsinline</code> 属性在 iOS 10 之前需要写成 <code>webkit-playsinline</code>，它的浏览器厂商前缀在 iOS 10 中被移除。但是目前 iOS 微信还不支持去掉前缀的写法，两个属性最好都加上。</p>
+<p>显然，<code>&lt;video autoplay&gt;</code> 必须和 <code>playsinline</code> 属性一起使用。也就是说，只有默认内联播放的视频才有可能自动播放，这一点很容易理解。</p>
+<h3 id="-">一些典型应用</h3><p>根据苹果公司的文章：GIF 相比 H.264 编码的视频，带宽占用为十二倍，电池消耗为两倍。没有声音的 <code>&lt;video&gt;</code> 元素很适合用作网页背景，取代 GIF：</p>
+<div class="ui message"><pre><code class="lang-"><span class="hljs-tag">&lt;<span class="hljs-name">video</span> <span class="hljs-attr">autoplay</span> <span class="hljs-attr">loop</span> <span class="hljs-attr">muted</span> <span class="hljs-attr">playsinline</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">source</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"image.mp4"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">source</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"image.webm"</span> <span class="hljs-attr">onerror</span>=<span class="hljs-string">"fallback(parentNode)"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"image.gif"</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">video</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="actionscript">
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fallback</span><span class="hljs-params">(video)</span> </span>{
+    <span class="hljs-keyword">var</span> img = video.querySelector(<span class="hljs-string">'img'</span>);
+    <span class="hljs-keyword">if</span> (img) {
+        video.parentNode.replaceChild(img, video);
+    }
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre></div><p>这段代码使用 <code>&lt;video&gt;</code> 来替代 GIF 动画，并考虑了降级。但在 iOS 10- Safari 中，由于视频无法自动并内联播放，体验很差。要解决这个问题，可以使用 CSS 的 Media Queries：</p>
+<div class="ui message"><pre><code class="lang-"><span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="css">
+<span class="hljs-selector-id">#either-gif-or-video</span> <span class="hljs-selector-tag">video</span> { <span class="hljs-attribute">display</span>: none; }
+@<span class="hljs-keyword">media</span> (-webkit-video-playable-inline) {
+    <span class="hljs-selector-id">#either-gif-or-video</span> <span class="hljs-selector-tag">img</span> { <span class="hljs-attribute">display</span>: none; }
+    <span class="hljs-selector-id">#either-gif-or-video</span> <span class="hljs-selector-tag">video</span> { <span class="hljs-attribute">display</span>: initial; }
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"either-gif-or-video"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">video</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"image.mp4"</span> <span class="hljs-attr">autoplay</span> <span class="hljs-attr">loop</span> <span class="hljs-attr">muted</span> <span class="hljs-attr">playsinline</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">video</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"image.gif"</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre></div><p>由于没有声音的 <code>&lt;video&gt;</code> 元素可以通过调用 <code>video.play()</code> 来自动播放，并且 <code>&lt;video&gt;</code> 元素不需要插入到 DOM 中，我们还可以使用 <code>&lt;canvas&gt;</code> 来做为视频播放的容器，这样就可以方便地修改视频画面了。示意代码如下：</p>
+<div class="ui message"><pre><code class="lang-"><span class="hljs-keyword">var</span> video;
+<span class="hljs-keyword">var</span> canvas;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">startPlayback</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">if</span> (!video) {
+        video = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'video'</span>);
+        video.src = <span class="hljs-string">'image.mp4'</span>;
+        video.loop = <span class="hljs-literal">true</span>;
+        video.addEventListener(<span class="hljs-string">'playing'</span>, paintVideo);
+    }
+    video.play();
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">paintVideo</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">if</span> (!canvas) {
+        canvas = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'canvas'</span>);
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        <span class="hljs-built_in">document</span>.body.appendChild(canvas);
+    }
+    canvas.getContext(<span class="hljs-string">'2d'</span>).drawImage(video, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, canvas.width, canvas.height);
+    <span class="hljs-keyword">if</span> (!video.paused) {
+        requestAnimationFrame(paintVideo);
+    }
+}
+
+startPlayback();
+</code></pre></div><p>本文主要内容来自于 Webkit 官方博客：<a href="https://webkit.org/blog/6784/new-video-policies-for-ios/">New &lt;video&gt; Policies for iOS</a>。</p>
+<p>原文链接：<a href="https://imququ.com/post/new-video-policies-for-ios10.html">https://imququ.com/post/new-video-policies-for-ios10.html</a>，<a href="https://imququ.com/post/new-video-policies-for-ios10.html#comments">前往原文评论 »</a></p>
+
+                <p><a href="../MD/new-video-policies-for-ios10.md">查看本文Markdown版本</a></p>
+                <div id="disqus_thread"></div>
+                <script>
+                
+                /**
+                *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+                *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+                
+                var disqus_config = function () {
+                this.page.url = 'https://maicss.com/archives/new-video-policies-for-ios10.html';  // Replace PAGE_URL with your page's canonical URL variable
+                this.page.identifier = 'new-video-policies-for-ios10'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+                };
+                
+                (function() { // DON'T EDIT BELOW THIS LINE
+                var d = document, s = d.createElement('script');
+                s.src = '//https-www-maicss-com.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+                })();
+                </script>
+                <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+                <script id="dsq-count-scr" src="//https-www-maicss-com.disqus.com/count.js" async></script>
+            </body>
+        </html>
