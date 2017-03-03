@@ -79,63 +79,72 @@ let readDBSha = new Promise(function (resolve, reject) {
     })
 });
 
-pullRes.then(() => {
-    Promise.all([readDBSha, readFileSha]).then(function (res) {
-        let [{results: dbRes}, fileRes] = res;
-        let copy = [...fileRes];
-        for (let fileInfo of fileRes) {
-            for (let dbInfo of dbRes) {
-                if (dbInfo.escapeName === fileInfo.escapeName && dbInfo.sha === fileInfo.sha) {
-                    copy.splice(copy.indexOf(fileInfo), 1);
-                    break;
+module.exports = function(callback) {
+    pullRes.then(() => {
+        Promise.all([readDBSha, readFileSha]).then(function (res) {
+            let [{results: dbRes}, fileRes] = res;
+            let copy = [...fileRes];
+            for (let fileInfo of fileRes) {
+                for (let dbInfo of dbRes) {
+                    if (dbInfo.escapeName === fileInfo.escapeName && dbInfo.sha === fileInfo.sha) {
+                        copy.splice(copy.indexOf(fileInfo), 1);
+                        break;
+                    }
                 }
             }
-        }
 
-        if (copy.length) {
-            // save name 的时候空格要换成-
-            saveHash(copy, function (d) {
-                if (d.opResStr === 'success' && d.results.result.ok === 1) {
-                    // render md
-                    copy.forEach(info => {
-                        renderer(info, function (renderResult) {
-                            let publicInfo = {
-                                title: renderResult.title,
-                                originalFileName: info.originalFileName,
-                                escapeName: info.escapeName,
-                                createDateStr: renderResult.date,
-                                createDate: new Date(renderResult.date) * 1,
-                                tags: renderResult.tags,
-                                readCount: 0,
-                                commentCount: 0
-                            };
-                            let postInfo = Object.assign({abstract: renderResult.abstract}, publicInfo);
+            if (copy.length) {
+                saveHash(copy, function (d) {
+                    if (d.opResStr === 'success' && d.results.result.ok === 1) {
+                        // render md
+                        copy.forEach(info => {
+                            renderer(info, function (renderResult) {
+                                /*
+                                 * todo:
+                                 * date不存在，这个自己写的东西，出现的概率很小
+                                 * readCount 和 commentCount 只能在初始化的时候赋值，而前面的代码是只要修改文件就会调用这个函数。
+                                 * */
+                                let publicInfo = {
+                                    title: renderResult.title,
+                                    originalFileName: info.originalFileName,
+                                    escapeName: info.escapeName,
+                                    createDateStr: renderResult.date,
+                                    createDate: new Date(renderResult.date) * 1,
+                                    tags: renderResult.tags,
+                                    readCount: 0,
+                                };
+                                let postInfo = Object.assign({abstract: renderResult.abstract}, publicInfo);
 
-                            savePostInfo(postInfo, function (d) {
-                                if (d.opResStr === 'success') {
-                                    logger.info('scan and render and save post success.')
-                                } else {
-                                    logger.error('save post error: ', d.error || d.fault)
-                                }
+                                savePostInfo(postInfo, function (d) {
+                                    if (d.opResStr === 'success') {
+                                        logger.info('scan and render and save post success.');
+                                        callback('prefect');
+                                    } else {
+                                        logger.error('save post error: ', d.error || d.fault);
+                                        callback('save db failed');
+                                    }
+                                });
                             });
+
                         });
+                    } else {
+                        logger('scanMD module, save hash error: ', d);
+                        callback('save hash failed');
+                    }
+                })
+            }
 
-                    });
-                } else {
-                    logger('scanMD module, save hash error: ', d);
-                }
-            })
-        }
-
-    }).catch(function (err) {
-        // 这个logger没必要
-        // logger.error('scanMD module, Promise all error: ', err);
-        console.log(err)
+        }).catch(function (err) {
+            // 这个logger没必要
+            // logger.error('scanMD module, Promise all error: ', err);
+            console.log(err)
+        });
+    }).catch(e => {
+        // todo: retry
+        logger.error('pull error or failed: ', e);
+        callback('github pull failed');
     });
-}).catch(e => {
-    // todo: retry
-    logger.error('pull error or failed: ', e)
-});
+};
 
 
 
