@@ -19,6 +19,7 @@ const moment = require('moment');
 const getHash = require('./db-op').getPostsSha;
 const saveHash = require('./db-op').savePostsSha;
 const savePostInfo = require('./db-op').savePostInfo;
+const updatePostInfo = require('./db-op').updatePostInfo;
 const logger = require('./mongo-logger');
 // const pull = require('./gitPull');
 const renderer = require('./render');
@@ -57,7 +58,8 @@ let readFileSha = new Promise(function (resolve, reject) {
                         fileInfos.push({
                             originalFileName: path.parse(file).name,
                             escapeName: path.parse(file).name.replace(/[ _]/g, '-'),
-                            sha: sha.update(content).digest('hex')
+                            sha: sha.update(content).digest('hex'),
+                            isNewFile: true,
                         });
                     }
                     if (i === files.length - 1) {
@@ -82,47 +84,59 @@ let readDBSha = new Promise(function (resolve, reject) {
 module.exports = function (callback) {
     Promise.all([readDBSha, readFileSha]).then(function (res) {
         let [{results: dbRes}, fileRes] = res;
-        let copy = [...fileRes];
         for (let fileInfo of fileRes) {
             for (let dbInfo of dbRes) {
-                if (dbInfo.escapeName === fileInfo.escapeName && dbInfo.sha === fileInfo.sha) {
-                    copy.splice(copy.indexOf(fileInfo), 1);
-                    break;
+                if (dbInfo.escapeName === fileInfo.escapeName) {
+
+                    if (dbInfo.sha === fileInfo.sha) {
+                        fileRes.splice(fileRes.indexOf(fileInfo), 1);
+                        break;
+                    } else {
+                        fileInfo.isNewFile = false;
+                    }
                 }
             }
         }
 
-        if (copy.length) {
-            saveHash(copy, function (d) {
+        if (fileRes.length) {
+            saveHash(fileRes, function (d) {
                 if (d.opResStr === 'success' && d.results.result.ok === 1) {
-                    // render md
-                    copy.forEach(info => {
+                    fileRes.forEach(info => {
                         renderer(info, function (renderResult) {
-                            /*
-                             * todo:
-                             * date不存在，这个自己写的东西，出现的概率很小
-                             * readCount 和 commentCount 只能在初始化的时候赋值，而前面的代码是只要修改文件就会调用这个函数。
-                             * */
-                            let publicInfo = {
+                            let postInfo = {
                                 title: renderResult.title,
                                 originalFileName: info.originalFileName,
                                 escapeName: info.escapeName,
                                 createDateStr: renderResult.date,
                                 createDate: new Date(renderResult.date) * 1,
                                 tags: renderResult.tags,
-                                readCount: 0,
+                                abstract: renderResult.abstract,
                             };
-                            let postInfo = Object.assign({abstract: renderResult.abstract}, publicInfo);
 
-                            savePostInfo(postInfo, function (d) {
-                                if (d.opResStr === 'success') {
-                                    logger.info('scan and render and save post success.');
-                                    callback('prefect');
-                                } else {
-                                    logger.error('save post error: ', d.error || d.fault);
-                                    callback('save db failed');
-                                }
-                            });
+                            if (info.isNewFile) {
+                                postInfo.readCount = 0;
+                                savePostInfo(postInfo, function (d) {
+                                    if (d.opResStr === 'success') {
+                                        logger.info('scan and render and save post success.');
+                                        callback('prefect');
+                                    } else {
+                                        logger.error('save post error: ', d.error || d.fault);
+                                        callback('save db failed');
+                                    }
+                                });
+                            } else {
+                                updatePostInfo(postInfo, function (d) {
+                                    if (d.opResStr === 'success') {
+                                        logger.info('scan and render and save post success.');
+                                        callback('prefect');
+                                    } else {
+                                        logger.error('save post error: ', d.error || d.fault);
+                                        callback('save db failed');
+                                    }
+                                });
+
+                            }
+
                         });
 
                     });

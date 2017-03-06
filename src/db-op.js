@@ -48,6 +48,7 @@ const findDocuments = function (collectionName, queryObj, options, callback) {
                         callback && callback({opResStr: 'fault', results: [{name: err.name, message: err.message}]})
                     } else {
                         callback && callback({opResStr: 'success', results: docs});
+                        db.close();
                     }
                 });
             } catch (e) {
@@ -59,30 +60,22 @@ const findDocuments = function (collectionName, queryObj, options, callback) {
     }
 };
 
-const updateDocuments = function (collectionName, query, newData, callback) {
+const updateDocument = function (collectionName, query, newData, callback) {
     try {
         MongoClient.connect(url, function (err, db) {
             let col = db.collection(collectionName);
             try {
                 // 这个还不会写过滤规则，先查询出来全部的，然后用js过滤好了
                 // col.findAndModify()
-                col.find({}).toArray(function (err, docs) {
-                    docs.forEach(v => {
-                        let aa = v;
-                        if (aa.images && aa.images.length) {
-                            aa.images.forEach((bb, i) => {
-                                if (bb.startsWith('public')) {
-                                    aa.images[i] = bb.substring('public'.length);
-                                    col.findOneAndUpdate({_id: aa._id}, {$set: aa}, function (err, r) {
-                                        // 这里返回为空的时候意味着没有匹配项，这样返回400类错误
-                                        // 默认返回r.upsertedCount
-                                        console.log(r)
-                                    })
-                                }
-                            });
-                        }
-                    })
-                })
+                col.findOneAndUpdate(query, {$set: newData}, {returnNewDocument: true}, function (err, doc) {
+                    if (err) {
+                        // todo 这里的错误结构可能不是这样的，但是mongodb文档里没找到错误的文档
+                        callback && callback({opResStr: 'error', results: [{name: err.name, message: err.message}]})
+                    } else {
+                        callback && callback({opResStr: 'success', results: doc});
+                        db.close();
+                    }
+                });
 
             } catch (e) {
                 console.error(e);
@@ -151,7 +144,7 @@ const rebuildSummary = function (callback) {
                         logger.error('updateShuoshuoSummary no summary, findAll documents error: ', err)
                     } else {
                         docs.forEach(v => {
-                            summary.all ++;
+                            summary.all++;
                             let year = v.dateStr.substring(0, 4);
                             if (summary[year]) {
                                 summary[year]++;
@@ -247,7 +240,7 @@ module.exports = {
                 case 'dateStr':
                     queryObj.dateStr = condition.dateStr;
                 case 'content':
-                    queryObj = condition.content ?  Object.assign(queryObj, {content: {$exists: true}} ) : queryObj;
+                    queryObj = condition.content ? Object.assign(queryObj, {content: {$exists: true}}) : queryObj;
             }
         }
         findDocuments('shuoshuo', queryObj, options, callback);
@@ -295,9 +288,12 @@ module.exports = {
     },
 
     savePostInfo: function (data, callback) {
-        // todo: 保存post预览的地方
         insertDocuments('posts', [data], callback);
 
+    },
+
+    updatePostInfo: function (data, callback) {
+        updateDocument('posts', {originalFileName: data.originalFileName}, data, callback);
     },
 
     getPosts: function (post, callback) {

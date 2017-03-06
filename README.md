@@ -21,6 +21,7 @@
     - [x] 图片的存储和显示
     - [x] 图片的压缩上传
     - [x] GitHub webhook 实现基于事件的动态部署
+    - [ ] GitHub webhook 证书错误(Peer certificate cannot be authenticated with given CA certificates)
     - [ ] 图片的压缩显示(也就是存两份图片，选作)
     - [x] 去jQuery化(semantic居然也是基于jQuery的，我输了)
     - [ ] 用react重构
