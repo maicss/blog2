@@ -10,11 +10,13 @@ module.exports = function (req, res, next) {
     // console.log('========== github push hook ==========');
     // console.log(req.body);
     // console.log('========== github push hook ==========');
-    console.log(Object.assign({}, req.body.commits.added, req.body.commits.removed, req.body.commits.modified));
+    console.log(typeof req.body);
+    console.log('github modified: ', Object.assign({}, req.body.commits.added, req.body.commits.removed, req.body.commits.modified));
     // pull
 
     pull(function (p) {
         if (p) {
+            console.log('pull succeed.');
             scanAndRender(function (r) {
                 if (r === 'prefect') {
                     logger.info('scan and render succeed.')
