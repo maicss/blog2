@@ -21,19 +21,12 @@ const saveHash = require('./db-op').savePostsSha;
 const savePostInfo = require('./db-op').savePostInfo;
 const updatePostInfo = require('./db-op').updatePostInfo;
 const logger = require('./mongo-logger');
-// const pull = require('./gitPull');
 const renderer = require('./render');
 
 const MD_DIR = require('../env').MD_DIR;
 const ALGORITHM = 'sha256';
 const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/;
 
-
-// let pullRes = new Promise(function (resolve, reject) {
-//     pull(function (r) {
-//         r ? resolve() : reject()
-//     })
-// });
 
 let readFileSha = new Promise(function (resolve, reject) {
     fs.readdir(path.resolve(__dirname, MD_DIR), function (err, files) {

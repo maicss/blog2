@@ -3,6 +3,7 @@
  */
 
 const scanAndRender = require('../scanMD');
+const pull = require('../gitPull');
 const logger = require('../mongo-logger');
 
 module.exports = function (req, res, next) {
@@ -10,12 +11,21 @@ module.exports = function (req, res, next) {
     // console.log(req.body);
     // console.log('========== github push hook ==========');
     console.log(Object.assign({}, req.body.commits.added, req.body.commits.removed, req.body.commits.modified));
-    scanAndRender(function (r) {
-        if (r === 'prefect') {
-            logger.info('scan and render succeed.')
+    // pull
+
+    pull(function (p) {
+        if (p) {
+            scanAndRender(function (r) {
+                if (r === 'prefect') {
+                    logger.info('scan and render succeed.')
+                } else {
+                    logger.error('scan and render failed.')
+                }
+                res.json(r);
+            });
         } else {
-            logger.error('scan and render failed.')
+            // todo retry pull
         }
-        res.json(r);
     });
+
 };
