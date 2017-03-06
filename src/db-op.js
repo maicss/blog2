@@ -300,8 +300,8 @@ module.exports = {
         findDocuments('posts', post, {}, callback)
     },
 
-    getPostAbstract: function (callback) {
-        findDocuments('postabstract', {}, {limit: 10}, callback)
+    getAbstracts: function (callback) {
+        findDocuments('posts', {}, {limit: 10, sort:{createDate: -1}}, callback)
     },
 };
 

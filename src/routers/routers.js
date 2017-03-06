@@ -24,7 +24,7 @@ const routerList = {
     shuoshuo: require('./shuoshuo'),
     getWeather: require('./weather'),
     user: require('./user'),
-    post: require('./post'),
+    posts: require('./posts'),
     github: require('./github'),
 };
 
@@ -60,7 +60,9 @@ router
                 next();
         }
     })
-    .use('/post/*', routerList.post)
+    .get('/post/*', routerList.posts.post)
+    .get('/post', routerList.posts.postIndex)
+    .post('/getPostsAbstract', routerList.posts.abstracts)
     .post('/github', routerList.github)
     .post('/getShuoshuoList', routerList.shuoshuo.getShuoshuoList)
     .post('/postShuoshuo', upload.any(), routerList.shuoshuo.postShuoshuo)
