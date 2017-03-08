@@ -92,51 +92,44 @@ module.exports = function (callback) {
         }
 
         if (fileRes.length) {
-            saveHash(fileRes, function (d) {
-                if (d.opResStr === 'success' && d.results.result.ok === 1) {
-                    fileRes.forEach(info => {
-                        renderer(info, function (renderResult) {
-                            let postInfo = {
-                                title: renderResult.title,
-                                originalFileName: info.originalFileName,
-                                escapeName: info.escapeName,
-                                createDateStr: renderResult.date,
-                                createDate: new Date(renderResult.date) * 1,
-                                tags: renderResult.tags,
-                                abstract: renderResult.abstract,
-                            };
+            fileRes.forEach(info => {
+                renderer(info, function (renderResult) {
+                    let postInfo = {
+                        title: renderResult.title,
+                        originalFileName: info.originalFileName,
+                        escapeName: info.escapeName,
+                        createDateStr: renderResult.date,
+                        createDate: new Date(renderResult.date) * 1,
+                        tags: renderResult.tags,
+                        abstract: renderResult.abstract,
+                    };
 
-                            if (info.isNewFile) {
-                                postInfo.readCount = 0;
-                                savePostInfo(postInfo, function (d) {
-                                    if (d.opResStr === 'success') {
-                                        logger.info('scan and render and save post success.');
-                                        callback('prefect');
-                                    } else {
-                                        logger.error('save post error: ', d.error || d.fault);
-                                        callback('save db failed');
-                                    }
-                                });
+                    if (info.isNewFile) {
+                        postInfo.readCount = 0;
+                        savePostInfo(postInfo, function (d) {
+                            if (d.opResStr === 'success') {
+                                logger.info('scan and render and save post success.');
+                                callback('prefect');
                             } else {
-                                updatePostInfo(postInfo, function (d) {
-                                    if (d.opResStr === 'success') {
-                                        logger.info('scan and render and save post success.');
-                                        callback('prefect');
-                                    } else {
-                                        logger.error('save post error: ', d.error || d.fault);
-                                        callback('save db failed');
-                                    }
-                                });
-
+                                logger.error('save post error: ', d.error || d.fault);
+                                callback('save db failed');
                             }
-
+                        });
+                    } else {
+                        updatePostInfo(postInfo, function (d) {
+                            if (d.opResStr === 'success') {
+                                logger.info('scan and render and save post success.');
+                                callback('prefect');
+                            } else {
+                                logger.error('save post error: ', d.error || d.fault);
+                                callback('save db failed');
+                            }
                         });
 
-                    });
-                } else {
-                    logger('scanMD module, save hash error: ', d);
-                    callback('save hash failed');
-                }
+                    }
+                    delete info.isNewFile;
+                    saveHash(info);
+                });
             })
         }
 

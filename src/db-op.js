@@ -60,14 +60,19 @@ const findDocuments = function (collectionName, queryObj, options, callback) {
     }
 };
 
-const updateDocument = function (collectionName, query, newData, callback) {
+const updateDocument = function (collectionName, query, newData, callback, options) {
+    let updateSet = {
+        returnNewDocument: true,
+        upsert: options && options.upsert
+    };
+
     try {
         MongoClient.connect(url, function (err, db) {
             let col = db.collection(collectionName);
             try {
                 // 这个还不会写过滤规则，先查询出来全部的，然后用js过滤好了
                 // col.findAndModify()
-                col.findOneAndUpdate(query, {$set: newData}, {returnNewDocument: true}, function (err, doc) {
+                col.findOneAndUpdate(query, {$set: newData}, updateSet, function (err, doc) {
                     if (err) {
                         // todo 这里的错误结构可能不是这样的，但是mongodb文档里没找到错误的文档
                         callback && callback({opResStr: 'error', results: [{name: err.name, message: err.message}]})
@@ -132,46 +137,46 @@ const updateShuoshuoSummary = function (dateStr) {
         logger.error('updateShuoshuoSummary connect db fault', e)
     }
 };
-
-const rebuildSummary = function (callback) {
-    let summary = {all: 0};
-    try {
-        MongoClient.connect(url, function (err, db) {
-            let col = db.collection('shuoshuo');
-            try {
-                col.find().toArray(function (err, docs) {
-                    if (err) {
-                        logger.error('updateShuoshuoSummary no summary, findAll documents error: ', err)
-                    } else {
-                        docs.forEach(v => {
-                            summary.all++;
-                            let year = v.dateStr.substring(0, 4);
-                            if (summary[year]) {
-                                summary[year]++;
-                            } else {
-                                summary[year] = 1;
-                            }
-                        });
-                        col.insertOne({name: 'summary', summary}, function (err, r) {
-                            if (err) {
-                                logger.error('updateShuoshuoSummary rebuild summary insert into col failed: ', err)
-                            } else {
-                                if (r.insertedCount === 1) {
-                                    logger.info('updateShuoshuoSummary rebuild summary and insert success.')
-                                }
-                            }
-                        });
-                        callback && callback(summary)
-                    }
-                })
-            } catch (e) {
-                logger.error('rebuild summary fault: ', e)
-            }
-        })
-    } catch (e) {
-        logger.error('rebuild summary connect to db fault: ', e)
-    }
-};
+//
+// const rebuildSummary = function (callback) {
+//     let summary = {all: 0};
+//     try {
+//         MongoClient.connect(url, function (err, db) {
+//             let col = db.collection('shuoshuo');
+//             try {
+//                 col.find().toArray(function (err, docs) {
+//                     if (err) {
+//                         logger.error('updateShuoshuoSummary no summary, findAll documents error: ', err)
+//                     } else {
+//                         docs.forEach(v => {
+//                             summary.all++;
+//                             let year = v.dateStr.substring(0, 4);
+//                             if (summary[year]) {
+//                                 summary[year]++;
+//                             } else {
+//                                 summary[year] = 1;
+//                             }
+//                         });
+//                         col.insertOne({name: 'summary', summary}, function (err, r) {
+//                             if (err) {
+//                                 logger.error('updateShuoshuoSummary rebuild summary insert into col failed: ', err)
+//                             } else {
+//                                 if (r.insertedCount === 1) {
+//                                     logger.info('updateShuoshuoSummary rebuild summary and insert success.')
+//                                 }
+//                             }
+//                         });
+//                         callback && callback(summary)
+//                     }
+//                 })
+//             } catch (e) {
+//                 logger.error('rebuild summary fault: ', e)
+//             }
+//         })
+//     } catch (e) {
+//         logger.error('rebuild summary connect to db fault: ', e)
+//     }
+// };
 
 // let now = new Date() * 1;
 //
@@ -280,8 +285,14 @@ module.exports = {
         })
     },
 
-    savePostsSha: function (data, callback) {
-        insertDocuments('postssha', data, callback)
+    savePostsSha: function (data) {
+        updateDocument('postssha', {originalFileName: data.originalFileName}, data, function (d) {
+            if (d.opResStr === 'success') {
+                logger.info('update/insert post[%s] sha success.', data.originalFileName)
+            } else {
+                logger.error('update/insert post[%s] sha failed.', data.originalFileName)
+            }
+        }, {upsert: true})
     },
     getPostsSha: function (callback) {
         findDocuments('postssha', {}, {}, callback)
