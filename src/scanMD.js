@@ -23,13 +23,12 @@ const updatePostInfo = require('./db-op').updatePostInfo;
 const logger = require('./mongo-logger');
 const renderer = require('./render');
 
-const MD_DIR = require('../env').MD_DIR;
 const ALGORITHM = 'sha256';
 const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/;
 
 
 let readFileSha = new Promise(function (resolve, reject) {
-    fs.readdir(path.resolve(__dirname, MD_DIR), function (err, files) {
+    fs.readdir('../public/MD', function (err, files) {
         if (err) {
             logger.error('scanMD module, read dir error: ', err);
             reject(err);
@@ -41,7 +40,8 @@ let readFileSha = new Promise(function (resolve, reject) {
                     console.log(file, ' is not match given format');
                     return
                 }
-                let abs_file = path.resolve(__dirname, MD_DIR, file);
+                let fileName = path.parse(file).name;
+                let abs_file = '../public/MD/' + fileName;
                 let sha = crypto.createHash(ALGORITHM);
                 fs.readFile(abs_file, function (err, content) {
                     if (err) {
@@ -49,8 +49,8 @@ let readFileSha = new Promise(function (resolve, reject) {
                         reject(err);
                     } else {
                         fileInfos.push({
-                            originalFileName: path.parse(file).name,
-                            escapeName: path.parse(file).name.replace(/[ _]/g, '-'),
+                            originalFileName: fileName,
+                            escapeName: fileName.replace(/[ _]/g, '-'),
                             sha: sha.update(content).digest('hex'),
                             isNewFile: true,
                         });
