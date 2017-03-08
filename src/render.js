@@ -9,6 +9,8 @@ const marked = require('maic-marked');
 const logger = require('./mongo-logger');
 const mdTem = require('./md-template');
 
+const MD_OUT_DIR = require('../env').MD_OUTPUT_DIR;
+const MD_DIR = require('../env').MD_DIR;
 const SITE_NAME = require('../env').SITE_NAME;
 
 marked.setOptions({
@@ -28,10 +30,10 @@ marked.setOptions({
 module.exports = function (fileInfo, callback) {
 
     let fileName = fileInfo.originalFileName + '.md';
-    let output = '../public/archives/' + fileInfo.escapeName + '.html';
+    let output = path.resolve(__dirname, MD_OUT_DIR, fileInfo.escapeName + '.html');
     // todo: 这个replace太丑了，要重写
-    let permalink = SITE_NAME + output.replace('../public/', '');
-    let filePath = '../public/MD/' +  fileName;
+    let permalink = SITE_NAME + output.replace('public/', '');
+    let filePath = path.resolve(__dirname, MD_DIR, fileName);
     if (fs.lstatSync(filePath).isFile()) {
         fs.readFile(filePath, function (err, content) {
             if (err) {

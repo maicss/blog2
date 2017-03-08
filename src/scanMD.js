@@ -22,13 +22,14 @@ const savePostInfo = require('./db-op').savePostInfo;
 const updatePostInfo = require('./db-op').updatePostInfo;
 const logger = require('./mongo-logger');
 const renderer = require('./render');
+const MD_DIR = require('../env').MD_DIR;
 
 const ALGORITHM = 'sha256';
 const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/;
 
 
 let readFileSha = new Promise(function (resolve, reject) {
-    fs.readdir('../public/MD', function (err, files) {
+    fs.readdir(path.resolve(__dirname, MD_DIR), function (err, files) {
         if (err) {
             logger.error('scanMD module, read dir error: ', err);
             reject(err);
@@ -41,7 +42,7 @@ let readFileSha = new Promise(function (resolve, reject) {
                     return
                 }
                 let fileName = path.parse(file).name;
-                let abs_file = '../public/MD/' + fileName;
+                let abs_file = path.resolve(__dirname, MD_DIR, file);
                 let sha = crypto.createHash(ALGORITHM);
                 fs.readFile(abs_file, function (err, content) {
                     if (err) {
@@ -77,13 +78,13 @@ let readDBSha = new Promise(function (resolve, reject) {
 module.exports = function (callback) {
     Promise.all([readDBSha, readFileSha]).then(function (res) {
         let [{results: dbRes}, fileRes] = res;
+        let fileResCopy = [...fileRes];
         for (let fileInfo of fileRes) {
             for (let dbInfo of dbRes) {
                 if (dbInfo.escapeName === fileInfo.escapeName) {
 
                     if (dbInfo.sha === fileInfo.sha) {
-                        fileRes.splice(fileRes.indexOf(fileInfo), 1);
-                        dbRes.splice(dbRes.indexOf(dbInfo), 1);
+                        fileResCopy.splice(fileResCopy.indexOf(fileInfo), 1);
                         break;
                     } else {
                         fileInfo.isNewFile = false;
@@ -92,8 +93,8 @@ module.exports = function (callback) {
             }
         }
 
-        if (fileRes.length) {
-            fileRes.forEach(info => {
+        if (fileResCopy.length) {
+            fileResCopy.forEach(info => {
                 renderer(info, function (renderResult) {
                     let postInfo = {
                         title: renderResult.title,
@@ -132,6 +133,8 @@ module.exports = function (callback) {
                     saveHash(info);
                 });
             })
+        } else {
+            callback('nothing new.')
         }
 
     }).catch(function (err) {

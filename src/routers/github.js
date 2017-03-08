@@ -18,6 +18,8 @@ module.exports = function (req, res, next) {
                 scanAndRender(function (r) {
                     if (r === 'prefect') {
                         logger.info('scan and render succeed.')
+                    } else if (r === 'nothing new') {
+                        logger.info('nothing new.')
                     } else {
                         logger.error('scan and render failed.')
                     }
