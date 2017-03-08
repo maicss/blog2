@@ -63,7 +63,7 @@ router
     })
     .get('/post/*', routerList.posts.post)
     .get('/post', routerList.posts.postIndex)
-    .get('/post', routerList.posts.postIndex)
+    .post('/getPostsAbstract', routerList.posts.abstracts)
     .post('/blogImageUpload', upload.any(), routerList.posts.blogImageUpload)
     .post('/github', routerList.github)
     .post('/getShuoshuoList', routerList.shuoshuo.getShuoshuoList)

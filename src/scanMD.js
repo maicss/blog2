@@ -83,6 +83,7 @@ module.exports = function (callback) {
 
                     if (dbInfo.sha === fileInfo.sha) {
                         fileRes.splice(fileRes.indexOf(fileInfo), 1);
+                        dbRes.splice(dbRes.indexOf(dbInfo), 1);
                         break;
                     } else {
                         fileInfo.isNewFile = false;
