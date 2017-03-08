@@ -1,3 +1,17 @@
+# http 链接
+
+tags: http nodejs
+
+date: 2017-03-06
+
+[toc]
+
+node http随手记。
+
+<!--more-->
+
+## 重用TCP链接
+
 为了重用TCP链接，http模块包含了一个默认的客户端代理对象http.globalAgent.
 
 默认情况下，通过ClientRequest对象对同一个服务端发起的HTTP请求最多可以创建5个链接，后续的请求需要等待某个请求完成服务后才能f发出。它的实质是一个链接池。

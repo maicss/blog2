@@ -10,10 +10,11 @@ const path = require('path');
 let multer = require('multer');
 let storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './public/img/')
+        let path = './public/img/';
+        cb(null, path + (req.headers.source || 'shuoshuo'))
     },
     filename: function (req, file, cb) {
-        cb(null, file.originalname)
+        cb(null, new Date() * 1 + '-' + file.originalname)
     }
 });
 
@@ -62,7 +63,8 @@ router
     })
     .get('/post/*', routerList.posts.post)
     .get('/post', routerList.posts.postIndex)
-    .post('/getPostsAbstract', routerList.posts.abstracts)
+    .get('/post', routerList.posts.postIndex)
+    .post('/blogImageUpload', upload.any(), routerList.posts.blogImageUpload)
     .post('/github', routerList.github)
     .post('/getShuoshuoList', routerList.shuoshuo.getShuoshuoList)
     .post('/postShuoshuo', upload.any(), routerList.shuoshuo.postShuoshuo)

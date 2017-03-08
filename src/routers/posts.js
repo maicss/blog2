@@ -62,5 +62,9 @@ module.exports = {
             }
         });
 
+    },
+
+    blogImageUpload: function (req, res, next) {
+        res.json({path: req.files[0].path.replace('/public', '')});
     }
 };

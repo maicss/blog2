@@ -137,18 +137,6 @@
 
 </script>
 <script>
-    if (!fetch) {
-        alert('not support fetch API!')
-    }
-    if (!document.body.prepend) {
-        alert('not support prepend')
-    }
-    if (!document.body.append) {
-        alert('not support append')
-    }
-    if (!$.fn) {
-        alert('jquery not processed')
-    }
     let readableSize = function (size) {
         return size / 1024 > 1024 ? (~~(10 * size / 1024 / 1024)) / 10 + "MB" : ~~(size / 1024) + "KB"
     };
@@ -267,7 +255,6 @@
     let timeMark = 0;
     let weatherInfo = {};
     let filter = 'all';
-    let hasMore = false;
 
     let renderContent = function (res) {
         let st = '';
@@ -330,7 +317,6 @@
         }).done(function (res) {
             let template = renderContent(res);
             if (res.length < 20) {
-//                hasMore = true;
                 $('#loadMore').hide();
             } else {
                 $('#loadMore').show();
