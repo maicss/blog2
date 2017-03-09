@@ -27,6 +27,7 @@ const routerList = {
     user: require('./user'),
     posts: require('./posts'),
     github: require('./github'),
+    tag: require('./tags'),
 };
 
 router
@@ -63,6 +64,7 @@ router
     })
     .get('/post/*', routerList.posts.post)
     .get('/post', routerList.posts.postIndex)
+    .post('/tag', routerList.tag)
     .post('/getPostsAbstract', routerList.posts.abstracts)
     .post('/blogImageUpload', upload.any(), routerList.posts.blogImageUpload)
     .post('/github', routerList.github)

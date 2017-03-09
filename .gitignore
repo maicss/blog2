@@ -93,3 +93,4 @@ test.html
 /public/lib/semantic/tasks/
 /public/lib/semantic/gulpfile.js
 envProduct.js
+/public/archives/*

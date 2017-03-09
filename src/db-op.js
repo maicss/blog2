@@ -314,6 +314,38 @@ module.exports = {
     getAbstracts: function (callback) {
         findDocuments('posts', {}, {limit: 10, sort:{createDate: -1}}, callback)
     },
+
+    saveTags: function (info) {
+        console.log(info);
+        info.tags.forEach(tag => {
+            let data = {name: tag, posts: []};
+            findDocuments('tags', {name: tag}, {}, function (d) {
+                console.log('find db: ', d.results, tag);
+                if (d.opResStr === "success") {
+                    if (d.results.length) {
+                        data.posts = d.results[0].posts;
+                    }
+                    if (data.posts.indexOf(info.post) === -1) {
+                        data.posts.push(info.post);
+                    }
+                    console.log('data: ', data);
+                    updateDocument('tags', {name: tag}, data, function (doc) {
+                        if (doc.opResStr === "success") {
+                            logger.info('save tag [%s] success', tag)
+                        } else {
+                            logger.error('save tag [%s] failed', tag, (doc.error || doc.fault))
+                        }
+                    }, {upsert: true})
+                } else {
+                    logger.error('save tags module, findDocuments failed', (d.error || d.fault))
+                }
+            })
+        })
+    },
+
+    getTag: function (tag, callback) {
+        findDocuments('tags', {name: tag}, {}, callback)
+    }
 };
 
 // let update = function () {

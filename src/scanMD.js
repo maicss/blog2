@@ -20,6 +20,7 @@ const getHash = require('./db-op').getPostsSha;
 const saveHash = require('./db-op').savePostsSha;
 const savePostInfo = require('./db-op').savePostInfo;
 const updatePostInfo = require('./db-op').updatePostInfo;
+const saveTags = require('./db-op').saveTags;
 const logger = require('./mongo-logger');
 const renderer = require('./render');
 const MD_DIR = require('../env').MD_DIR;
@@ -94,45 +95,63 @@ module.exports = function (callback) {
         }
 
         if (fileResCopy.length) {
-            fileResCopy.forEach(info => {
-                renderer(info, function (renderResult) {
-                    let postInfo = {
-                        title: renderResult.title,
-                        originalFileName: info.originalFileName,
-                        escapeName: info.escapeName,
-                        createDateStr: renderResult.date,
-                        createDate: new Date(renderResult.date) * 1,
-                        tags: renderResult.tags,
-                        abstract: renderResult.abstract,
-                    };
-
-                    if (info.isNewFile) {
-                        postInfo.readCount = 0;
-                        savePostInfo(postInfo, function (d) {
-                            if (d.opResStr === 'success') {
-                                logger.info('scan and render and save post success.');
-                                callback('prefect');
-                            } else {
-                                logger.error('save post error: ', d.error || d.fault);
-                                callback('save db failed');
-                            }
+            let handleOneFile = function (fileList) {
+                let info;
+                if (info = fileList.pop()) {
+                    new Promise(function(resolve) {
+                        renderer(info, function (renderResult) {
+                            resolve(renderResult)
                         });
-                    } else {
-                        updatePostInfo(postInfo, function (d) {
-                            if (d.opResStr === 'success') {
-                                logger.info('scan and render and save post success.');
-                                callback('prefect');
-                            } else {
-                                logger.error('save post error: ', d.error || d.fault);
-                                callback('save db failed');
-                            }
-                        });
+                    }).then(function (renderResult) {
+                        if (renderResult.tags.length) {
+                            saveTags({tags: renderResult.tags, post: info.escapeName});
+                        }
+                        return(renderResult);
+                    }).then(function (renderResult) {
+                        let postInfo = {
+                            title: renderResult.title,
+                            originalFileName: info.originalFileName,
+                            escapeName: info.escapeName,
+                            createDateStr: renderResult.date,
+                            createDate: new Date(renderResult.date) * 1,
+                            tags: renderResult.tags,
+                            abstract: renderResult.abstract,
+                        };
 
-                    }
-                    delete info.isNewFile;
-                    saveHash(info);
-                });
-            })
+                        if (info.isNewFile) {
+                            postInfo.readCount = 0;
+                            savePostInfo(postInfo, function (d) {
+                                if (d.opResStr === 'success') {
+                                    logger.info('scan and render and save post success.');
+                                    callback('prefect');
+                                } else {
+                                    logger.error('save post error: ', d.error || d.fault);
+                                    callback('save db failed');
+                                }
+                            });
+                        } else {
+                            updatePostInfo(postInfo, function (d) {
+                                if (d.opResStr === 'success') {
+                                    logger.info('scan and render and save post success.');
+                                    callback('prefect');
+                                } else {
+                                    logger.error('save post error: ', d.error || d.fault);
+                                    callback('save db failed');
+                                }
+                            });
+
+                        }
+                    }).then(function () {
+                        delete info.isNewFile;
+                        saveHash(info);
+                        if (fileList.length) return handleOneFile(fileList)
+                    }).catch(function (e) {
+                        logger.error('render Promise error: ', e)
+                    });
+                }
+            };
+
+            handleOneFile(fileResCopy)
         } else {
             callback('nothing new.')
         }
