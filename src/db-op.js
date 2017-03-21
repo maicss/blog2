@@ -137,46 +137,46 @@ const updateShuoshuoSummary = function (dateStr) {
         logger.error('updateShuoshuoSummary connect db fault', e)
     }
 };
-//
-// const rebuildSummary = function (callback) {
-//     let summary = {all: 0};
-//     try {
-//         MongoClient.connect(url, function (err, db) {
-//             let col = db.collection('shuoshuo');
-//             try {
-//                 col.find().toArray(function (err, docs) {
-//                     if (err) {
-//                         logger.error('updateShuoshuoSummary no summary, findAll documents error: ', err)
-//                     } else {
-//                         docs.forEach(v => {
-//                             summary.all++;
-//                             let year = v.dateStr.substring(0, 4);
-//                             if (summary[year]) {
-//                                 summary[year]++;
-//                             } else {
-//                                 summary[year] = 1;
-//                             }
-//                         });
-//                         col.insertOne({name: 'summary', summary}, function (err, r) {
-//                             if (err) {
-//                                 logger.error('updateShuoshuoSummary rebuild summary insert into col failed: ', err)
-//                             } else {
-//                                 if (r.insertedCount === 1) {
-//                                     logger.info('updateShuoshuoSummary rebuild summary and insert success.')
-//                                 }
-//                             }
-//                         });
-//                         callback && callback(summary)
-//                     }
-//                 })
-//             } catch (e) {
-//                 logger.error('rebuild summary fault: ', e)
-//             }
-//         })
-//     } catch (e) {
-//         logger.error('rebuild summary connect to db fault: ', e)
-//     }
-// };
+
+const rebuildSummary = function (callback) {
+    let summary = {all: 0};
+    try {
+        MongoClient.connect(url, function (err, db) {
+            let col = db.collection('shuoshuo');
+            try {
+                col.find().toArray(function (err, docs) {
+                    if (err) {
+                        logger.error('updateShuoshuoSummary no summary, findAll documents error: ', err)
+                    } else {
+                        docs.forEach(v => {
+                            summary.all++;
+                            let year = v.dateStr.substring(0, 4);
+                            if (summary[year]) {
+                                summary[year]++;
+                            } else {
+                                summary[year] = 1;
+                            }
+                        });
+                        col.insertOne({name: 'summary', summary}, function (err, r) {
+                            if (err) {
+                                logger.error('updateShuoshuoSummary rebuild summary insert into col failed: ', err)
+                            } else {
+                                if (r.insertedCount === 1) {
+                                    logger.info('updateShuoshuoSummary rebuild summary and insert success.')
+                                }
+                            }
+                        });
+                        callback && callback(summary)
+                    }
+                })
+            } catch (e) {
+                logger.error('rebuild summary fault: ', e)
+            }
+        })
+    } catch (e) {
+        logger.error('rebuild summary connect to db fault: ', e)
+    }
+};
 
 // let now = new Date() * 1;
 //
@@ -316,20 +316,22 @@ module.exports = {
     },
 
     saveTags: function (info) {
-        console.log(info);
-        info.tags.forEach(tag => {
-            let data = {name: tag, posts: []};
+        console.log('传进来的数据：', info);
+        info.tags.forEach((tag, i) => {
+            let data = {name: tag, posts: [info.post]};
+            console.log('第%s次准备要插入的数据：%s', i, JSON.stringify(data));
             findDocuments('tags', {name: tag}, {}, function (d) {
-                console.log('find db: ', d.results, tag);
                 if (d.opResStr === "success") {
+                    console.log('第%s次查询到数据库的数据：%s', i, JSON.stringify(d.results[0]));
+                    // todo 这里应该循环的
                     if (d.results.length) {
                         data.posts = d.results[0].posts;
                     }
                     if (data.posts.indexOf(info.post) === -1) {
                         data.posts.push(info.post);
                     }
-                    console.log('data: ', data);
                     updateDocument('tags', {name: tag}, data, function (doc) {
+                        console.log('第%s次插入数据库的结果：%s', i, JSON.stringify(doc.results.value));
                         if (doc.opResStr === "success") {
                             logger.info('save tag [%s] success', tag)
                         } else {

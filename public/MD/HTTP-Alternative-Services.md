@@ -1,5 +1,9 @@
 # HTTP Alternative Services 介绍
 
+tags: HTTP
+
+date: 2017-02-22 13:32
+
 [HTTP Alternative Services](https://tools.ietf.org/html/rfc7838)（HTTP 替代服务）是今年上半年由 IESG 通过的一项与 HTTP 有关的新协议。估计很少有人能从名字上猜出它是用来干嘛的，本文从解决什么问题、如何使用以及真实场景下的应用三方面来介绍这份协议。
 
 顺便说一下，HTTP 各种协议除了可以在 [tools.ietf.org](https://tools.ietf.org/) 找到，还可以前往 [httpwg.org](http://httpwg.org/specs/) 查看。后者格式更丰富，阅读体验更好，例如本文介绍的 HTTP Alternative Services 协议也可以通过[这个地址](http://httpwg.org/specs/rfc7838.html)查看。<!--more-->

@@ -81,6 +81,7 @@ module.exports = function (callback) {
         let [{results: dbRes}, fileRes] = res;
         let fileResCopy = [...fileRes];
         for (let fileInfo of fileRes) {
+            fileInfo.isNewFile = true;
             for (let dbInfo of dbRes) {
                 if (dbInfo.escapeName === fileInfo.escapeName) {
 
@@ -98,7 +99,7 @@ module.exports = function (callback) {
             let handleOneFile = function (fileList) {
                 let info;
                 if (info = fileList.pop()) {
-                    new Promise(function(resolve) {
+                    new Promise(function (resolve) {
                         renderer(info, function (renderResult) {
                             resolve(renderResult)
                         });
@@ -106,7 +107,7 @@ module.exports = function (callback) {
                         if (renderResult.tags.length) {
                             saveTags({tags: renderResult.tags, post: info.escapeName});
                         }
-                        return(renderResult);
+                        return (renderResult);
                     }).then(function (renderResult) {
                         let postInfo = {
                             title: renderResult.title,
@@ -139,19 +140,20 @@ module.exports = function (callback) {
                                     callback('save db failed');
                                 }
                             });
-
                         }
                     }).then(function () {
                         delete info.isNewFile;
                         saveHash(info);
-                        if (fileList.length) return handleOneFile(fileList)
+                        return fileList
                     }).catch(function (e) {
                         logger.error('render Promise error: ', e)
+                    }).then(function (list) {
+                        if (list.length) return handleOneFile(list)
                     });
                 }
             };
-
             handleOneFile(fileResCopy)
+
         } else {
             callback('nothing new.')
         }

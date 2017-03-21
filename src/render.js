@@ -31,7 +31,6 @@ module.exports = function (fileInfo, callback) {
 
     let fileName = fileInfo.originalFileName + '.md';
     let output = path.resolve(__dirname, MD_OUT_DIR, fileInfo.escapeName + '.html');
-    // todo: 这个replace太丑了，要重写
     let permalink = SITE_NAME + output.replace('public/', '');
     let filePath = path.resolve(__dirname, MD_DIR, fileName);
     if (fs.lstatSync(filePath).isFile()) {
@@ -40,7 +39,6 @@ module.exports = function (fileInfo, callback) {
                 logger.error('renderMD module, read file error: ', err);
             } else {
                 let renderResult = marked(content.toString());
-                // todo:没有等渲染完毕就callback，好诡异，但是渲染是异步，会导致后面的解析结果覆盖前面的。
                 callback(renderResult);
                 fs.writeFile(output,
                     mdTem(renderResult.html, fileInfo.escapeName, permalink),

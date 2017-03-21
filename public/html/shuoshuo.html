@@ -61,6 +61,7 @@
                     <label for="rememberMe">remember me</label>
                 </div>
             </div>
+            <div class="ui error message"></div>
             <div class="field" style="overflow: hidden;">
                 <button class="ui right floated button primary" id="submitLogin">Submit</button>
             </div>
@@ -258,8 +259,10 @@
 
     let renderContent = function (res) {
         let st = '';
+        if (!res.length) {
+            return `<p>还没有说说呢，写一条呗～～</p>`
+        }
         res.forEach(function (v, i) {
-            if (!v.content) return;
             let im = '';
             v.images.forEach(function (iv) {
                 im += `<img src="${iv}">`
@@ -424,8 +427,17 @@
 //            }).then(function (d) {
 //                callback(d)
 //            })
-            $.post('./getUser', user, function (d) {
-                callback(d)
+//            $.post('./getUser', user, function (d) {
+//                callback(d)
+//            })
+
+            $.ajax({
+                url:'/getUser',
+                data: user,
+            }).then(function (d) {
+                callback (d)
+            }, function (e) {
+                callback(e)
             })
         }
     };
@@ -468,7 +480,9 @@
     });
 
     $('#login').click(function () {
+        $('.ui.error.message').hide();
         $('.ui.modal.login').modal('show');
+
         $('#submitLogin').click(function () {
             $(this).addClass('loading');
             let user = {
@@ -496,6 +510,10 @@
                     $('#shuoshuoOpMsg').html('').parent('div').hide();
                     $('#logout').show();
                 } else {
+                    $('#submitLogin').removeClass('loading');
+
+//                    $('.ui.modal.login').modal('hide');
+                    $('.ui.error.message').html('Invalid User or Password.').show();
                     console.log(res)
                 }
             });
@@ -513,7 +531,7 @@
                     $('#logout').hide();
                     $('#shuoshuoArea').hide();
                 } else {
-
+                    alert('logout filed.')
                 }
             });
         })
