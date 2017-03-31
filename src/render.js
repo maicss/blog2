@@ -39,17 +39,17 @@ module.exports = function (fileInfo, callback) {
                 logger.error('renderMD module, read file error: ', err);
             } else {
                 let renderResult = marked(content.toString());
-                callback(renderResult);
                 fs.writeFile(output,
-                    mdTem(renderResult.html, fileInfo.escapeName, permalink),
-                    function (err) {
+                    mdTem(renderResult.html, fileInfo.escapeName, permalink)
+                    , function (err) {
                         if (err) {
                             logger.error('renderMD module, write file error: ', err)
                         } else {
                             logger.info('renderMD module, render file succeed.');
                         }
                     }
-                )
+                );
+                callback(renderResult);
             }
         });
     } else {

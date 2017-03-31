@@ -8,6 +8,7 @@ module.exports = function (marked, fileName, postLink) {
                 <title>${fileName}</title>
                 <link rel="stylesheet" href="../lib/semantic/dist/semantic.min.css">
                 <link rel="stylesheet" href="../lib/highlight-github.css">
+                <link rel="stylesheet" href="../lib/markdown.css">
                 <style>
                     #toc_container {
                         position: absolute;

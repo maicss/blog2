@@ -56,14 +56,75 @@
 </html>
 
 <script>
-    $(function () {
-        $.post('/getPostsAbstract', {limit: 10}, function (abstracts) {
-            let st = '';
-            abstracts.forEach(v => {
-                st += v.abstract;
-                st += `<p><a href="/post/${v.escapeName}">继续阅读</a></p>`;
+    let filter = 'all';
+    let loadPosts = function () {
+        if (filter === 'all') {
+            $.post('/getPostsAbstract', {tag: filter}, function (abstracts) {
+                let st = '';
+                abstracts.forEach(v => {
+                    st += v.abstract;
+                    st += `<p><a href="/post/${v.escapeName}">继续阅读</a></p>`;
+                });
+                $('article').html(st);
             });
-            $('article').html(st);
-        })
-    })
+
+            $.post('/getPostAllTags', function (data) {
+                $('#summary').append(`<a data-tag="all" class="teal item">All <div class="ui teal label">${data.length}</div></a>`);
+                data.forEach(v => {
+                    let a = document.createElement('a');
+                    a.dataset.tag = v.name;
+                    a.classList = 'teal item';
+                    a.innerHTML = `${v.name} <div class="ui teal label">${v.posts.length}</div>`;
+                    $('#summary').append(a);
+                });
+            });
+        } else {
+            $.post('/getPostsAbstract', {tag: filter}, function (abstracts) {
+                let st = '';
+                abstracts.forEach(v => {
+                    st += v.abstract;
+                    st += `<p><a href="/post/${v.escapeName}">继续阅读</a></p>`;
+                });
+                $('article').html(st);
+            });
+
+//            $.post('/postSingleTag', function (tags) {
+//                Object.keys(data).sort((a, b) => a < b).forEach(v => {
+//                    let a = document.createElement('a');
+//                    a.dataset.year = v;
+//                    a.classList = 'teal item';
+//                    if (v === filter) {
+//                        a.classList.add('active');
+//                    }
+//                    a.innerHTML = `${v} <div class="ui teal label">${data[v]}</div>`;
+//                    $('#summary').append(a);
+//                });
+//            });
+        }
+    };
+    $(function () {
+        loadPosts();
+
+        $('#summary').click(function (e) {
+            let targetA = '';
+            if (e.target.localName === 'a') {
+                targetA = e.target;
+            } else if (e.target.localName === 'span') {
+                targetA = e.target.parentElement;
+            }
+            targetA.classList.add('active');
+            let as = this.children;
+            for (let i = 0; i < as.length; i++) {
+                if (as[i].localName === 'a') {
+                    if (as[i] !== targetA) {
+                        as[i].classList.remove('active');
+                    }
+                }
+            }
+
+            filter = targetA.dataset.tag;
+            loadPosts();
+        });
+
+    });
 </script>

@@ -37,7 +37,7 @@ const insertDocuments = function (collectionName, data, callback) {
 
 const findDocuments = function (collectionName, queryObj, options, callback) {
     // console.log('queryObj: ', queryObj);
-    // todo: 这里的参数设计不好，queryObj和options可以设置为默认参数，放到最后面
+    // todo: 这里的参数设计不好，queryObj和options可以设置为默认参数，放到最后面-
     options.limit = options.limit || 0;
     try {
         MongoClient.connect(url, function (err, db) {
@@ -178,47 +178,6 @@ const rebuildSummary = function (callback) {
     }
 };
 
-// let now = new Date() * 1;
-//
-// let sb = [];
-//
-// const fs = require('fs');
-//
-// let strs = fs.readFileSync('../songci.txt').toString().split('。');
-//
-// function randomBetween(low, high) {
-//     return Math.floor(Math.random() * (high - low) + low)
-// }
-//
-// let len = strs.length;
-// for (let i = 0; i < 1000; i++) {
-//     // 每次减20到70小时，生成300条数据
-//     now -= (Math.floor(Math.random() * 50 + 20) * 3567 * 1000);
-//     let start = Math.floor(Math.random() * len);
-//     let temperatureLow = randomBetween(-5, 40);
-//     let temperatureHigh = randomBetween(temperatureLow, (temperatureLow + 10 > 40 ? 40 : temperatureLow + 10));
-//     // -5 ~ 40
-//     let codeLow = randomBetween(0, 38);
-//     let codeHigh = randomBetween(codeLow, (codeLow + 20 > 38 ? 38 : codeLow + 20));
-//
-//     sb.push({
-//         date: now,
-//         dateStr: moment(now).format('YYYY-MM-DD HH:mm:ss'),
-//         weather: {
-//             location: Math.random() > 0.8 ? '上海' : '苏州',
-//             temperature: [temperatureLow, temperatureHigh],
-//             code: [codeLow , codeHigh]
-//         },
-//         // 从一个已知范围内随机出来一个10-20个连续单词长度的"一句话"
-//         content: strs.slice(start, start + Math.floor(Math.random() * 3 + 2)).join('。'),
-//         images: [],
-//         isPublic: Math.random() < 0.95
-//     });
-// }
-// insertDocuments('shuoshuo', sb, function (d) {
-//     console.log(d)
-// });
-
 module.exports = {
 
     saveWeather: function (data, callback) {
@@ -311,19 +270,19 @@ module.exports = {
         findDocuments('posts', post, {}, callback)
     },
 
-    getAbstracts: function (callback) {
-        findDocuments('posts', {}, {limit: 10, sort:{createDate: -1}}, callback)
+    getAbstracts: function (condition, callback) {
+        let query = {};
+        if (condition.tag !== 'all') {
+            query.tags = condition.tag;
+        }
+        findDocuments('posts', query, {limit: condition.limit, sort:{createDate: -1}}, callback)
     },
 
     saveTags: function (info) {
-        console.log('传进来的数据：', info);
-        info.tags.forEach((tag, i) => {
+        info.tags.forEach(tag => {
             let data = {name: tag, posts: [info.post]};
-            console.log('第%s次准备要插入的数据：%s', i, JSON.stringify(data));
             findDocuments('tags', {name: tag}, {}, function (d) {
                 if (d.opResStr === "success") {
-                    console.log('第%s次查询到数据库的数据：%s', i, JSON.stringify(d.results[0]));
-                    // todo 这里应该循环的
                     if (d.results.length) {
                         data.posts = d.results[0].posts;
                     }
@@ -331,7 +290,6 @@ module.exports = {
                         data.posts.push(info.post);
                     }
                     updateDocument('tags', {name: tag}, data, function (doc) {
-                        console.log('第%s次插入数据库的结果：%s', i, JSON.stringify(doc.results.value));
                         if (doc.opResStr === "success") {
                             logger.info('save tag [%s] success', tag)
                         } else {
@@ -346,7 +304,13 @@ module.exports = {
     },
 
     getTag: function (tag, callback) {
-        findDocuments('tags', {name: tag}, {}, callback)
+        let query;
+        if (tag === 'all') {
+            query = {}
+        } else {
+            query = {name: tag}
+        }
+        findDocuments('tags', query, {}, callback)
     }
 };
 

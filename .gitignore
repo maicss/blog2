@@ -88,7 +88,8 @@ env.js
 test.js
 test.html
 
-
+／public/img/blog/*
+／public/img/shuoshuo/*
 /public/lib/semantic/src/
 /public/lib/semantic/tasks/
 /public/lib/semantic/gulpfile.js

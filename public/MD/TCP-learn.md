@@ -1,16 +1,14 @@
 # http 链接
 
-tags: http nodejs
+tags: http TCP
 
 date: 2017-03-06
 
-[toc]
-
-node http随手记。
+http随手记。
 
 <!--more-->
 
-## 重用TCP链接
+## node重用TCP链接
 
 为了重用TCP链接，http模块包含了一个默认的客户端代理对象http.globalAgent.
 

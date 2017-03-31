@@ -4,6 +4,7 @@
 const getPost = require('../db-op').getPosts;
 const updatePost = require('../db-op').updatePostInfo;
 const getAbstracts = require('../db-op').getAbstracts;
+const getPostTgas = require('../db-op').getTag;
 const logger = require('../mongo-logger');
 
 module.exports = {
@@ -40,6 +41,7 @@ module.exports = {
                     next()
                 }
             });
+
             // }
 
         } else {
@@ -54,7 +56,11 @@ module.exports = {
         }
     },
     abstracts: function (req, res, next) {
-        getAbstracts(function (d) {
+        let query = {
+            limit: 10,
+            tag: req.body.tag
+        };
+        getAbstracts(query, function (d) {
             if (d.opResStr === 'success') {
                 res.json(d.results)
             } else {
@@ -66,5 +72,24 @@ module.exports = {
 
     blogImageUpload: function (req, res, next) {
         res.json({path: req.files[0].path.replace('/public', '')});
+    },
+
+    allTags: function (req, res, next) {
+        getPostTgas('all', function (d) {
+            if (d.opResStr === 'success') {
+                res.json(d.results)
+            } else {
+                res.status(500).send(d.error || d.fault)
+            }
+        });
+    },
+    singleTag: function (req, res, next) {
+        getPostTgas(req.body.tag, function (d) {
+            if (d.opResStr === 'success') {
+                res.json(d.results)
+            } else {
+                res.status(500).send(d.error || d.fault)
+            }
+        });
     }
 };

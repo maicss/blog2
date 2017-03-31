@@ -27,7 +27,6 @@ const routerList = {
     user: require('./user'),
     posts: require('./posts'),
     github: require('./github'),
-    tag: require('./tags'),
 };
 
 router
@@ -64,14 +63,20 @@ router
     })
     .get('/post/*', routerList.posts.post)
     .get('/post', routerList.posts.postIndex)
-    .post('/tag', routerList.tag)
+
+    .post('/postSingleTag', routerList.posts.singleTag)
     .post('/getPostsAbstract', routerList.posts.abstracts)
     .post('/blogImageUpload', upload.any(), routerList.posts.blogImageUpload)
+    .post('/getPostAllTags', routerList.posts.allTags)
+
     .post('/github', routerList.github)
+
     .post('/getShuoshuoList', routerList.shuoshuo.getShuoshuoList)
     .post('/postShuoshuo', upload.any(), routerList.shuoshuo.postShuoshuo)
     .post('/getSummary', routerList.shuoshuo.getSummary)
+
     .post('/getWeather', routerList.getWeather)
+
     .post('/getUser', routerList.user.login)
     .post('/logout', routerList.user.logout)
     .use(express.static(path.resolve('./public')))

@@ -433,6 +433,7 @@
 
             $.ajax({
                 url:'/getUser',
+                method: 'post',
                 data: user,
             }).then(function (d) {
                 callback (d)
