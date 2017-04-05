@@ -1,6 +1,6 @@
 const db = require('../db-op');
 const moment = require('moment');
-const marked = require('marked');
+const marked = require('maic-marked');
 const getShuoshuoList = db.getShuoshuoList;
 const saveOneShuoshuo = db.saveOneShuoshuo;
 const getShuoshuoSummary = db.getShuoshuoSummary;
@@ -44,7 +44,7 @@ module.exports = {
                     let d = moment();
                     try {
                         let body = JSON.parse(req.body.obj);
-                        body.content = marked(body.content);
+                        body.content = new marked().exec(body.content);
                         let content = {
                             "date": d * 1,
                             "dateStr": d.format(),

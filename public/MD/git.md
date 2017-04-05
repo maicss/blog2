@@ -25,5 +25,9 @@ date: 2017-03-08 17:41
 
 ## git merge 和 git rebase
 
+## 线上强制覆盖本地
 
-
+```$xslt
+git fetch --all
+git reset --hard origin/master # master 为分支名称
+```
