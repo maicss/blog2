@@ -11,7 +11,7 @@ module.exports = function (marked, fileName, postLink) {
                 <link rel="stylesheet" href="../lib/markdown.css">
                 <style>
                     #toc_container {
-                        position: absolute;
+                        position: fixed;
                         top: 10px;
                         width: 250px;
                         right: 10px;

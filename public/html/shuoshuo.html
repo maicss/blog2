@@ -96,7 +96,7 @@
             <article class="ui segment">
                 <div id="shuoshuoArea" style="display: none" class="ui fluid massive icon input">
                 <textarea id="s_content"
-                          style="padding: 0.5em;border-radius: 4px;border: 1px solid rgba(34, 36, 38, 0.15);overflow: scroll;height: 64px;max-width: 100%;max-height: 64px;margin: 0; resize: none;outline: 0;flex: 1 0 auto;line-height: 1em;"
+                          style="padding: 0.5em;border-radius: 4px;border: 1px solid rgba(34, 36, 38, 0.15);overflow-x: hidden;height: 64px;max-width: 100%;max-height: 64px;margin: 0; resize: none;outline: 0;flex: 1 0 auto;line-height: 1em;"
                           placeholder="lalala"> </textarea>
                     <button>
                         <label for="photo"><i class="icon image"></i></label>
@@ -118,7 +118,8 @@
                     <button class="fluid ui button" onclick="loadList('more')">更多</button>
                 </p>
                 <a href="#"
-                   style="width: 30px; height: 30px; text-align: center; border: #898989 1px solid; border-radius: 3px; background-color: #acacac; line-height: 30px; text-decoration: none;position: fixed; right: 20px; bottom: 30px;"><i class="chevron up icon"></i></a>
+                   style="width: 30px; height: 30px; text-align: center; border: #898989 1px solid; border-radius: 3px; background-color: #acacac; line-height: 30px; text-decoration: none;position: fixed; right: 20px; bottom: 30px;"><i
+                        class="chevron up icon"></i></a>
             </article>
         </div>
     </div>
@@ -127,10 +128,17 @@
 </body>
 </html>
 <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
     ga('create', 'UA-70116787-3', 'auto');
     ga('send', 'pageview');
@@ -432,11 +440,11 @@
 //            })
 
             $.ajax({
-                url:'/getUser',
+                url: '/getUser',
                 method: 'post',
                 data: user,
             }).then(function (d) {
-                callback (d)
+                callback(d)
             }, function (e) {
                 callback(e)
             })

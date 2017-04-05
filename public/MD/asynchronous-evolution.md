@@ -22,12 +22,13 @@ date: 2017-03-16 13:34
    - c.md => this is file3
 */
 ```
+
 <!--more-->
 
-[toc]
 
 以下代码都是在`test.js`里面写的，每次运行`node test.js`之后的结果都应该是`this is file1\nthis is file2\nthis is file3`。
 
+[toc]
 每个解决方案都有原生的方法示例和基于这个方案的比较流行的库的示例。
 
 ## 一代目：callback

@@ -12,7 +12,6 @@ module.exports = function (req, res, next) {
             logger.error('git pull error: ', err)
         } else {
             if (stdout.trim() === 'Already up-to-date.') {
-                // 一切OK，但是肯定是不可能的
                 res.send('Already up-to-date.');
             } else {
                 scanAndRender(function (r) {

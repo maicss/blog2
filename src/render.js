@@ -3,7 +3,6 @@
  */
 const fs = require('fs');
 const path = require('path');
-const highlight = require('highlight.js');
 
 const marked = require('maic-marked');
 const logger = require('./mongo-logger');
@@ -12,19 +11,6 @@ const mdTem = require('./md-template');
 const MD_OUT_DIR = require('../env').MD_OUTPUT_DIR;
 const MD_DIR = require('../env').MD_DIR;
 const SITE_NAME = require('../env').SITE_NAME;
-
-marked.setOptions({
-    gfm: true,
-    tables: true,
-    breaks: false,
-    pedantic: false,
-    sanitize: true,
-    smartLists: true,
-    smartypants: false,
-    highlight: function (code) {
-        return highlight.highlightAuto(code).value;
-    }
-});
 
 
 module.exports = function (fileInfo, callback) {
@@ -38,7 +24,7 @@ module.exports = function (fileInfo, callback) {
             if (err) {
                 logger.error('renderMD module, read file error: ', err);
             } else {
-                let renderResult = marked(content.toString());
+                let renderResult = new marked().exec(content.toString());
                 fs.writeFile(output,
                     mdTem(renderResult.html, fileInfo.escapeName, permalink)
                     , function (err) {
