@@ -44,6 +44,7 @@ module.exports = {
                     let d = moment();
                     try {
                         let body = JSON.parse(req.body.obj);
+                        body.isPublic = true;
                         if (body.content.trim().startsWith('pre')) {
                             body.isPublic = false;
                             body.content = body.content.substring(body.content.indexOf('pre') + 'pre'.length);
