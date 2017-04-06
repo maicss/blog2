@@ -95,3 +95,5 @@ test.html
 /public/lib/semantic/gulpfile.js
 envProduct.js
 /public/archives/*
+yarn.lock
+todos
