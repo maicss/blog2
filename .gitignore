@@ -97,3 +97,5 @@ envProduct.js
 /public/archives/*
 yarn.lock
 todos
+settings.json
+launch.json

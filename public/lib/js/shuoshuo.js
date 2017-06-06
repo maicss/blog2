@@ -193,9 +193,19 @@ let _login = function (user, callback) {
     }
 };
 
+$('#s_poster').click(function () {
+    postShuoshuo();
+});
+
+
 $(function () {
     getInitList();
     getWeather();
+    document.addEventListener('keyup', function (e) {
+        if (e.ctrlKey && e.which === 13) {
+            postShuoshuo();
+        }
+    });
     $('#summary').click(function (e) {
         let targetA = '';
         if (e.target.localName === 'a') {
@@ -225,10 +235,6 @@ $(function () {
 
 });
 
-
-$('#s_poster').click(function () {
-    postShuoshuo();
-});
 
 $('#login').click(function () {
     $('.ui.error.message').hide();
@@ -287,4 +293,5 @@ $('#logout').click(function () {
         });
     })
 
-})
+});
+

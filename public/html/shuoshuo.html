@@ -98,18 +98,17 @@
                 <textarea id="s_content"
                           style="padding: 0.5em;border-radius: 4px;border: 1px solid rgba(34, 36, 38, 0.15);overflow-x: hidden;height: 64px;max-width: 100%;max-height: 64px;margin: 0; resize: none;outline: 0;flex: 1 0 auto;line-height: 1em;"
                           placeholder="lalala"> </textarea>
-                    <button>
-                        <label for="photo"><i class="icon image"></i></label>
-                        <input type="file" hidden id="photo" multiple accept="image/*">
+                    <button onclick="document.querySelector('#photo').click()">
+                        <i class="icon image"></i>
                     </button>
+                    <input type="file" hidden id="photo" multiple accept="image/*">
                     <button id="s_poster"><i class="send icon"></i></button>
                 </div>
                 <div class="ui negative message hidden">
                     <i class="close icon"></i>
                     <div class="header" id="shuoshuoOpMsg"></div>
                 </div>
-                <div class="ui cards four doubling" style="margin: 0;" id="frame">
-                </div>
+                <div class="ui cards four doubling" style="margin: 0;" id="frame"></div>
                 <p id="weather"></p>
                 <ul class="ui divided items" id="shuoshuo-ul">
 
@@ -118,8 +117,7 @@
                     <button class="fluid ui button" onclick="loadList('more')">更多</button>
                 </p>
                 <a href="#"
-                   style="width: 30px; height: 30px; text-align: center; border: #898989 1px solid; border-radius: 3px; background-color: #acacac; line-height: 30px; text-decoration: none;position: fixed; right: 20px; bottom: 30px;"><i
-                        class="chevron up icon"></i></a>
+                   style="width: 30px; height: 30px; text-align: center; border: #898989 1px solid; border-radius: 3px; background-color: #acacac; line-height: 30px; text-decoration: none;position: fixed; right: 20px; bottom: 30px;"><i class="chevron up icon"></i></a>
             </article>
         </div>
     </div>
