@@ -26,7 +26,7 @@ const api = new WeatherApi();
 module.exports = function (req, res, next) {
     // return last cached weather by IP city address
     let ip = '';
-    if (req.ip === '::1') {
+    if (req.ip === '::1' || req.ip === '::ffff:127.0.0.1') {
         ip = Math.random() > 0.9 ? '116.246.19.150' : '112.22.233.200';
     } else if (req.ip.startsWith('::ffff:')){
         ip = req.ip.substring('::ffff:'.length)
