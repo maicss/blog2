@@ -44,24 +44,23 @@ module.exports = {
                     let d = moment();
                     try {
                         let body = JSON.parse(req.body.obj);
-                        body.content = new marked().exec(body.content);
+                        body.isPublic = true;
+                        if (body.content.trim().startsWith('pre')) {
+                            body.isPublic = false;
+                            body.content = body.content.substring(body.content.indexOf('pre') + 'pre'.length);
+                        }
                         let content = {
                             "date": d * 1,
                             "dateStr": d.format(),
                             "weather": body.weather,
-                            "content": body.content,
+                            "content": new marked().exec(body.content).html,
                             "images": [],
-                            "isPublic": true
+                            "isPublic": body.isPublic
                         };
 
                         req.files.forEach(function (v) {
                             content.images.push(v.path.substring('public'.length))
                         });
-
-                        if (body.content.startsWith('pre')) {
-                            content.isPublic = false;
-                            content.content = body.content.substring('pre'.length);
-                        }
 
                         saveOneShuoshuo(content, function (d) {
                             switch (d.opResStr) {
@@ -78,7 +77,7 @@ module.exports = {
                             }
                         });
                     } catch (e) {
-                        res.status(400).send({error: 'JSON Parse Error in post data.' + req.body.obj});
+                        res.status(400).send({error: 'JSON Parse Error in post data: ' + req.body.obj});
                     }
 
                 }

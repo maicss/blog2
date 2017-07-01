@@ -303,7 +303,7 @@ module.exports = {
         })
     },
 
-    getTag: function (tag, callback) {
+    getPostsByTag: function (tag, callback) {
         let query;
         if (tag === 'all') {
             query = {}
@@ -313,29 +313,3 @@ module.exports = {
         findDocuments('tags', query, {}, callback)
     }
 };
-
-// let update = function () {
-//     MongoClient.connect(url, function (err, db) {
-//         let col = db.collection('shuoshuo');
-//         let summary = {all: 0};
-//         col.find({date: {$exists: 1}}).toArray(function (err, docs) {
-//             if (err) console.error(err);
-//             docs.forEach(function (v) {
-//                 console.log(v);
-//                 let year = v.dateStr.substring(0, 4);
-//                 summary.all ++;
-//                 if (summary[year]) {
-//                     summary[year] ++;
-//                 } else {
-//                     summary[year] = 1;
-//                 }
-//             });
-//             col.findOneAndUpdate({name: 'summary'}, {$set: {name: 'summary', summary}}, function (err, c) {
-//                 if (err) console.error(err);
-//                 console.log(c)
-//             })
-//         });
-//     })
-// };
-//
-// update();

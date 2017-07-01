@@ -64,7 +64,7 @@ router
     .get('/post/*', routerList.posts.post)
     .get('/post', routerList.posts.postIndex)
 
-    .post('/postSingleTag', routerList.posts.singleTag)
+    .post('/getTagPosts', routerList.posts.singleTag)
     .post('/getPostsAbstract', routerList.posts.abstracts)
     .post('/blogImageUpload', upload.any(), routerList.posts.blogImageUpload)
     .post('/getPostAllTags', routerList.posts.allTags)

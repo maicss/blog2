@@ -4,7 +4,7 @@
 const getPost = require('../db-op').getPosts;
 const updatePost = require('../db-op').updatePostInfo;
 const getAbstracts = require('../db-op').getAbstracts;
-const getPostTgas = require('../db-op').getTag;
+const getPostByTag = require('../db-op').getPostsByTag;
 const logger = require('../mongo-logger');
 
 module.exports = {
@@ -75,7 +75,7 @@ module.exports = {
     },
 
     allTags: function (req, res, next) {
-        getPostTgas('all', function (d) {
+        getPostByTag('all', function (d) {
             if (d.opResStr === 'success') {
                 res.json(d.results)
             } else {
@@ -84,7 +84,7 @@ module.exports = {
         });
     },
     singleTag: function (req, res, next) {
-        getPostTgas(req.body.tag, function (d) {
+        getPostByTag(req.body.tag, function (d) {
             if (d.opResStr === 'success') {
                 res.json(d.results)
             } else {
