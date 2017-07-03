@@ -27,7 +27,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-// let httpServer = http.createServer(app);
+let httpServer = http.createServer(app);
 // let httpsServer = https.createServer(credentials, app);
 
 spdyOption = {
@@ -59,7 +59,7 @@ spdy
         }
     })
 
-// httpServer.listen(ports['non-secure']);
+httpServer.listen(ports['non-secure']);
 // httpsServer.listen(ports.secure);
 console.log('server on https://localhost:' + ports.secure);
 
