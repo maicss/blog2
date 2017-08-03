@@ -57,6 +57,9 @@ router
             case '/test':
                 res.status(200).sendFile('/public/html/test.html', {root: './'});
                 break;
+            case '/googlee2a049d23b90511c.html':
+                res.sendFile('/public/html/googlee2a049d23b90511c.html', {root: './'});
+                break;
             default:
                 next();
         }
