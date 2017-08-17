@@ -14,17 +14,17 @@ let renderContent = function (res) {
             im += `<img src="${iv}">`
         });
         st += `<div class="item">
-                            <div class="content">
-                                <h3 class="header"><time>${v.dateStr}</time></h3>
-                                <div class="description">
-                                    <div>${v.content}</div>
-                                    <p><i class="icon location arrow"></i>${v.weather.location || v.location}: <img class="aligned image mini spaced ui" src="../assert/weather-icon/${v.weather.code[0]}.png"> ~ <img class="aligned image mini spaced ui" src="../assert/weather-icon/${v.weather.code[1]}.png"> ${v.weather.temperature[0]}&#8451; ~ ${v.weather.temperature[1]}&#8451; </p>
-                                     <div class="images ui small">${im}</div>
+                    <div class="content">
+                        <h3 class="header"><time>${v.dateStr}</time></h3>
+                        <div class="description">
+                            <div>${v.content}</div>
+                            <p><i class="icon location arrow"></i>${v.weather.location || v.location}: <img class="aligned image mini spaced ui" src="../assert/weather-icon/${v.weather.code[0]}.png"> ~ <img class="aligned image mini spaced ui" src="../assert/weather-icon/${v.weather.code[1]}.png"> ${v.weather.temperature[0]}&#8451; ~ ${v.weather.temperature[1]}&#8451; </p>
+                                <div class="images ui small">${im}</div>
 
-                                </div>
-                                ${v.isPublic ? '' : '<div class="extra"><div class="ui label red">Private</div> </div>'}
-                            </div>
-                        </div>`;
+                        </div>
+                        ${v.isPublic ? '' : '<div class="extra"><div class="ui label red">Private</div> </div>'}
+                    </div>
+                </div>`;
         if (i === res.length - 1) {
             timeMark = v.date;
         }
@@ -35,7 +35,7 @@ let renderContent = function (res) {
 let getSummary = function () {
     let summary = document.querySelector('#summary');
     summary.innerHTML = '';
-    fetch('/getSummary', {method: "POST"}).then(function (d) {
+    fetch('/getSummary', {method: "GET"}).then(function (d) {
         if (d.ok) {
             d.json().then(function (s) {
                 let data = s[0].summary;
@@ -61,7 +61,7 @@ let getInitList = function () {
     timeMark = 0;
     $.ajax({
         url: '/getShuoshuoList',
-        method: 'POST',
+        method: 'GET',
         data: {limit: 20, filter, timeMark}
     }).done(function (res) {
         let template = renderContent(res);
@@ -79,7 +79,7 @@ let getInitList = function () {
 
 let getWeather = function () {
     $.ajax({
-        method: 'POST',
+        method: 'GET',
         url: '/getWeather'
     }).done(function (d) {
         weatherInfo = d;
@@ -96,7 +96,7 @@ let getWeather = function () {
 let loadList = function (mark) {
     $.ajax({
         url: '/getShuoshuoList',
-        method: 'POST',
+        method: 'GET',
         data: {
             filter,
             timeMark
@@ -164,25 +164,10 @@ let postShuoshuo = function () {
 };
 
 let _login = function (user, callback) {
-    // todo: 这个留着测试一下
-//        let form = new FormData();
-//        let data=form.append('json',  JSON.stringify(user));
     if (user.username && user.password) {
-//            fetch('/getUser', {
-//                method: "POST",
-//                headers: {
-//                    'Content-Type': 'application/json'
-//                },
-//                body: JSON.stringify(user)
-//            }).then(function (d) {
-//                callback(d)
-//            })
-//            $.post('./getUser', user, function (d) {
-//                callback(d)
-//            })
 
         $.ajax({
-            url: '/getUser',
+            url: '/login',
             method: 'post',
             data: user,
         }).then(function (d) {
@@ -248,17 +233,6 @@ $('#login').click(function () {
             rememberMe: $('#rememberMe').prop('checked')
         };
         _login(user, function (res) {
-//                if (res.ok) {
-//                    res.text().then(function (text) {
-//                        if (text === 'succeed') {
-//                            $('.ui.modal.login').modal('hide');
-//                            $('#login').hide();
-//                            $('#logout').show();
-//                        }
-//                    })
-//                } else {
-//                    console.log(res.status)
-//                }
             if (res === 'succeed') {
                 $(this).removeClass('loading');
                 $('.ui.modal.login').modal('hide');

@@ -67,20 +67,20 @@ router
     .get('/post/*', routerList.posts.post)
     .get('/post', routerList.posts.postIndex)
 
-    .post('/getTagPosts', routerList.posts.singleTag)
+    .get('/getTagPosts', routerList.posts.singleTag)
     .post('/getPostsAbstract', routerList.posts.abstracts)
     .post('/blogImageUpload', upload.any(), routerList.posts.blogImageUpload)
-    .post('/getPostAllTags', routerList.posts.allTags)
+    .get('/getPostAllTags', routerList.posts.allTags)
 
     .post('/github', routerList.github)
 
-    .post('/getShuoshuoList', routerList.shuoshuo.getShuoshuoList)
+    .get('/getShuoshuoList', routerList.shuoshuo.getShuoshuoList)
     .post('/postShuoshuo', upload.any(), routerList.shuoshuo.postShuoshuo)
-    .post('/getSummary', routerList.shuoshuo.getSummary)
+    .get('/getSummary', routerList.shuoshuo.getSummary)
 
-    .post('/getWeather', routerList.getWeather)
+    .get('/getWeather', routerList.getWeather)
 
-    .post('/getUser', routerList.user.login)
+    .post('/login', routerList.user.login)
     .post('/logout', routerList.user.logout)
     .use(express.static(path.resolve('./public')))
     .use(function (req, res) {

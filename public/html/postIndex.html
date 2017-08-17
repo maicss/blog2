@@ -68,7 +68,7 @@
                 $('article').html(st);
             });
 
-            $.post('/getPostAllTags', function (data) {
+            $.get('/getPostAllTags', function (data) {
                 $('#summary').append(`<a data-tag="all" class="teal item">All <div class="ui teal label">${data.length}</div></a>`);
                 data.forEach(v => {
                     let a = document.createElement('a');
