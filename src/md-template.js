@@ -20,6 +20,7 @@ module.exports = function (marked, fileName, postLink) {
                 </style>
             </head>
             <body class="ui main text container">
+                <a href="／posts">返回文章首页</a>
                 <a href="${postLink}#disqus_thread">count</a>
                 ${marked}
                 <p><a href="../MD/${fileName}.md">查看本文Markdown版本</a></p>
