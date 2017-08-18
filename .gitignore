@@ -90,11 +90,11 @@ test.html
 
 ／public/img/blog/*
 ／public/img/shuoshuo/*
-/public/lib/semantic/src/
-/public/lib/semantic/tasks/
-/public/lib/semantic/gulpfile.js
+/frontEnd/public/lib/semantic/src/
+/frontEnd/public/lib/semantic/tasks/
+/frontEnd/public/lib/semantic/gulpfile.js
 envProduct.js
-/public/archives/*
+/frontEnd/public/archives/*
 yarn.lock
 todos
 settings.json

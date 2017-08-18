@@ -12,17 +12,18 @@ moment.defaultFormat = 'YYYY-MM-DD HH:mm:ss'
 const credentials = require('./env').credentials
 const ports = require('./env').ports
 
-const routers = require('./src/routers/routers')
+const routers = require('./backEnd/src/routers/routers')
 const CORS = function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*')
+  // console.log()
+  res.header('Access-Control-Allow-Origin', req.get('origin'))
+  res.header('Access-Control-Max-Age', 864000)
+  res.header('Access-Control-Allow-Credentials', 'true')
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
   res.header('Access-Control-Allow-Headers', 'Content-Type')
   if ('OPTIONS' === req.method) {
-    //respond with 200
     res.sendStatus(200)
   }
   else {
-    //move on
     next()
   }
 }
