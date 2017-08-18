@@ -6,7 +6,7 @@ module.exports = function (marked, fileName, postLink) {
                 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
                 <title>${fileName}</title>
-                <link rel="stylesheet" href="../lib/semantic/dist/semantic.min.css">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css">
                 <link rel="stylesheet" href="../lib/highlight-github.css">
                 <link rel="stylesheet" href="../lib/markdown.css">
                 <style>
@@ -20,7 +20,7 @@ module.exports = function (marked, fileName, postLink) {
                 </style>
             </head>
             <body class="ui main text container">
-                <a href="／posts">返回文章首页</a>
+                <a href="/post">返回文章首页</a>
                 <a href="${postLink}#disqus_thread">count</a>
                 ${marked}
                 <p><a href="../MD/${fileName}.md">查看本文Markdown版本</a></p>

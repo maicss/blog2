@@ -31,7 +31,7 @@ module.exports = function (fileInfo, callback) {
                         if (err) {
                             logger.error('renderMD module, write file error: ', err)
                         } else {
-                            logger.info('renderMD module, render file succeed.');
+                            logger.info('renderMD module, render [ ' + fileInfo.escapeName + ' ] succeed.');
                         }
                     }
                 );

@@ -12,7 +12,7 @@ moment.defaultFormat = 'YYYY-MM-DD HH:mm:ss'
 const credentials = require('./env').credentials
 const ports = require('./env').ports
 
-const routers = require('./backEnd/src/routers/routers')
+const routers = require('./backEnd/routers/routers')
 const CORS = function (req, res, next) {
   // console.log()
   res.header('Access-Control-Allow-Origin', req.get('origin'))
@@ -34,7 +34,7 @@ let app = express()
 
 app.use(compression())
 app.use(cookieParser())
-app.use(CORS)
+// app.use(CORS)
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
 
@@ -68,8 +68,6 @@ spdy
     if (error) {
       console.error(error)
       return process.exit(1)
-    } else {
-      console.log('Listening on port: ' + ports.secure + '.')
     }
   })
 

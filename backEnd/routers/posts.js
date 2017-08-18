@@ -21,7 +21,7 @@ module.exports = {
             //     }
             // }
             // if (hasCached) {
-            //     res.sendFile('./public/archives/' + d.results[0].escapeName + '.html', {root: './'});
+            //     res.sendFile('./frontEnd/archives/' + d.results[0].escapeName + '.html', {root: './'});
             // } else {
             let query = {
                 escapeName: req.params['0']
@@ -36,7 +36,7 @@ module.exports = {
                         }
                     });
                     // cachedRes.add(data);
-                    res.sendFile('./public/archives/' + d.results[0].escapeName + '.html', {root: './'});
+                    res.sendFile('./frontEnd/archives/' + d.results[0].escapeName + '.html', {root: './'});
                 } else {
                     next()
                 }
@@ -50,7 +50,7 @@ module.exports = {
     },
     postIndex: function (req, res, next) {
         if (req.path === '/post') {
-            res.sendFile('./public/html/postIndex.html', {root: './'});
+            res.sendFile('./frontEnd/html/postIndex.html', {root: './'});
         } else {
             next()
         }
@@ -71,7 +71,7 @@ module.exports = {
     },
 
     blogImageUpload: function (req, res, next) {
-        res.json({path: req.files[0].path.replace('/public', '')});
+        res.json({path: req.files[0].path.replace('/frontEnd', '')});
     },
 
     allTags: function (req, res, next) {
