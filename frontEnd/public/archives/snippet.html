@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="utf-8">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+                <title>snippet</title>
+                <link rel="stylesheet" href="../lib/semantic/dist/semantic.min.css">
+                <link rel="stylesheet" href="../lib/highlight-github.css">
+                <link rel="stylesheet" href="../lib/markdown.css">
+                <style>
+                    #toc_container {
+                        position: fixed;
+                        top: 10px;
+                        width: 250px;
+                        right: 10px;
+                        word-break: break-word;
+                    }
+                </style>
+            </head>
+            <body class="ui main text container">
+                <a href="https://maicss.com//Users/mac/Documents/code/js/blog2/archives/snippet.html#disqus_thread">count</a>
+                <h1 id="code-snippet">code snippet</h1><blockquote>
+<p>都是些当时倍有feel，后来感觉是白痴水平都东西</p>
+</blockquote>
+<div class="ui message"><pre><code class="lang-"><span class="hljs-keyword">let</span> calc1 = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">t</span>) </span>{
+    <span class="hljs-keyword">let</span> diff = <span class="hljs-built_in">parseInt</span>((+<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>() - t) / <span class="hljs-number">1000</span>);
+
+    <span class="hljs-keyword">if</span> (diff &lt; <span class="hljs-number">60</span>) {
+        <span class="hljs-keyword">return</span> diff.toString() + <span class="hljs-string">'秒'</span>
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (diff &lt; <span class="hljs-number">60</span> * <span class="hljs-number">60</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">parseInt</span>(diff / <span class="hljs-number">60</span>).toString() + <span class="hljs-string">'分钟'</span>
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (diff &lt; <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">parseInt</span>(diff / <span class="hljs-number">60</span> / <span class="hljs-number">60</span>).toString() + <span class="hljs-string">'小时'</span>
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (diff &lt; <span class="hljs-number">30</span> * <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">parseInt</span>(diff / <span class="hljs-number">60</span> / <span class="hljs-number">60</span> / <span class="hljs-number">24</span>).toString() + <span class="hljs-string">'天'</span>
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">parseInt</span>(diff / <span class="hljs-number">60</span> / <span class="hljs-number">60</span> / <span class="hljs-number">24</span> / <span class="hljs-number">30</span>).toString() + <span class="hljs-string">'个月'</span>
+    }
+};
+
+<span class="hljs-keyword">let</span> calc2 = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">t</span>) </span>{
+    <span class="hljs-keyword">let</span> scales = [<span class="hljs-number">60</span>, <span class="hljs-number">60</span>, <span class="hljs-number">24</span>, <span class="hljs-number">30</span>, <span class="hljs-number">12</span>];
+    <span class="hljs-keyword">let</span> suffixes = [<span class="hljs-string">'秒'</span>, <span class="hljs-string">'分钟'</span>, <span class="hljs-string">'小时'</span>, <span class="hljs-string">'天'</span>, <span class="hljs-string">'个月'</span>, <span class="hljs-string">'年'</span>];
+    <span class="hljs-keyword">let</span> diff = <span class="hljs-built_in">parseInt</span>((+<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>() - t) / <span class="hljs-number">1000</span>);
+    <span class="hljs-keyword">let</span> scale = scales.shift();
+    <span class="hljs-keyword">let</span> index = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">while</span> (diff &gt; scale) {
+        index++;
+        diff = <span class="hljs-built_in">parseInt</span>(diff / scale);
+        scale = scales.shift();
+    }
+    <span class="hljs-keyword">return</span> diff.toString() + suffixes[index];
+};
+<span class="hljs-comment">// seconds</span>
+<span class="hljs-built_in">console</span>.log(calc1(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>() * <span class="hljs-number">1</span> - <span class="hljs-number">15</span> * <span class="hljs-number">1000</span>));
+<span class="hljs-built_in">console</span>.log(calc2(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>() * <span class="hljs-number">1</span> - <span class="hljs-number">15</span> * <span class="hljs-number">1000</span>));
+<span class="hljs-comment">// minutes</span>
+<span class="hljs-built_in">console</span>.log(calc1(<span class="hljs-number">1491475486040</span>) + <span class="hljs-string">'前'</span>);
+<span class="hljs-built_in">console</span>.log(calc2(<span class="hljs-number">1491475486040</span>) + <span class="hljs-string">'前'</span>);
+<span class="hljs-comment">// days</span>
+<span class="hljs-built_in">console</span>.log(calc1(<span class="hljs-number">1491177600000</span>) + <span class="hljs-string">'前'</span>);
+<span class="hljs-built_in">console</span>.log(calc2(<span class="hljs-number">1491177600000</span>) + <span class="hljs-string">'前'</span>);
+<span class="hljs-comment">// months</span>
+<span class="hljs-built_in">console</span>.log(calc1(<span class="hljs-number">1483401600000</span>) + <span class="hljs-string">'前'</span>);
+<span class="hljs-built_in">console</span>.log(calc2(<span class="hljs-number">1483401600000</span>) + <span class="hljs-string">'前'</span>);
+<span class="hljs-comment">// years</span>
+<span class="hljs-built_in">console</span>.log(calc1(<span class="hljs-number">1451779200000</span>) + <span class="hljs-string">'前'</span>);
+<span class="hljs-built_in">console</span>.log(calc2(<span class="hljs-number">1451779200000</span>) + <span class="hljs-string">'前'</span>);
+</code></pre></div>
+                <p><a href="../MD/snippet.md">查看本文Markdown版本</a></p>
+                <div id="disqus_thread"></div>
+                <script>
+                
+                /**
+                *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+                *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+                
+                var disqus_config = function () {
+                this.page.url = 'https://maicss.com//Users/mac/Documents/code/js/blog2/archives/snippet.html';  // Replace PAGE_URL with your page's canonical URL variable
+                this.page.identifier = 'snippet'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+                };
+                
+                (function() { // DON'T EDIT BELOW THIS LINE
+                var d = document, s = d.createElement('script');
+                s.src = '//https-www-maicss-com.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+                })();
+                </script>
+                <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+                <script id="dsq-count-scr" src="//https-www-maicss-com.disqus.com/count.js" async></script>
+            </body>
+        </html>

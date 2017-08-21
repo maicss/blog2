@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Post Index</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css">
+    <link rel="stylesheet" href="../lib/markdown.css">
+</head>
+<body style="padding: 30px;">
+    <div class="ui attached stackable menu tabular" style="margin-bottom: 20px;">
+        <div class="ui container">
+            <a class="item" href="/post">
+                <i class="home icon active"></i> Blog
+            </a>
+            <a class="item" href="/shuoshuo">
+                <i class="grid layout icon"></i> ShuoShuo
+            </a>
+            <a class="item">
+                <i class="mail icon"></i> About
+            </a>
+            <div class="ui simple dropdown item">
+                More
+                <i class="dropdown icon"></i>
+                <div class="menu">
+                    <a class="item"><i class="edit icon"></i> Edit Profile</a>
+                    <a class="item"><i class="globe icon"></i> Choose Language</a>
+                    <a class="item"><i class="settings icon"></i> Account Settings</a>
+                </div>
+            </div>
+            <div class="right item">
+                <div class="ui input"><input type="text" placeholder="Search..."></div>
+            </div>
+        </div>
+    </div>
+    <div class="ui container grid">
+        <div class="two column row">
+            <div class="four wide computer five wide tablet sixteen wide mobile column">
+                <section class="ui segment">
+                    <h2>Tags</h2>
+                    <div id="summary" class="menu ui vertical" style="width: auto">
+                    </div>
+                </section>
+            </div>
+            <div class="twelve wide computer eleven wide tablet sixteen wide mobile column">
+                <article class="posts ui segment">
+                </article>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    let filter = 'all';
+    let loadPosts = function () {
+        if (filter === 'all') {
+            $.post('/getPostsAbstract', {tag: filter}, function (abstracts) {
+                let st = '';
+                abstracts.forEach(v => {
+                    st += v.abstract;
+                    st += `<p><a href="/post/${v.escapeName}">继续阅读</a></p>`;
+                });
+                $('article').html(st);
+            });
+
+            $.get('/getPostAllTags', function (data) {
+                $('#summary').append(`<a data-tag="all" class="teal item">All <div class="ui teal label">${data.length}</div></a>`);
+                data.forEach(v => {
+                    let a = document.createElement('a');
+                    a.dataset.tag = v.name;
+                    a.classList = 'teal item';
+                    a.innerHTML = `${v.name} <div class="ui teal label">${v.posts.length}</div>`;
+                    $('#summary').append(a);
+                });
+            });
+        } else {
+            $.post('/getPostsAbstract', {tag: filter}, function (abstracts) {
+                let st = '';
+                abstracts.forEach(v => {
+                    st += v.abstract;
+                    st += `<p><a href="/post/${v.escapeName}">继续阅读</a></p>`;
+                });
+                $('article').html(st);
+            });
+
+//            $.post('/getTagPosts', function (tags) {
+//                Object.keys(data).sort((a, b) => a < b).forEach(v => {
+//                    let a = document.createElement('a');
+//                    a.dataset.year = v;
+//                    a.classList = 'teal item';
+//                    if (v === filter) {
+//                        a.classList.add('active');
+//                    }
+//                    a.innerHTML = `${v} <div class="ui teal label">${data[v]}</div>`;
+//                    $('#summary').append(a);
+//                });
+//            });
+        }
+    };
+    $(function () {
+        loadPosts();
+
+        $('#summary').click(function (e) {
+            let targetA = '';
+            if (e.target.localName === 'a') {
+                targetA = e.target;
+            } else if (e.target.localName === 'span') {
+                targetA = e.target.parentElement;
+            }
+            targetA.classList.add('active');
+            let as = this.children;
+            for (let i = 0; i < as.length; i++) {
+                if (as[i].localName === 'a') {
+                    if (as[i] !== targetA) {
+                        as[i].classList.remove('active');
+                    }
+                }
+            }
+
+            filter = targetA.dataset.tag;
+            loadPosts();
+        });
+
+    });
+</script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-70116787-3', 'auto');
+  ga('send', 'pageview');
+
+</script>
