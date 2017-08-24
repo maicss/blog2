@@ -12,21 +12,7 @@ moment.defaultFormat = 'YYYY-MM-DD HH:mm:ss'
 const credentials = require('./env').credentials
 const ports = require('./env').ports
 
-const routers = require('./backEnd/routers/routers')
-const CORS = function (req, res, next) {
-  // console.log()
-  res.header('Access-Control-Allow-Origin', req.get('origin'))
-  res.header('Access-Control-Max-Age', 864000)
-  res.header('Access-Control-Allow-Credentials', 'true')
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'Content-Type')
-  if ('OPTIONS' === req.method) {
-    res.sendStatus(200)
-  }
-  else {
-    next()
-  }
-}
+const routers = require('./backEnd/routers/')
 
 let bodyParser = require('body-parser')
 
@@ -34,11 +20,10 @@ let app = express()
 
 app.use(compression())
 app.use(cookieParser())
-// app.use(CORS)
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
 
-// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 let httpServer = http.createServer(app)
 // let httpsServer = https.createServer(credentials, app);

@@ -4,10 +4,15 @@ const marked = require('maic-marked');
 const getShuoshuoList = db.getShuoshuoList;
 const saveOneShuoshuo = db.saveOneShuoshuo;
 const getShuoshuoSummary = db.getShuoshuoSummary;
+const db_deleteShuoshuo = db.deleteShuoshuo;
 const getuser = db.getUser;
+const fs = require('fs');
+const path = require('path')
 module.exports = {
     getShuoshuoList: function (req, res, next) {
-        let condition = {content: true};
+        let condition = {
+            content: true
+        };
         condition.isPublic = !(req.cookies.login === 'bingo');
         if (req.query.filter && req.query.filter !== 'all') {
             condition.dateStr = new RegExp("^" + req.query.filter);
@@ -31,56 +36,48 @@ module.exports = {
         })
     },
     postShuoshuo: function (req, res, next) {
-        if (!req.cookies.uid) {
-            res.status(401).json({error: 'please login and retry.'});
-        } else {
-            getuser({createTime: req.cookies.uid * 1}, function (d) {
-                if (!d.results.length) {
-                    res.status(401).send({error: 'please login and retry.'});
-                } else {
-                    let d = moment();
-                    try {
-                        let body = JSON.parse(req.body.obj);
-                        body.isPublic = true;
-                        if (body.content.trim().startsWith('pre')) {
-                            body.isPublic = false;
-                            body.content = body.content.substring(body.content.indexOf('pre') + 'pre'.length);
-                        }
-                        let content = {
-                            "date": d * 1,
-                            "dateStr": d.format(),
-                            "weather": body.weather,
-                            "content": new marked().exec(body.content).html,
-                            "images": [],
-                            "isPublic": body.isPublic
-                        };
 
-                        req.files.forEach(function (v) {
-                            content.images.push(v.path.substring('public'.length))
-                        });
+        let date = moment();
+        console.log(req.files)
+        try {
+            let body = JSON.parse(req.body.obj);
+            body.isPublic = true;
+            if (body.content.trim().startsWith('pre-')) {
+                body.isPublic = false;
+                body.content = body.content.substring(body.content.indexOf('pre-') + 'pre-'.length);
+            }
+            let content = {
+                "date": date * 1,
+                "dateStr": date.format(),
+                "weather": body.weather,
+                "content": new marked().exec(body.content).html,
+                "images": [],
+                "isPublic": body.isPublic
+            };
 
-                        saveOneShuoshuo(content, function (d) {
-                            switch (d.opResStr) {
-                                case 'success':
-                                    res.json(d.results);
-                                    // res.json({status: 'success', n: 1});
-                                    break;
-                                case 'error':
-                                    res.status(400).send(d.results[0]);
-                                    break;
-                                case 'fault':
-                                    res.status(500).send(d.results[0]);
-                                    break;
-                            }
-                        });
-                    } catch (e) {
-                        res.status(400).send({error: 'JSON Parse Error in post data: ' + req.body.obj});
-                    }
+            req.files.forEach(function (v) {
+                content.images.push(v.path.substring('frontEnd'.length))
+            });
 
+            saveOneShuoshuo(content, function (d) {
+                switch (d.opResStr) {
+                    case 'success':
+                        res.json(d.results.ops[0]);
+                        // res.json({status: 'success', n: 1});
+                        break;
+                    case 'error':
+                        res.status(400).send(d.results[0]);
+                        break;
+                    case 'fault':
+                        res.status(500).send(d.results[0]);
+                        break;
                 }
-            })
+            });
+        } catch (e) {
+            res.status(400).send({
+                error: 'JSON Parse Error in post data: ' + req.body.obj
+            });
         }
-
     },
     getSummary: function (req, res, next) {
         getShuoshuoSummary(function (d) {
@@ -94,6 +91,39 @@ module.exports = {
                 case 'fault':
                     res.status(500).send(d.results[0]);
                     break;
+            }
+        })
+    },
+    deleteShuoshuo(req, res) {
+        // todo 先检查说说是不是存在，再进行删除
+        // 删除说说自带的图片
+        req.query = {date: req.query.date * 1}
+        getShuoshuoList(req.query, function (m) {
+            if (m.results[0]) {
+                if (m.results[0].images.length) {
+                    try {
+                        m.results[0].images.forEach(_path => {
+                            fs.unlinkSync(path.resolve(__dirname, 'frontEnd' + _path))
+                        })
+                    } catch (e) {
+                        console.log('delete shuoshuo -- remove shuoshuo images failed: ', e)
+                    }
+                }
+                db_deleteShuoshuo(req.query, function (d) {
+                    switch (d.opResStr) {
+                        case 'success':
+                            res.json(d.results);
+                            break;
+                        case 'error':
+                            res.status(400).send(d.results[0]);
+                            break;
+                        case 'fault':
+                            res.status(500).send(d.results[0]);
+                            break;
+                    }
+                })
+            } else {
+                res.status(400).send({error: 'invalid query param.'})
             }
         })
     }
