@@ -28,7 +28,7 @@ const findDocuments = async function (collectionName, queryCondition = {}, optio
  * @param newData {Object}
  * @param options {Object} []
  * */
-const updateDocument = async function (collectionName, queryCondition, newData, options = {}) {
+const updateDocument = async function (collectionName, queryCondition, newData, options={}) {
   options.upsert = options.upsert || true
   try {
     const database = await MongoClient.connect(url)
@@ -46,7 +46,7 @@ const updateDocument = async function (collectionName, queryCondition, newData, 
   }
 }
 
-const deleteDocument = async function (collectionName, queryCondition, options = {}) {
+const deleteDocument = async function (collectionName, queryCondition, options={}) {
   try {
     const database = await MongoClient.connect(url)
     const collection = database.collection(collectionName)
@@ -87,7 +87,7 @@ const buildShuoshuoSummary = async function () {
     const shuoshuoCollection = database.collection('shuoshuo')
     const shuoshuoSummaryCollection = database.collection('shuoshuoSummary')
     try {
-      const allShuoshuo = await shuoshuoCollection.find({})
+      const allShuoshuo = await shuoshuoCollection.find({}).toArray()
       summary.all = allShuoshuo.length
       allShuoshuo.forEach(item => {
         let year = item.dateStr.substring(0, 4)
@@ -97,9 +97,9 @@ const buildShuoshuoSummary = async function () {
           summary[year] = 1
         }
       })
-      const docs = await shuoshuoSummaryCollection.insertOne(summary)
+      const docs = await shuoshuoSummaryCollection.findOneAndReplace({name: 'summary'}, {name: 'summary', content: summary}, {returnOriginal: false})
       database.close()
-      return buildDatabaseRes(docs.result)
+      return buildDatabaseRes(docs.value.content)
     } catch (e) {
       return buildDatabaseRes(e, 'error', 'find documents failed.')
     }
@@ -108,127 +108,12 @@ const buildShuoshuoSummary = async function () {
     return buildDatabaseRes(e, 'fault', 'connect database error.')
   }
 }
+
 const buildBlogSummary = async function () {}
-
-const updateShuoshuoSummary = function (dateStr) {
-  try {
-    MongoClient.connect(url, function (err, db) {
-      let col = db.collection('shuoshuo')
-      try {
-        col.findOne({
-          name: 'summary'
-        }, function (err, doc) {
-          if (err) {
-            logger.error('updateShuoshuoSummary find summary document error', err)
-          } else {
-            let summary = {}
-            if (doc === null) {
-              // summary not exists, rebuild summary
-              rebuildSummary()
-            } else {
-              summary = doc.summary
-              summary.all++
-              let year = dateStr.substring(0, 4)
-              if (summary[year]) {
-                summary[year]++
-              } else {
-                summary[year] = 1
-              }
-              col.updateOne({
-                _id: doc._id
-              }, {
-                $set: {
-                  summary
-                }
-              }, function (err, r) {
-                if (err) {
-                  logger.error('updateShuoshuoSummary update summary document error', err)
-                } else {
-                  if (r.upsertedCount === 1) {
-                    logger.info('updateShuoshuoSummary update summary document success')
-                  }
-                }
-                db.close()
-              })
-            }
-
-          }
-        })
-      } catch (e) {
-        logger.error('updateShuoshuoSummary find summary fault', e)
-      }
-    })
-  } catch (e) {
-    logger.error('updateShuoshuoSummary connect db fault', e)
-  }
-}
-
-const rebuildSummary = function (callback) {
-  let summary = {
-    all: 0
-  }
-  try {
-    MongoClient.connect(url, function (err, db) {
-      let col = db.collection('shuoshuo')
-      try {
-        col.find().toArray(function (err, docs) {
-          if (err) {
-            logger.error('updateShuoshuoSummary no summary, findAll documents error: ', err)
-          } else {
-            docs.forEach(v => {
-              if (v.name !== 'summary') {
-                summary.all++
-                let year = v.dateStr.substring(0, 4)
-                if (summary[year]) {
-                  summary[year]++
-                } else {
-                  summary[year] = 1
-                }
-              }
-
-            })
-            col.insertOne({
-              name: 'summary',
-              summary
-            }, function (err, r) {
-              if (err) {
-                logger.error('updateShuoshuoSummary rebuild summary insert into col failed: ', err)
-              } else {
-                if (r.insertedCount === 1) {
-                  logger.info('updateShuoshuoSummary rebuild summary and insert success.')
-                }
-              }
-            })
-            callback && callback(summary)
-          }
-        })
-      } catch (e) {
-        logger.error('rebuild summary fault: ', e)
-      }
-    })
-  } catch (e) {
-    logger.error('rebuild summary connect to db fault: ', e)
-  }
-}
 
 module.exports = {
 
-  saveWeather: function (data, callback) {
-    insertDocuments('weather', data, callback)
-  },
-
-  readWeather: function (location, callback) {
-    findDocuments('weather', {
-      location,
-      date: moment().format('YYYY-MM-DD')
-    }, {
-      limit: 1
-    }, function (d) {
-      callback && callback(d)
-    })
-  },
-
-  getShuoshuoList: function (condition, callback) {
+  getShuoshuoList: async function (condition) {
     let queryObj = {}
     let options = {
       sort: {
@@ -253,65 +138,41 @@ module.exports = {
         case 'dateStr':
           queryObj.dateStr = condition.dateStr
           break
-        case 'content':
-          queryObj = condition.content ? Object.assign(queryObj, {
-            content: {
-              $exists: true
-            }
-          }) : queryObj
-          break
         case 'date':
           queryObj.date = condition.date
           break
       }
     }
-    findDocuments('shuoshuo', queryObj, options, callback)
+    return await findDocuments('shuoshuo', queryObj, options)
   },
 
-  saveOneShuoshuo: function (data, callback) {
-    insertDocuments('shuoshuo', [data], function (d) {
-      updateShuoshuoSummary(data.dateStr)
-      callback && callback(d)
-    })
+  saveOneShuoshuo: async function (data) {
+
+    const res = await insertDocument('shuoshuo', data)
+    return buildShuoshuoSummary()
+      .then(() => res)
+      .catch(e => buildDatabaseRes(e, 'error', 'save one shuoshuo - build summary error.'))
   },
 
-  deleteShuoshuo (data, callback) {
-    console.log(data)
-    removeDocuments('shuoshuo', data, (d) => {
-      rebuildSummary()
-      callback && callback(d)
-    })
+  deleteShuoshuo: async function (data) {
+    const res = await deleteDocument('shuoshuo', data)
+    return buildShuoshuoSummary()
+      .then( () => res)
+      .catch( e => buildDatabaseRes(e, 'error', 'save one shuoshuo - build summary error.') )
   },
 
-  findLog: function (level, date, callback) {
-    findDocuments('blogLog', date, callback)
+  getShuoshuoSummary: async function () {
+    return await findDocuments('shuoshuoSummary')
   },
 
-  saveLog: function (level, date, callback) {
-    insertDocuments('blogLog', date, callback)
-  },
-
-  getShuoshuoSummary: function (callback) {
-    findDocuments('shuoshuo', {
-      name: 'summary'
-    }, {}, function (d) {
-      if (d.results.length === 0) {
-        rebuildSummary(function (summary) {
-          d.results.push({
-            summary
-          })
-          callback && callback(d)
-        })
-      } else {
-        callback && callback(d)
-      }
-    })
-  },
-
-  getUser: function (username, callback) {
-    findDocuments('user', username, {}, function (d) {
-      callback && callback(d)
-    })
+  getUser: async function (userInfo) {
+    /**
+     * @param userInfo {Object}
+     * @param userInfo.username
+     * @param userInfo.createTime
+     * @return {Promise}
+     * */
+    return await findDocuments('user', userInfo)
   },
 
   savePostsSha: function (data) {
@@ -416,5 +277,8 @@ module.exports = {
 //   images: [],
 //   isPublic: true
 // }).then(d => console.log(d)).catch(e => console.error(e))
-// findDocuments('shuoshuo', {}, {sort: {date: -1}, limit: 2}).then(d => console.log(d)).catch(e => console.error(e))
-buildShuoshuoSummary().then(d => console.log(d)).catch(e => console.error(e))
+// findDocuments('shuoshuoSummary').then(d => console.log(d)).catch(e => console.error(e))
+// buildShuoshuoSummary().then(d => console.log(d)).catch(e => console.error(e))
+// console.log(new mongo.Logger().error('aa'))
+// buildShuoshuoSummary().then(d => console.log(d)).catch(e => console.error(e))
+

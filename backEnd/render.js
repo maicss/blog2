@@ -5,7 +5,6 @@ const fs = require('fs');
 const path = require('path');
 
 const marked = require('maic-marked');
-const logger = require('./mongo-logger');
 const mdTem = require('./md-template');
 
 const MD_OUT_DIR = require('../env').MD_OUTPUT_DIR;
@@ -22,16 +21,16 @@ module.exports = function (fileInfo, callback) {
     if (fs.lstatSync(filePath).isFile()) {
         fs.readFile(filePath, function (err, content) {
             if (err) {
-                logger.error('renderMD module, read file error: ', err);
+                console.error('renderMD module, read file error: ', err);
             } else {
                 let renderResult = new marked().exec(content.toString());
                 fs.writeFile(output,
                     mdTem(renderResult.html, fileInfo.escapeName, permalink)
                     , function (err) {
                         if (err) {
-                            logger.error('renderMD module, write file error: ', err)
+                            console.error('renderMD module, write file error: ', err)
                         } else {
-                            logger.info('renderMD module, render [ ' + fileInfo.escapeName + ' ] succeed.');
+                            console.info('renderMD module, render [ ' + fileInfo.escapeName + ' ] succeed.');
                         }
                     }
                 );

@@ -1,11 +1,7 @@
 /**
  * Created by maic on 01/03/2017.
  */
-const getPost = require('../db-op').getPosts;
-const updatePost = require('../db-op').updatePostInfo;
-const getAbstracts = require('../db-op').getAbstracts;
-const getPostByTag = require('../db-op').getPostsByTag;
-const logger = require('../mongo-logger');
+const {getPost, updatePost, getAbstracts, getPostByTag} = require('../databaseOperation');
 
 module.exports = {
     post: function (req, res, next) {
@@ -31,9 +27,6 @@ module.exports = {
                     let data = d.results[0];
                     data.readCount++;
                     updatePost(data, function (d) {
-                        if (d.opResStr === 'success') {
-                            logger.info('router post module, update readCount success.')
-                        }
                     });
                     // cachedRes.add(data);
                     res.sendFile('./frontEnd/archives/' + d.results[0].escapeName + '.html', {root: './'});
@@ -44,13 +37,6 @@ module.exports = {
 
             // }
 
-        } else {
-            next()
-        }
-    },
-    postIndex: function (req, res, next) {
-        if (req.path === '/post') {
-            res.sendFile('./frontEnd/html/postIndex.html', {root: './'});
         } else {
             next()
         }

@@ -6,7 +6,6 @@ const crypto = require('crypto');
 const querystring = require('querystring');
 const request = require('request-promise');
 const moment = require('moment');
-const logger = require('./mongo-logger');
 moment.defaultFormat = 'YYYY-MM-DD HH:mm:ss';
 let URL = 'https://api.thinkpage.cn/v3/';
 

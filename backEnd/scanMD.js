@@ -14,14 +14,8 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
-const moment = require('moment');
 
-const getHash = require('./db-op').getPostsSha;
-const saveHash = require('./db-op').savePostsSha;
-const savePostInfo = require('./db-op').savePostInfo;
-const updatePostInfo = require('./db-op').updatePostInfo;
-const saveTags = require('./db-op').saveTags;
-const logger = require('./mongo-logger');
+const {getPostsSha, savePostsSha, savePostInfo, updatePostInfo, saveTags}= require('./databaseOperation');
 const renderer = require('./render');
 const MD_DIR = require('../env').MD_DIR;
 
@@ -32,7 +26,7 @@ const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/;
 let readFileSha = new Promise(function (resolve, reject) {
     fs.readdir(path.resolve(__dirname, MD_DIR), function (err, files) {
         if (err) {
-            logger.error('scanMD module, read dir error: ', err);
+            console.error('scanMD module, read dir error: ', err);
             reject(err);
         } else {
             let fileInfos = [];
@@ -47,7 +41,7 @@ let readFileSha = new Promise(function (resolve, reject) {
                 let sha = crypto.createHash(ALGORITHM);
                 fs.readFile(abs_file, function (err, content) {
                     if (err) {
-                        logger.error('scanMD module, read file error: ', err);
+                        console.error('scanMD module, read file error: ', err);
                         reject(err);
                     } else {
                         fileInfos.push({
@@ -67,7 +61,7 @@ let readFileSha = new Promise(function (resolve, reject) {
 });
 
 let readDBSha = new Promise(function (resolve, reject) {
-    getHash(function (d) {
+  getPostsSha(function (d) {
         if (d.opResStr === 'success') {
             resolve(d)
         } else {
@@ -123,30 +117,30 @@ module.exports = function (callback) {
                             postInfo.readCount = 0;
                             savePostInfo(postInfo, function (d) {
                                 if (d.opResStr === 'success') {
-                                    logger.info('scan and render and save post success.');
+                                    console.info('scan and render and save post success.');
                                     callback('prefect');
                                 } else {
-                                    logger.error('save post error: ', d.error || d.fault);
+                                    console.error('save post error: ', d.error || d.fault);
                                     callback('save db failed');
                                 }
                             });
                         } else {
                             updatePostInfo(postInfo, function (d) {
                                 if (d.opResStr === 'success') {
-                                    logger.info('scan and render and save post success.');
+                                    console.info('scan and render and save post success.');
                                     callback('prefect');
                                 } else {
-                                    logger.error('save post error: ', d.error || d.fault);
+                                    console.error('save post error: ', d.error || d.fault);
                                     callback('save db failed');
                                 }
                             });
                         }
                     }).then(function () {
                         delete info.isNewFile;
-                        saveHash(info);
+                      savePostsSha(info);
                         return fileList
                     }).catch(function (e) {
-                        logger.error('render Promise error: ', e)
+                        console.error('render Promise error: ', e)
                     }).then(function (list) {
                         if (list.length) return handleOneFile(list)
                     });
