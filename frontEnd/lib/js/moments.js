@@ -60,7 +60,7 @@ let getSummary = function () {
 let getInitList = function () {
     timeMark = 0;
     $.ajax({
-        url: '/getShuoshuoList',
+        url: '/getMomentsList',
         method: 'GET',
         data: {limit: 20, filter, timeMark}
     }).done(function (res) {
@@ -70,10 +70,10 @@ let getInitList = function () {
         } else {
             $('#loadMore').show();
         }
-        $('#shuoshuo-ul').html(template);
+        $('#moments-ul').html(template);
         getSummary();
     }).fail(function (jqxhr) {
-        $('#shuoshuo-ul').html(`<p>${jqxhr.status}: ${jqxhr.responseText}</p>`)
+        $('#moments-ul').html(`<p>${jqxhr.status}: ${jqxhr.responseText}</p>`)
     });
 };
 
@@ -95,7 +95,7 @@ let getWeather = function () {
 
 let loadList = function (mark) {
     $.ajax({
-        url: '/getShuoshuoList',
+        url: '/getMomentsList',
         method: 'GET',
         data: {
             filter,
@@ -113,18 +113,18 @@ let loadList = function (mark) {
             }
             let template = renderContent(res);
             if (mark === 'more') {
-                $('#shuoshuo-ul').append(template);
+                $('#moments-ul').append(template);
             } else {
-                $('#shuoshuo-ul').html(template);
+                $('#moments-ul').html(template);
             }
         }
 
     }).fail(function (xhr) {
-        $('#shuoshuo-ul').append(`<p>${xhr.status}: ${xhr.responseText}</p>`);
+        $('#moments-ul').append(`<p>${xhr.status}: ${xhr.responseText}</p>`);
     })
 };
 
-let postShuoshuo = function () {
+let postMoments = function () {
     if ($('#s_content').val().trim()) {
         if (moment().format('YYYY-MM-DD') !== weatherInfo.date) {
             getWeather();
@@ -140,7 +140,7 @@ let postShuoshuo = function () {
         imgFormData.append('obj', JSON.stringify(s));
 
         $.ajax({
-            url: '/postShuoshuo',
+            url: '/postMoments',
             method: 'POST',
             processData: false,
             contentType: false,
@@ -158,7 +158,7 @@ let postShuoshuo = function () {
             }
         }).fail(function (e) {
             imgFormData = new FormData();
-            $('#shuoshuoOpMsg').html(e.responseText).parent('div').removeClass('hidden');
+            $('#momentsOpMsg').html(e.responseText).parent('div').removeClass('hidden');
         })
     }
 };
@@ -179,7 +179,7 @@ let _login = function (user, callback) {
 };
 
 $('#s_poster').click(function () {
-    postShuoshuo();
+    postMoments();
 });
 
 
@@ -188,7 +188,7 @@ $(function () {
     getWeather();
     document.addEventListener('keyup', function (e) {
         if (e.ctrlKey && e.which === 13) {
-            postShuoshuo();
+            postMoments();
         }
     });
     $('#summary').click(function (e) {
@@ -215,7 +215,7 @@ $(function () {
     if (document.cookie.indexOf('login=bingo') > -1) {
         $('#logout').show();
         $('#login').hide();
-        $('#shuoshuoArea').show();
+        $('#momentsArea').show();
     }
 
 });
@@ -237,8 +237,8 @@ $('#login').click(function () {
                 $(this).removeClass('loading');
                 $('.ui.modal.login').modal('hide');
                 $('#login').hide();
-                $('#shuoshuoArea').show();
-                $('#shuoshuoOpMsg').html('').parent('div').hide();
+                $('#momentsArea').show();
+                $('#momentsOpMsg').html('').parent('div').hide();
                 $('#logout').show();
             } else {
                 $('#submitLogin').removeClass('loading');
@@ -260,7 +260,7 @@ $('#logout').click(function () {
             if (d === 'succeed') {
                 $('#login').show();
                 $('#logout').hide();
-                $('#shuoshuoArea').hide();
+                $('#momentsArea').hide();
             } else {
                 alert('logout filed.')
             }

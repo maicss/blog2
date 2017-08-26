@@ -11,20 +11,17 @@ let multer = require('multer')
 let storage = multer.diskStorage({
   destination (req, file, cb) {
     let path = './frontEnd/img/'
-    cb(null, path + (req.headers.source || 'shuoshuo'))
+    cb(null, path + (req.headers.source || 'moments'))
   },
   filename (req, file, cb) {
-    console.log(file)
     cb(null, new Date() * 1 + '-' + file.originalname)
   }
 })
 
 let upload = multer({storage})
 
-console.log(upload)
-
 const routerList = {
-  shuoshuo: require('./shuoshuo'),
+  moments: require('./moments'),
   getWeather: require('./weather'),
   user: require('./user'),
   blog: require('./blog'),
@@ -41,14 +38,14 @@ router
   })
   .use((req, res, next) => {
     // 验证身份
-    if (req.method !== 'GET') {
+    if (req.method !== 'GET' && req.path !== '/login') {
       if (!req.cookies.uid) {
         res.status(401).json({error: 'please login and retry.'})
       } else {
         getUser({createTime: req.cookies.uid * 1})
           .then(d => {
             d.result.length ? next() : res.status(401).send({error: 'Please login and retry.'})})
-          .catch(e => {e.status === 'error' ? res.status(400).send(d.result) : res.status(500).send(d.result)})
+          .catch(e => {e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result)})
       }
     } else {
       next()
@@ -60,8 +57,8 @@ router
       case '/':
         res.sendFile('/frontEnd/html/index.html', {"root": './'})
         break
-      case '/shuoshuo':
-        res.sendFile('/frontEnd/html/shuoshuo.html', {"root": './'})
+      case '/moments':
+        res.sendFile('/frontEnd/html/moments.html', {"root": './'})
         break
       case '/blog':
         res.sendFile('/frontEnd/html/blog.html', {"root": './'})
@@ -82,10 +79,10 @@ router
 
   // .post('/github', routerList.github)
 
-  .get('/getShuoshuoList', routerList.shuoshuo.getShuoshuoList)
-  .post('/postShuoshuo', upload.any(), routerList.shuoshuo.postShuoshuo)
-  .get('/getSummary', routerList.shuoshuo.getSummary)
-  .delete('/deleteShuoshuo', routerList.shuoshuo.deleteShuoshuo)
+  .get('/getMomentsList', routerList.moments.getMomentsList)
+  .post('/postMoments', upload.any(), routerList.moments.postMoments)
+  .get('/getSummary', routerList.moments.getSummary)
+  .delete('/deleteMoments', routerList.moments.deleteMoments)
 
   .get('/getWeather', routerList.getWeather)
 

@@ -5,11 +5,12 @@ const {buildDatabaseRes} = require('./utils')
 
 const findDocuments = async function (collectionName, queryCondition = {}, options = {}) {
   options.limit = options.limit || 1
+  options.skip = options.skip || 0
   try {
     const database = await MongoClient.connect(url)
     const collection = database.collection(collectionName)
     try {
-      const docs = await collection.find(queryCondition, {'_id': 0}).sort(options.sort).limit(options.limit).toArray()
+      const docs = await collection.find(queryCondition, {'_id': 0}).sort(options.sort).skip(options.skip).limit(options.limit).toArray()
       database.close()
       return buildDatabaseRes(docs)
     } catch (e) {
@@ -28,7 +29,7 @@ const findDocuments = async function (collectionName, queryCondition = {}, optio
  * @param newData {Object}
  * @param options {Object} []
  * */
-const updateDocument = async function (collectionName, queryCondition, newData, options={}) {
+const updateDocument = async function (collectionName, queryCondition, newData, options = {}) {
   options.upsert = options.upsert || true
   try {
     const database = await MongoClient.connect(url)
@@ -46,7 +47,7 @@ const updateDocument = async function (collectionName, queryCondition, newData, 
   }
 }
 
-const deleteDocument = async function (collectionName, queryCondition, options={}) {
+const deleteDocument = async function (collectionName, queryCondition, options = {}) {
   try {
     const database = await MongoClient.connect(url)
     const collection = database.collection(collectionName)
@@ -80,24 +81,24 @@ const insertDocument = async function (collectionName, data) {
   }
 }
 
-const buildShuoshuoSummary = async function () {
-  const summary = {all: 0}
+const buildMomentsSummary = async function () {
+  const summary = { all: 0 }
   try {
     const database = await MongoClient.connect(url)
-    const shuoshuoCollection = database.collection('shuoshuo')
-    const shuoshuoSummaryCollection = database.collection('shuoshuoSummary')
+    const momentsCollection = database.collection('moments')
+    const momentsSummaryCollection = database.collection('momentsSummary')
     try {
-      const allShuoshuo = await shuoshuoCollection.find({}).toArray()
-      summary.all = allShuoshuo.length
-      allShuoshuo.forEach(item => {
+      const allMoments = await momentsCollection.find({}).toArray()
+      summary.all = allMoments.length
+      allMoments.forEach(item => {
         let year = item.dateStr.substring(0, 4)
         if (summary[year]) {
-          summary[year] ++
+          summary[year]++
         } else {
           summary[year] = 1
         }
       })
-      const docs = await shuoshuoSummaryCollection.findOneAndReplace({name: 'summary'}, {name: 'summary', content: summary}, {returnOriginal: false})
+      const docs = await momentsSummaryCollection.findOneAndReplace({ name: 'summary' }, { name: 'summary', content: summary }, { returnOriginal: false })
       database.close()
       return buildDatabaseRes(docs.value.content)
     } catch (e) {
@@ -113,23 +114,17 @@ const buildBlogSummary = async function () {}
 
 module.exports = {
 
-  getShuoshuoList: async function (condition) {
+  getMomentsList: async function (condition) {
     let queryObj = {}
     let options = {
       sort: {
         'date': -1
       },
-      limit: Number(condition.limit || 1)
+      limit: condition.limit,
+      skip: (condition.page - 1) * condition.limit
     }
     for (let a in condition) {
       switch (a) {
-        case 'timeMark':
-          queryObj = Object.assign(queryObj, {
-            date: {
-              $lt: Number(condition.timeMark)
-            }
-          })
-          break
         case 'isPublic':
           queryObj = condition.isPublic ? Object.assign(queryObj, {
             isPublic: true
@@ -143,26 +138,26 @@ module.exports = {
           break
       }
     }
-    return await findDocuments('shuoshuo', queryObj, options)
+    return await findDocuments('moments', queryObj, options)
   },
 
-  saveOneShuoshuo: async function (data) {
+  saveOneMoments: async function (data) {
 
-    const res = await insertDocument('shuoshuo', data)
-    return buildShuoshuoSummary()
+    const res = await insertDocument('moments', data)
+    return buildMomentsSummary()
       .then(() => res)
-      .catch(e => buildDatabaseRes(e, 'error', 'save one shuoshuo - build summary error.'))
+      .catch(e => buildDatabaseRes(e, 'error', 'save one moments - build summary error.'))
   },
 
-  deleteShuoshuo: async function (data) {
-    const res = await deleteDocument('shuoshuo', data)
-    return buildShuoshuoSummary()
-      .then( () => res)
-      .catch( e => buildDatabaseRes(e, 'error', 'save one shuoshuo - build summary error.') )
+  deleteMoments: async function (data) {
+    const res = await deleteDocument('moments', data)
+    return buildMomentsSummary()
+      .then(() => res)
+      .catch(e => buildDatabaseRes(e, 'error', 'save one moments - build summary error.'))
   },
 
-  getShuoshuoSummary: async function () {
-    return await findDocuments('shuoshuoSummary')
+  getMomentsSummary: async function () {
+    return await findDocuments('momentsSummary')
   },
 
   getUser: async function (userInfo) {
@@ -267,9 +262,9 @@ module.exports = {
   }
 }
 
-// updateDocument('shuoshuo', {date: 1503489236608}, {content: 'update test'}).then(d => console.log(d)).catch(e => console.error(e))
-// deleteDocument('shuoshuo', {date: 1503489236608}).then(d => console.log(d)).catch(e => console.error(e))
-// insertDocument('shuoshuo', {
+// updateDocument('moments', {date: 1503489236608}, {content: 'update test'}).then(d => console.log(d)).catch(e => console.error(e))
+// deleteDocument('moments', {date: 1503489236608}).then(d => console.log(d)).catch(e => console.error(e))
+// insertDocument('moments', {
 //   date: 1503489246608,
 //   dateStr: '2017-08-23 19:53:56',
 //   weather: {},
@@ -277,8 +272,6 @@ module.exports = {
 //   images: [],
 //   isPublic: true
 // }).then(d => console.log(d)).catch(e => console.error(e))
-// findDocuments('shuoshuoSummary').then(d => console.log(d)).catch(e => console.error(e))
-// buildShuoshuoSummary().then(d => console.log(d)).catch(e => console.error(e))
+// findDocuments('momentsSummary').then(d => console.log(d)).catch(e => console.error(e))
+// buildMomentsSummary().then(d => console.log(d)).catch(e => console.error(e))
 // console.log(new mongo.Logger().error('aa'))
-// buildShuoshuoSummary().then(d => console.log(d)).catch(e => console.error(e))
-

@@ -1,12 +1,11 @@
 /**
  * Created by maic on 12/02/2017.
  */
-const getUser = require('../databaseOperation').getUser
-const {buildDatabaseRes} = require('../utils')
+const {getUser} = require('../databaseOperation')
 
 const login = function (req, res) {
   let user = req.body
-  getUser(user.username).then(function (d) {
+  getUser({username: user.username}).then(function (d) {
     // 这个好扯啊，没有用户、查询的字段没有都返回一个空数组，而不是报错
     // 所以这里的status判断是没意义的
     if (d.result.length && d.result[0].password === user.password) {
@@ -27,7 +26,7 @@ const login = function (req, res) {
     } else {
       res.status(401).send({error: 'Invalid username or password'})
     }
-  }).catch(e => buildDatabaseRes(e, 'error', 'login error in user module.'))
+  }).catch(e => e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result))
 }
 
 const logout = function (req, res) {

@@ -30,8 +30,8 @@ let httpServer = http.createServer(app)
 
 spdyOption = {
   key: credentials.key,
-  cert: credentials.chain,
-  // cert: credentials.cert,
+  // cert: credentials.chain,
+  cert: credentials.cert,
   spdy: {
     protocols: ['h2', 'spdy/3.1', 'http/1.1'],
     plain: false,
