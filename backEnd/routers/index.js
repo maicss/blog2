@@ -37,19 +37,23 @@ router
     }
   })
   .use((req, res, next) => {
-    // 验证身份
-    if (req.method !== 'GET' && req.path !== '/login') {
-      if (!req.cookies.uid) {
-        res.status(401).json({error: 'please login and retry.'})
-      } else {
-        getUser({createTime: req.cookies.uid * 1})
-          .then(d => {
-            d.result.length ? next() : res.status(401).send({error: 'Please login and retry.'})})
-          .catch(e => {e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result)})
-      }
-    } else {
+    // check identificate middleware
+    let isLogin = false
+    if (!req.cookiss.uid) {
+      isLogin = false
+    } else { 
+      getUser({createTime: req.cookies.uid * 1})
+      .then(d => login = !!d.result.length)
+      .catch(e => login = false)
+     }
+    if (req.method === 'GET' || req.path === '/login') {
+      // pass the login info
+      req.login = isLogin
       next()
-    }
+     } else {
+       // response not login error
+       isLogin ? next() : res.send({error: 'Please login and retry.'})
+     }
   })
   .get('*', function (req, res, next) {
     switch (req.path) {
@@ -70,12 +74,15 @@ router
         next()
     }
   })
+  .post('/fun', (req, res) => {
+    res.send(req.body)
+  })
   // .get('/post/*', routerList.blog.post)
-
+  .get('/blogList/*', router.blog.getBlogList)
   // .get('/getTagPosts', routerList.blog.singleTag)
   // .post('/getPostsAbstract', routerList.blog.abstracts)
   .post('/blogImageUpload', upload.any(), routerList.blog.blogImageUpload)
-  // .get('/getPostAllTags', routerList.blog.allTags)
+  // .get('/getBlogSummary', routerList.blog.allTags)
 
   // .post('/github', routerList.github)
 

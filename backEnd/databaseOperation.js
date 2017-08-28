@@ -144,14 +144,14 @@ module.exports = {
   saveOneMoments: async function (data) {
 
     const res = await insertDocument('moments', data)
-    return buildMomentsSummary()
+    return await buildMomentsSummary()
       .then(() => res)
       .catch(e => buildDatabaseRes(e, 'error', 'save one moments - build summary error.'))
   },
 
   deleteMoments: async function (data) {
     const res = await deleteDocument('moments', data)
-    return buildMomentsSummary()
+    return await buildMomentsSummary()
       .then(() => res)
       .catch(e => buildDatabaseRes(e, 'error', 'save one moments - build summary error.'))
   },
@@ -168,6 +168,33 @@ module.exports = {
      * @return {Promise}
      * */
     return await findDocuments('user', userInfo)
+  },
+
+  getBlogList: async function (condition) {
+    let queryObj = {}
+    let options = {
+      sort: {
+        'date': -1
+      },
+      limit: condition.limit,
+      skip: (condition.page - 1) * condition.limit
+    }
+    for (let a in condition) {
+      switch (a) {
+        case 'isPublic':
+          queryObj = condition.isPublic ? Object.assign(queryObj, {
+            isPublic: true
+          }) : queryObj
+          break
+        case 'dateStr':
+          queryObj.dateStr = condition.dateStr
+          break
+        case 'date':
+          queryObj.date = condition.date
+          break
+      }
+    }
+    return await findDocuments('blog', queryObj, options)
   },
 
   savePostsSha: function (data) {

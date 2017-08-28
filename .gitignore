@@ -89,7 +89,7 @@ test.js
 test.html
 
 ／public/img/blog/*
-／public/img/shuoshuo/*
+／public/img/moments/*
 /frontEnd/public/lib/semantic/src/
 /frontEnd/public/lib/semantic/tasks/
 /frontEnd/public/lib/semantic/gulpfile.js

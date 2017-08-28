@@ -6,7 +6,7 @@ const path = require('path')
 module.exports = {
   getMomentsList (req, res) {
     let condition = {}
-    condition.isPublic = !(req.cookies.login === 'bingo')
+    condition.isPublic = req.login
     if (req.query.filter && req.query.filter !== 'all') {
       condition.dateStr = new RegExp('^' + req.query.filter)
     }
