@@ -1,6 +1,6 @@
 const moment = require('moment')
 const marked = require('maic-marked')
-const {getMomentsList, saveOneMoments, getMomentsSummary, deleteMoments} = require('../databaseOperation')
+const {getMomentsList, saveMoments, getMomentsSummary, deleteMoments, updateMoments} = require('../databaseOperation')
 const fs = require('fs')
 const path = require('path')
 module.exports = {
@@ -40,7 +40,7 @@ module.exports = {
         content.images.push(v.path.substring('frontEnd'.length))
       })
 
-      saveOneMoments(content)
+      saveMoments(content)
         .then(d => res.send(d.result))
         .catch(e => e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result))
     } catch (e) {
@@ -52,6 +52,12 @@ module.exports = {
 
   getSummary (req, res) {
     getMomentsSummary()
+      .then(d => res.json(d.result[0].content))
+      .catch(e => {e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result)})
+  },
+
+  updateMoments (req, res) {
+    updateMoments(req.body)
       .then(d => res.json(d.result[0].content))
       .catch(e => {e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result)})
   },

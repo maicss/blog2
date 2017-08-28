@@ -1,10 +1,10 @@
 const mongo = require('mongodb')
 const url = require('../env').mongoConfig.url
 const MongoClient = mongo.MongoClient
-const {buildDatabaseRes} = require('./utils')
+const {buildDatabaseRes, logger} = require('./utils')
 
 const findDocuments = async function (collectionName, queryCondition = {}, options = {}) {
-  options.limit = options.limit || 1
+  options.limit = options.limit || 0
   options.skip = options.skip || 0
   try {
     const database = await MongoClient.connect(url)
@@ -22,14 +22,14 @@ const findDocuments = async function (collectionName, queryCondition = {}, optio
   }
 }
 
-/**
- * 更新数据库的方法，只支持单个数据的更新
- * @param collectionName {String}
- * @param queryCondition {Object}
- * @param newData {Object}
- * @param options {Object} []
- * */
 const updateDocument = async function (collectionName, queryCondition, newData, options = {}) {
+  /**
+   * 更新数据库的方法，只支持单个数据的更新
+   * @param collectionName {String}
+   * @param queryCondition {Object}
+   * @param newData {Object}
+   * @param options {Object} []
+   * */
   options.upsert = options.upsert || true
   try {
     const database = await MongoClient.connect(url)
@@ -82,7 +82,7 @@ const insertDocument = async function (collectionName, data) {
 }
 
 const buildMomentsSummary = async function () {
-  const summary = { all: 0 }
+  const summary = {all: 0}
   try {
     const database = await MongoClient.connect(url)
     const momentsCollection = database.collection('moments')
@@ -98,7 +98,10 @@ const buildMomentsSummary = async function () {
           summary[year] = 1
         }
       })
-      const docs = await momentsSummaryCollection.findOneAndReplace({ name: 'summary' }, { name: 'summary', content: summary }, { returnOriginal: false })
+      const docs = await momentsSummaryCollection.findOneAndReplace({name: 'summary'}, {
+        name: 'summary',
+        content: summary
+      }, {returnNewDocument: true, upsert: true})
       database.close()
       return buildDatabaseRes(docs.value.content)
     } catch (e) {
@@ -110,56 +113,38 @@ const buildMomentsSummary = async function () {
   }
 }
 
-const buildBlogSummary = async function () {}
+const buildBlogSummary = async () => {
+  const summary = {all: 0}
+  try {
+    const database = await MongoClient.connect(url)
+    const blogCollection = database.collection('blog')
+    const blogSummaryCollection = database.collection('blogSummary')
+    try {
+      const allBlog = await blogCollection.find({}).toArray()
+      summary.all = allBlog.length
+      allBlog.forEach(blog => {
+        blog.tags.forEach(tag => {
+          summary[tag] ? summary[tag] ++ : summary[tag] = 1
+        })
+      })
+      const docs = await blogSummaryCollection.findOneAndReplace({name: 'summary'}, {
+        name: 'summary',
+        content: summary
+      }, {returnNewDocument: true, upsert: true})
+      database.close()
+      return buildDatabaseRes(docs.value.content)
+    } catch (e) {
+      return buildDatabaseRes(e, 'error', 'find documents failed.')
+    }
+
+  } catch (e) {
+    return buildDatabaseRes(e, 'fault', 'connect database error.')
+  }
+}
 
 module.exports = {
 
-  getMomentsList: async function (condition) {
-    let queryObj = {}
-    let options = {
-      sort: {
-        'date': -1
-      },
-      limit: condition.limit,
-      skip: (condition.page - 1) * condition.limit
-    }
-    for (let a in condition) {
-      switch (a) {
-        case 'isPublic':
-          queryObj = condition.isPublic ? Object.assign(queryObj, {
-            isPublic: true
-          }) : queryObj
-          break
-        case 'dateStr':
-          queryObj.dateStr = condition.dateStr
-          break
-        case 'date':
-          queryObj.date = condition.date
-          break
-      }
-    }
-    return await findDocuments('moments', queryObj, options)
-  },
-
-  saveOneMoments: async function (data) {
-
-    const res = await insertDocument('moments', data)
-    return await buildMomentsSummary()
-      .then(() => res)
-      .catch(e => buildDatabaseRes(e, 'error', 'save one moments - build summary error.'))
-  },
-
-  deleteMoments: async function (data) {
-    const res = await deleteDocument('moments', data)
-    return await buildMomentsSummary()
-      .then(() => res)
-      .catch(e => buildDatabaseRes(e, 'error', 'save one moments - build summary error.'))
-  },
-
-  getMomentsSummary: async function () {
-    return await findDocuments('momentsSummary')
-  },
-
+  // user
   getUser: async function (userInfo) {
     /**
      * @param userInfo {Object}
@@ -170,7 +155,8 @@ module.exports = {
     return await findDocuments('user', userInfo)
   },
 
-  getBlogList: async function (condition) {
+  // moments
+  getMomentsList: async function (condition) {
     let queryObj = {}
     let options = {
       sort: {
@@ -179,126 +165,97 @@ module.exports = {
       limit: condition.limit,
       skip: (condition.page - 1) * condition.limit
     }
-    for (let a in condition) {
-      switch (a) {
-        case 'isPublic':
-          queryObj = condition.isPublic ? Object.assign(queryObj, {
-            isPublic: true
-          }) : queryObj
-          break
-        case 'dateStr':
-          queryObj.dateStr = condition.dateStr
-          break
-        case 'date':
-          queryObj.date = condition.date
-          break
-      }
+    if (condition.isPublic) {
+      queryObj.isPublic = true
+    } else if (condition.date) {
+      queryObj.date = condition.date
+    }
+    return await findDocuments('moments', queryObj, options)
+  },
+
+  saveMoments: async function (data) {
+
+    const res = await insertDocument('moments', data)
+    return await buildMomentsSummary()
+      .then(() => res)
+      .catch(e => buildDatabaseRes(e, 'error', 'save moments - build summary error.'))
+  },
+
+  updateMoments: async (moments) => {
+    const res = updateDocument('moments', {date: moments.date}, moments)
+    return buildMomentsSummary()
+      .then(() => res)
+      .catch(e => buildDatabaseRes(e, 'error', 'update moments - build summary error.'))
+  },
+
+  deleteMoments: async function (data) {
+    const res = await deleteDocument('moments', data)
+    return await buildMomentsSummary()
+      .then(() => res)
+      .catch(e => buildDatabaseRes(e, 'error', 'delete moments - build summary error.'))
+  },
+
+  getMomentsSummary: async function () {
+    return await findDocuments('momentsSummary')
+  },
+
+// Blog
+  getBlogList: async function (condition) {
+    let queryObj = {}
+    let options = {
+      sort: {createDate: -1},
+      limit: condition.limit,
+      skip: (condition.page - 1) * condition.limit
+    }
+    if (condition.isPublic) {
+      queryObj.isPublic = true
+    } else if (condition.tag) {
+      queryObj.tag = condition.tag
     }
     return await findDocuments('blog', queryObj, options)
   },
 
-  savePostsSha: function (data) {
-    updateDocument('postssha', {
-      originalFileName: data.originalFileName
-    }, data, function (d) {
-      if (d.opResStr === 'success') {
-        logger.info('update/insert post[%s] sha success.', data.originalFileName)
-      } else {
-        logger.error('update/insert post[%s] sha failed.', data.originalFileName)
-      }
-    }, {
-      upsert: true
-    })
+  saveBlogHash: async function (data) {
+    return await updateDocument('blogHash', {originalFileName: data.originalFileName}, data, {upsert: true})
   },
-  getPostsSha: function (callback) {
-    findDocuments('postssha', {}, {}, callback)
+  getBlogHash: async function () {
+    return await findDocuments('blogHash')
   },
 
-  savePostInfo: function (data, callback) {
-    insertDocuments('posts', [data], callback)
-
+  saveBlog: async function (data) {
+    const res = await insertDocument('blog', data)
+    return buildBlogSummary().then(() => res)
+      .catch(e => buildDatabaseRes(e, 'error', 'save blog - build summary error.'))
   },
 
-  updatePostInfo: function (data, callback) {
-    updateDocument('posts', {
-      originalFileName: data.originalFileName
-    }, data, callback)
-  },
+  updateBlogProp: async function (escapeName, attr) {
+    /**
+     * 内容的Update使用重新渲染来做，因为可能更新了摘要和内容，还要重新生成静态文件
+     * 其余的Update有两个，一个readCount，一个commentCount
+     * 这两个更新不用先查出来赋一个值再插入，直接使用mongodb自带的$inc就可以了
+     * */
 
-  getPosts: function (post, callback) {
-    findDocuments('posts', post, {}, callback)
-  },
-
-  getAbstracts: function (condition, callback) {
-    let query = {}
-    if (condition.tag !== 'all') {
-      query.tags = condition.tag
+    if (attr !== 'readCount' || attr !== 'commentCount') {
+      logger.error('invalid attr value')
+      throw Error('invalid attr value')
     }
-    findDocuments('posts', query, {
-      limit: condition.limit,
-      sort: {
-        createDate: -1
-      }
-    }, callback)
-  },
 
-  saveTags: function (info) {
-    info.tags.forEach(tag => {
-      let data = {
-        name: tag,
-        posts: [info.post]
+    try {
+      const database = await MongoClient.connect(url)
+      const collection = database.collection('blog')
+      try {
+        const docs = await collection.findOneAndUpdate({escapeName}, {$inc: { [attr] : 1}}, {returnNewDocument: true})
+        database.close()
+        return buildDatabaseRes(docs)
+      } catch (e) {
+        return buildDatabaseRes(e, 'error', 'find documents failed.')
       }
-      findDocuments('tags', {
-        name: tag
-      }, {}, function (d) {
-        if (d.opResStr === 'success') {
-          if (d.results.length) {
-            data.posts = d.results[0].posts
-          }
-          if (data.posts.indexOf(info.post) === -1) {
-            data.posts.push(info.post)
-          }
-          updateDocument('tags', {
-            name: tag
-          }, data, function (doc) {
-            if (doc.opResStr === 'success') {
-              logger.info('save tag [%s] success', tag)
-            } else {
-              logger.error('save tag [%s] failed', tag, (doc.error || doc.fault))
-            }
-          }, {
-            upsert: true
-          })
-        } else {
-          logger.error('save tags module, findDocuments failed', (d.error || d.fault))
-        }
-      })
-    })
-  },
 
-  getPostsByTag: function (tag, callback) {
-    let query
-    if (tag === 'all') {
-      query = {}
-    } else {
-      query = {
-        name: tag
-      }
+    } catch (e) {
+      return buildDatabaseRes(e, 'fault', 'connect database error.')
     }
-    findDocuments('tags', query, {}, callback)
   }
-}
 
-// updateDocument('moments', {date: 1503489236608}, {content: 'update test'}).then(d => console.log(d)).catch(e => console.error(e))
-// deleteDocument('moments', {date: 1503489236608}).then(d => console.log(d)).catch(e => console.error(e))
-// insertDocument('moments', {
-//   date: 1503489246608,
-//   dateStr: '2017-08-23 19:53:56',
-//   weather: {},
-//   content: 'insert test2',
-//   images: [],
-//   isPublic: true
-// }).then(d => console.log(d)).catch(e => console.error(e))
-// findDocuments('momentsSummary').then(d => console.log(d)).catch(e => console.error(e))
-// buildMomentsSummary().then(d => console.log(d)).catch(e => console.error(e))
-// console.log(new mongo.Logger().error('aa'))
+}
+// findDocuments('blog', {title: 'code snippet'}).then(d=> console.log(d)).catch(e => console.log(e))
+// aa({}).then(d=> console.log(d)).catch(e => console.log(e))

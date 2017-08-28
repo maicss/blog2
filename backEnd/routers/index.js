@@ -25,7 +25,7 @@ const routerList = {
   getWeather: require('./weather'),
   user: require('./user'),
   blog: require('./blog'),
-  github: require('./github'),
+  // github: require('./github'),
 }
 
 router
@@ -37,22 +37,24 @@ router
     }
   })
   .use((req, res, next) => {
-    // check identificate middleware
+    // check identification middleware
     let isLogin = false
-    if (!req.cookiss.uid) {
+    if (!req.cookies.uid) {
       isLogin = false
     } else { 
       getUser({createTime: req.cookies.uid * 1})
-      .then(d => login = !!d.result.length)
-      .catch(e => login = false)
-     }
-    if (req.method === 'GET' || req.path === '/login') {
-      // pass the login info
-      req.login = isLogin
-      next()
-     } else {
-       // response not login error
-       isLogin ? next() : res.send({error: 'Please login and retry.'})
+      .then(d => {
+        isLogin = !!d.result.length
+        if (req.method === 'GET' || req.path === '/login') {
+          // pass the login info
+          req.login = isLogin
+          next()
+        } else {
+          // response not login error
+          isLogin ? next() : res.status(401).send({message: 'Please login and retry.'})
+        }
+      })
+      .catch(e => console.error('check identification middleware error: ', e))
      }
   })
   .get('*', function (req, res, next) {
@@ -64,9 +66,11 @@ router
       case '/moments':
         res.sendFile('/frontEnd/html/moments.html', {"root": './'})
         break
-      case '/blog':
+      case '/blog/':
         res.sendFile('/frontEnd/html/blog.html', {"root": './'})
         break
+      case '/blog/*':
+        res.send(req.params)
       case '/googlee2a049d23b90511c.html':
         res.sendFile('/frontEnd/html/googlee2a049d23b90511c.html', {"root": './'})
         break
@@ -78,7 +82,7 @@ router
     res.send(req.body)
   })
   // .get('/post/*', routerList.blog.post)
-  .get('/blogList/*', router.blog.getBlogList)
+  .get('/blogList/*', routerList.blog.getBlogList)
   // .get('/getTagPosts', routerList.blog.singleTag)
   // .post('/getPostsAbstract', routerList.blog.abstracts)
   .post('/blogImageUpload', upload.any(), routerList.blog.blogImageUpload)

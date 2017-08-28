@@ -18,3 +18,4 @@
 - 弄了一点数据库
 - 尝试所有新的感觉有意思的Web API和ECMA Script
 - 正在折腾VUE
+- 二次的后端重构使用async/await

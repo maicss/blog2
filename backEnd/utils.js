@@ -26,6 +26,19 @@ const buildDatabaseRes = (e, type, desc) => {
   }
 }
 
+
+const shellLoggerSetting = {
+  format: [
+    "{{timestamp}} <{{title}}> (in {{file}}:{{line}}) {{message}}", //default format
+    {
+      error: "{{timestamp}} <{{title}}> (in {{file}}:{{line}}) {{message}}\nCall Stack:\n{{stack}}" // error format
+    }
+  ],
+  dateformat : "mm-dd HH:MM:ss"
+};
+const logger = require('tracer').colorConsole(shellLoggerSetting);
+
 module.exports = {
-  buildDatabaseRes
+  buildDatabaseRes,
+  logger,
 }

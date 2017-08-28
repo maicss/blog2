@@ -6,15 +6,11 @@ const spdy = require('spdy')
 // this is just add a default format to moment, because this file always load first
 const moment = require('moment')
 const cookieParser = require('cookie-parser')
+const bodyParser = require('body-parser')
 
 moment.defaultFormat = 'YYYY-MM-DD HH:mm:ss'
-
-const credentials = require('./env').credentials
-const ports = require('./env').ports
-
+const {ports, credentials} = require('./env')
 const routers = require('./backEnd/routers/')
-
-let bodyParser = require('body-parser')
 
 let app = express()
 
