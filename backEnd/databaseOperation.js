@@ -216,7 +216,7 @@ module.exports = {
   },
 
   saveBlogHash: async function (data) {
-    return await updateDocument('blogHash', {originalFileName: data.originalFileName}, data, {upsert: true})
+    return await updateDocument('blogHash', {originalFileName: data.originalFileName}, data)
   },
   getBlogHash: async function () {
     return await findDocuments('blogHash')
