@@ -1,5 +1,5 @@
 module.exports = function (marked, fileName, postLink) {
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
         <html>
             <head>
                 <meta charset="utf-8">
@@ -11,20 +11,27 @@ module.exports = function (marked, fileName, postLink) {
                 <link rel="stylesheet" href="../lib/markdown.css">
                 <style>
                     #toc_container {
-                        position: fixed;
-                        top: 10px;
-                        width: 250px;
-                        right: 10px;
+                        max-width: 250px;
+                        float:right;
                         word-break: break-word;
                     }
                 </style>
             </head>
             <body class="ui main text container">
-                <a href="/post">返回文章首页</a>
+                <a href="/blog">返回文章首页</a>
                 <a href="${postLink}#disqus_thread">count</a>
                 ${marked}
                 <p><a href="../MD/${fileName}.md">查看本文Markdown版本</a></p>
+                <blockquote style="display: none" id="passed-days-reminder"></blockquote>
                 <div id="disqus_thread"></div>
+                <script>
+                    const blogCreateDate = new Date(${marked.date})
+                    const passedDays = ~~((new Date() - blogCreateDate) / 864000)
+                    if (passedDays > 60) {
+                      document.querySelector('#passed-days-reminder').style.display = 'block'
+                      document.querySelector('#passed-days-reminder').innerHTML = "本文写于" + passedDays + "天前，请注意文章的有效性。"
+                    }
+                </script>
                 <script>
                 
                 /**
@@ -56,5 +63,5 @@ module.exports = function (marked, fileName, postLink) {
 
                 </script>
             </body>
-        </html>`;
-};
+        </html>`
+}

@@ -1,7 +1,7 @@
 /**
  * Created by maic on 01/03/2017.
  */
-const {getBlogList, updateBlogProp} = require('../databaseOperation')
+const {getBlogList, updateBlogProp, getBlogSummary} = require('../databaseOperation')
 
 module.exports = {
 
@@ -11,21 +11,22 @@ module.exports = {
      *
      * */
     let condition = {}
-    condition.isPublic = req.login
+    condition.isPublic = !req.login
     if (req.query.filter && req.query.filter !== 'all') {
       condition.tag = new req.query.filter
     }
     condition.page = Number(req.query.page) || 1
     condition.limit = Number(req.query.limit) || 10
+    console.log(condition)
     getBlogList(condition)
       .then(d => res.send(d))
-      .catch(e => {e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result)})
+      .catch(e => e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result || e.toString()))
   },
 
   getBlog (req, res, next) {
     /**
      * 获取静态的的Blog HTML
-     *
+     * 这个可以在外面直接使用变量的方式返回回去，但是为了统计阅读数量，就放到这个里面了
      * */
     let pathReg = /^[\u4e00-\u9fa5\w-]+[^ /]$/
     if (pathReg.test(req.params['0'])) {
@@ -34,16 +35,22 @@ module.exports = {
       }
       updateBlogProp(query, 'readCount')
         .then(d => {
-            if (d.result.value.escapeName === query.escapeName) {
-              res.sendFile('./frontEnd/archives/' + d.results[0].escapeName + '.html', {root: './'})
-            }
+          if (d.result.value && d.result.value.escapeName === query.escapeName) {
+            res.sendFile('./frontEnd/archives/' + d.result.value.escapeName + '.html', {root: './'})
+          } else {
+            next()
           }
-        )
-        .catch(e => {e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result)})
+        })
+        .catch(e => e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result || e.toString()))
     } else {
       next()
     }
-    // 这个可以在外面直接使用变量的方式返回回去，但是为了统计阅读数量，就放到这个里面了
+  },
+
+  getBlogSummary(req, res) {
+    getBlogSummary()
+      .then(d => res.send(d))
+      .catch(e => e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result || e.toString()))
   },
 
   blogImageUpload: function (req, res) {

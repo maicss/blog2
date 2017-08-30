@@ -88,11 +88,9 @@ env.js
 test.js
 test.html
 envProduct.js
-/frontEnd/public/archives/*
 yarn.lock
 todos
 settings.json
 launch.json
 .vscode/
 aa.js
-frontEnd/archives/*

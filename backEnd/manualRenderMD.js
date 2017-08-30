@@ -1,6 +1,2 @@
-let ren = require('./scanMD');
-ren(function (g) {
-
-    console.log(g)
-    process.exit()
-});
+let ren = require('./markdownRender');
+ren(1)

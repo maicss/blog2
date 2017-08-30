@@ -19,7 +19,7 @@ const {MD_OUTPUT_DIR, MD_DIR, SITE_NAME} = require('../env')
 const ALGORITHM = 'sha256'
 const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/
 
-const singleRender =  async (fileInfo) => {
+const singleRender = async (fileInfo) => {
 
   let fileName = fileInfo.originalFileName + '.md'
   let output = path.resolve(__dirname, MD_OUTPUT_DIR, fileInfo.escapeName + '.html')
@@ -41,7 +41,7 @@ const singleRender =  async (fileInfo) => {
   }
 }
 
-const getAllMarkdownHash = async function() {
+const getAllMarkdownHash = async () => {
   try {
     let files = await readdir(path.resolve(__dirname, MD_DIR))
     return Promise.all(files.map(file => {
@@ -55,7 +55,7 @@ const getAllMarkdownHash = async function() {
       return readFile(fileAbsPath).then(content => ({
         originalFileName: filename,
         escapeName: filename.replace(/[ _]/g, '-'),
-        sha: sha.update(content).digest('hex'),
+        hash: sha.update(content).digest('hex'),
         isNewFile: true,
       })).catch(e => logger.error('read MD file error', e))
     }))
@@ -64,67 +64,105 @@ const getAllMarkdownHash = async function() {
   }
 }
 
-const renderAll = async () => {
+const renderAll = async (forceRerender) => {
+  /**
+   * forceRerender: 是否忽略数据库信息强制渲染所有文件
+   * */
   try {
-
     const filesInfo = await getAllMarkdownHash()
-    const {result: DBFilesInfo} = await getBlogHash()
-    filesInfo.forEach((fileInfo, i) => {
-      DBFilesInfo.forEach((dbInfo, j) => {
-        if (fileInfo.escapeName === dbInfo.escapeName) {
-          if (fileInfo.hash === dbInfo.hash) {
+    const filesInfoCopy = [...filesInfo]
+    let DBFilesInfoCopy = []
+    if (!forceRerender) {
+      const {result: DBFilesInfo} = await getBlogHash()
+      DBFilesInfoCopy = [...DBFilesInfo]
+
+      // 比对本地文件和数据库的hash
+      filesInfo.forEach((fileInfo) => {
+        DBFilesInfo.forEach((dbInfo) => {
+          if (fileInfo.escapeName === dbInfo.escapeName) {
+            DBFilesInfoCopy.splice(DBFilesInfoCopy.indexOf(dbInfo), 1)
             fileInfo.isNewFile = false
-            DBFilesInfo.splice(j, 1)
-            filesInfo.splice(i, 1)
-          }
-        }
-      })
-    })
-
-    if (filesInfo.length) {
-      Promise.all(filesInfo.map(info => singleRender(info)))
-        .then(renderResults => {
-          renderResults.forEach((r, i) => {
-            let blogInfo = {
-              title: r.title,
-              originalFileName: filesInfo[i].originalFileName,
-              escapeName: filesInfo[i].escapeName,
-              createDateStr: r.date,
-              createDate: new Date(r.date) * 1,
-              tags: r.tags,
-              abstract: r.abstract,
+            if (fileInfo.hash === dbInfo.hash) {
+              filesInfoCopy.splice(filesInfoCopy.indexOf(fileInfo), 1)
             }
+          }
+        })
+      })
+    }
 
-            if (filesInfo[i].isNewFile) {
+    const needRenderFileCount = filesInfoCopy.length
+    if (needRenderFileCount) {
+      for (let i = 0; i < needRenderFileCount; i++) {
+        (async () => {
+          try {
+            const renderResult = await singleRender(filesInfoCopy[i])
+            let blogInfo = {
+              title: renderResult.title,
+              originalFileName: filesInfoCopy[i].originalFileName,
+              escapeName: filesInfoCopy[i].escapeName,
+              createDateStr: renderResult.date,
+              createDate: new Date(renderResult.date) * 1,
+              tags: renderResult.tags,
+              abstract: renderResult.abstract,
+            }
+            if (filesInfoCopy[i].isNewFile) {
               blogInfo.readCount = 0
               blogInfo.commentCount = 0
             }
-            delete filesInfo[i].isNewFile
-            saveBlog(blogInfo)
-              .then( (d) => {
-                logger.info(`save ${blogInfo.originalFileName} info success`)
-                saveBlogHash(filesInfo[i])
-                  .then(_d => logger.info(`save ${filesInfo[i].originalFileName} hash success: `))
-                  .catch(e => logger.error(`save ${filesInfo[i].originalFileName} hash error: `, e))
-            })
-              .catch(e => logger.error(`save ${blogInfo.originalFileName} info error: `, e))
-          })
-
-          logger.info('render all file success')
-        })
-        .catch(e => logger.error('render file failed, ', e))
+            delete filesInfoCopy[i].isNewFile
+            await saveBlog(blogInfo)
+            await saveBlogHash(filesInfoCopy[i])
+          } catch (e) {
+            logger.error('during render markdown and save info to db error: ', e)
+          }
+        })()
+      }
+      // Promise.all(filesInfoCopy.map(info => singleRender(info)))
+      //   .then(renderResults => {
+      //     renderResults.forEach((r, i) => {
+      //       let blogInfo = {
+      //         title: r.title,
+      //         originalFileName: filesInfoCopy[i].originalFileName,
+      //         escapeName: filesInfoCopy[i].escapeName,
+      //         createDateStr: r.date,
+      //         createDate: new Date(r.date) * 1,
+      //         tags: r.tags,
+      //         abstract: r.abstract,
+      //       }
+      //
+      //       if (filesInfoCopy[i].isNewFile) {
+      //         blogInfo.readCount = 0
+      //         blogInfo.commentCount = 0
+      //       }
+      //       delete filesInfoCopy[i].isNewFile
+      //       // 保存blog信息
+      //       saveBlog(blogInfo)
+      //         .then((d) => {
+      //           logger.info(`save ${blogInfo.originalFileName} info success`)
+      //           // 保存hash信息
+      //           saveBlogHash(filesInfoCopy[i])
+      //             .then(_d => logger.info(`save ${filesInfoCopy[i].originalFileName} hash success: `))
+      //             .catch(e => logger.error(`save ${filesInfoCopy[i].originalFileName} hash error: `, e))
+      //         })
+      //         .catch(e => logger.error(`save ${blogInfo.originalFileName} info error: `, e))
+      //     })
+      //
+      //     logger.info('render all file success')
+      //   })
+      //   .catch(e => logger.error('render file failed, ', e))
     } else {
       logger.info('no new file')
+      return 'no new file'
     }
 
-
-
-    if (DBFilesInfo.length) {
-      logger.warn('hash in database is redundancy', DBFilesInfo)
+    if (DBFilesInfoCopy.length) {
+      // 正常情况下，本地文件的信息应该是大于等于数据库的信息
+      logger.warn('hash in database is redundancy', DBFilesInfoCopy)
     }
+    return `${filesInfoCopy.map(i => i.originalFileName)} success`
   } catch (e) {
     logger.error(e)
   }
 }
 
-renderAll()
+module.exports = renderAll

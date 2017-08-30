@@ -25,7 +25,7 @@ const routerList = {
   getWeather: require('./weather'),
   user: require('./user'),
   blog: require('./blog'),
-  // github: require('./github'),
+  github: require('./githubHook'),
 }
 
 router
@@ -66,11 +66,9 @@ router
       case '/moments':
         res.sendFile('/frontEnd/html/moments.html', {"root": './'})
         break
-      case '/blog/':
+      case '/blog':
         res.sendFile('/frontEnd/html/blog.html', {"root": './'})
         break
-      case '/blog/*':
-        res.send(req.params)
       case '/googlee2a049d23b90511c.html':
         res.sendFile('/frontEnd/html/googlee2a049d23b90511c.html', {"root": './'})
         break
@@ -81,14 +79,14 @@ router
   .post('/fun', (req, res) => {
     res.send(req.body)
   })
-  // .get('/post/*', routerList.blog.post)
-  .get('/blogList/*', routerList.blog.getBlogList)
+  .get('/blog/*', routerList.blog.getBlog)
+  .get('/blogList', routerList.blog.getBlogList)
   // .get('/getTagPosts', routerList.blog.singleTag)
   // .post('/getPostsAbstract', routerList.blog.abstracts)
   .post('/blogImageUpload', upload.any(), routerList.blog.blogImageUpload)
-  // .get('/getBlogSummary', routerList.blog.allTags)
+  .get('/blogSummary', routerList.blog.getBlogSummary)
 
-  // .post('/github', routerList.github)
+  .post('/github', routerList.github)
 
   .get('/getMomentsList', routerList.moments.getMomentsList)
   .post('/postMoments', upload.any(), routerList.moments.postMoments)

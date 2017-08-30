@@ -101,7 +101,7 @@ const buildMomentsSummary = async function () {
       const docs = await momentsSummaryCollection.findOneAndReplace({name: 'summary'}, {
         name: 'summary',
         content: summary
-      }, {returnNewDocument: true, upsert: true})
+      }, {returnOriginal: false, upsert: true})
       database.close()
       return buildDatabaseRes(docs.value.content)
     } catch (e) {
@@ -130,7 +130,7 @@ const buildBlogSummary = async () => {
       const docs = await blogSummaryCollection.findOneAndReplace({name: 'summary'}, {
         name: 'summary',
         content: summary
-      }, {returnNewDocument: true, upsert: true})
+      }, {returnOriginal: false, upsert: true})
       database.close()
       return buildDatabaseRes(docs.value.content)
     } catch (e) {
@@ -215,15 +215,20 @@ module.exports = {
     return await findDocuments('blog', queryObj, options)
   },
 
+  getBlogSummary: async () => {
+    return await findDocuments('blogSummary')
+  },
+
   saveBlogHash: async function (data) {
     return await updateDocument('blogHash', {originalFileName: data.originalFileName}, data)
   },
+
   getBlogHash: async function () {
     return await findDocuments('blogHash')
   },
 
   saveBlog: async function (data) {
-    const res = await insertDocument('blog', data)
+    const res = await updateDocument('blog',{escapeName: data.escapeName}, data)
     return buildBlogSummary().then(() => res)
       .catch(e => buildDatabaseRes(e, 'error', 'save blog - build summary error.'))
   },
@@ -235,7 +240,7 @@ module.exports = {
      * 这两个更新不用先查出来赋一个值再插入，直接使用mongodb自带的$inc就可以了
      * */
 
-    if (attr !== 'readCount' || attr !== 'commentCount') {
+    if (attr !== 'readCount' && attr !== 'commentCount') {
       logger.error('invalid attr value')
       throw Error('invalid attr value')
     }
@@ -244,7 +249,7 @@ module.exports = {
       const database = await MongoClient.connect(url)
       const collection = database.collection('blog')
       try {
-        const docs = await collection.findOneAndUpdate({escapeName}, {$inc: { [attr] : 1}}, {returnNewDocument: true})
+        const docs = await collection.findOneAndUpdate(escapeName, {$inc: { [attr] : 1}}, {returnOriginal: false})
         database.close()
         return buildDatabaseRes(docs)
       } catch (e) {
