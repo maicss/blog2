@@ -5,9 +5,12 @@
 const express = require('express')
 const router = express.Router()
 const path = require('path')
+let multer = require('multer')
+
+const {ports} = require('../../env')
+const {logger} = require('../utils')
 const {getUser} = require('../databaseOperation')
 
-let multer = require('multer')
 let storage = multer.diskStorage({
   destination (req, file, cb) {
     let path = './frontEnd/img/'
@@ -31,7 +34,7 @@ const routerList = {
 router
   .use(function (req, res, next) {
     if (!req.secure) {
-      res.redirect('https://maicss.com' + req.path)
+      res.redirect('https://' + req.hostname + ':' + ports.secure + req.path)
     } else {
       next()
     }
@@ -41,9 +44,11 @@ router
     let isLogin = false
     if (!req.cookies.uid) {
       isLogin = false
+      next()
     } else { 
       getUser({createTime: req.cookies.uid * 1})
       .then(d => {
+        logger.log(d)
         isLogin = !!d.result.length
         if (req.method === 'GET' || req.path === '/login') {
           // pass the login info
@@ -79,7 +84,8 @@ router
   .post('/fun', (req, res) => {
     res.send(req.body)
   })
-  .get('/blog/*', routerList.blog.getBlog)
+  .get('/blog/*', (req, res) => res.sendFile('/frontEnd/archives/' + req.params[0] + '.html', {"root": './'}))
+  .get('/getBlog/*', routerList.blog.getBlog)
   .get('/blogList', routerList.blog.getBlogList)
   // .get('/getTagPosts', routerList.blog.singleTag)
   // .post('/getPostsAbstract', routerList.blog.abstracts)

@@ -10,7 +10,7 @@ const bodyParser = require('body-parser')
 
 moment.defaultFormat = 'YYYY-MM-DD HH:mm:ss'
 const {ports, credentials} = require('./env')
-const routers = require('./backEnd/routers/')
+const routers = require('./backEnd/routers/index')
 
 let app = express()
 
@@ -42,6 +42,7 @@ spdyOption = {
 }
 
 app.use(routers)
+// app.get('/', (req, res) => res.sendFile('/frontEnd/html/index.html', {"root": './'}))
 
 spdy
   .createServer(spdyOption, app)

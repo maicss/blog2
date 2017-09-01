@@ -1,8 +1,18 @@
 # code snippet
 
-> 都是些当时倍有feel，后来感觉是白痴水平都东西
+date: 2017-08-01 13:33
+
+tags: snippet
+
+<abstract>
+都是些当时倍有feel，后来感觉是白痴水平都东西
+<abstract>
 
 <!--more-->
+
+[toc]
+
+## 格式化日期
 
 ```javascript
 let calc1 = function (t) {

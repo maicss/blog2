@@ -207,9 +207,10 @@ module.exports = {
       limit: condition.limit,
       skip: (condition.page - 1) * condition.limit
     }
-    if (condition.isPublic) {
-      queryObj.isPublic = true
-    } else if (condition.tag) {
+    // if (condition.isPublic) {
+      // queryObj.isPublic = true
+    // } else
+    if (condition.tag) {
       queryObj.tag = condition.tag
     }
     return await findDocuments('blog', queryObj, options)
@@ -249,7 +250,7 @@ module.exports = {
       const database = await MongoClient.connect(url)
       const collection = database.collection('blog')
       try {
-        const docs = await collection.findOneAndUpdate(escapeName, {$inc: { [attr] : 1}}, {returnOriginal: false})
+        const docs = await collection.findOneAndUpdate(escapeName, {$inc: { [attr] : 1}}, {returnOriginal: false, _id: 0})
         database.close()
         return buildDatabaseRes(docs)
       } catch (e) {
@@ -262,5 +263,35 @@ module.exports = {
   }
 
 }
-// findDocuments('blog', {title: 'code snippet'}).then(d=> console.log(d)).catch(e => console.log(e))
+
+
+aa  = async function (escapeName, attr) {
+  /**
+   * 内容的Update使用重新渲染来做，因为可能更新了摘要和内容，还要重新生成静态文件
+   * 其余的Update有两个，一个readCount，一个commentCount
+   * 这两个更新不用先查出来赋一个值再插入，直接使用mongodb自带的$inc就可以了
+   * */
+
+  if (attr !== 'readCount' && attr !== 'commentCount') {
+    logger.error('invalid attr value')
+    throw Error('invalid attr value')
+  }
+
+  try {
+    const database = await MongoClient.connect(url)
+    const collection = database.collection('blog')
+    try {
+      const docs = await collection.findOneAndUpdate(escapeName, {$inc: { [attr] : 1}}, {returnOriginal: false, _id: 0})
+      database.close()
+      return buildDatabaseRes(docs)
+    } catch (e) {
+      return buildDatabaseRes(e, 'error', 'find documents failed.')
+    }
+
+  } catch (e) {
+    return buildDatabaseRes(e, 'fault', 'connect database error.')
+  }
+}
+// aa({escapeName: 'code-snippet'}, 'readCount').then(d=> console.log(d)).catch(e => console.log(e))
+// findDocuments('blog', {isPublic: true}, { skip: 0, limit: 10}).then(d=> console.log(d)).catch(e => console.log(e))
 // aa({}).then(d=> console.log(d)).catch(e => console.log(e))

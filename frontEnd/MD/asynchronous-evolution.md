@@ -4,6 +4,9 @@ tags: javascript 异步
 
 date: 2017-03-16 13:34
 
+<abstract>
+闲谈Javascript的异步进化史。
+<abstract>
 什么是异步，为啥异步就不说了。
 
 这里用nodejs的fs模块做演示。

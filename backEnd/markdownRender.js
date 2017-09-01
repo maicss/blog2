@@ -30,6 +30,17 @@ const singleRender = async (fileInfo) => {
     try {
       const MDContent = await readFile(filePath)
       let renderResult = new marked().exec(MDContent.toString())
+      if (!renderResult.date) {
+        throw Error(fileName + ' has no date')
+      } else if (!renderResult.toc.length) {
+        throw Error(fileName + ' has no toc')
+      } else if (!renderResult.abstract) {
+        throw Error(fileName + ' has no abstract')
+      } else if (!renderResult.tags.length) {
+        throw Error(fileName + ' has no tags')
+      } else if (!renderResult.title) {
+        throw Error(fileName + ' has no title')
+      }
       await writeFile(output, mdTem(renderResult.html, fileInfo.escapeName, permalink))
       logger.info('write file: [' + fileInfo.escapeName + '.html] success.')
       return renderResult
@@ -96,15 +107,10 @@ const renderAll = async (forceRerender) => {
         (async () => {
           try {
             const renderResult = await singleRender(filesInfoCopy[i])
-            let blogInfo = {
-              title: renderResult.title,
+            let blogInfo = Object.assign({
               originalFileName: filesInfoCopy[i].originalFileName,
-              escapeName: filesInfoCopy[i].escapeName,
-              createDateStr: renderResult.date,
-              createDate: new Date(renderResult.date) * 1,
-              tags: renderResult.tags,
-              abstract: renderResult.abstract,
-            }
+              escapeName: filesInfoCopy[i].escapeName
+            }, renderResult)
             if (filesInfoCopy[i].isNewFile) {
               blogInfo.readCount = 0
               blogInfo.commentCount = 0

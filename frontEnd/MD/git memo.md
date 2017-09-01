@@ -4,7 +4,9 @@ tags: git
 
 date: 2017-03-08 17:41
 
+<abstract>
 关于git的一些笔记，有些老是记不住，给自己这笨脑子跪了。
+<abstract>
 
 
 ## untrack file
