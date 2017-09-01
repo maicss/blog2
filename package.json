@@ -18,7 +18,7 @@
     "cookie-parser": "^1.4.3",
     "express": "^4.14.1",
     "highlight.js": "^9.9.0",
-    "maic-marked": "^0.3.19",
+    "maic-marked": "*",
     "moment": "^2.17.1",
     "mongodb": "^2.2.24",
     "multer": "^1.3.0",
