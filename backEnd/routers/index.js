@@ -48,7 +48,6 @@ router
     } else { 
       getUser({createTime: req.cookies.uid * 1})
       .then(d => {
-        logger.log(d)
         isLogin = !!d.result.length
         if (req.method === 'GET' || req.path === '/login') {
           // pass the login info
@@ -87,8 +86,7 @@ router
   .get('/blog/*', (req, res) => res.sendFile('/frontEnd/archives/' + req.params[0] + '.html', {"root": './'}))
   .get('/getBlog/*', routerList.blog.getBlog)
   .get('/blogList', routerList.blog.getBlogList)
-  // .get('/getTagPosts', routerList.blog.singleTag)
-  // .post('/getPostsAbstract', routerList.blog.abstracts)
+  .get('/getBlogImageInfo', routerList.blog.blogImageInfo)
   .post('/blogImageUpload', upload.any(), routerList.blog.blogImageUpload)
   .get('/blogSummary', routerList.blog.getBlogSummary)
 
