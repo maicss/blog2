@@ -211,8 +211,9 @@ module.exports = {
       // queryObj.isPublic = true
     // } else
     if (condition.tag) {
-      queryObj.tag = condition.tag
+      queryObj.tags = condition.tag
     }
+    console.log(queryObj, options)
     return await findDocuments('blog', queryObj, options)
   },
 

@@ -41,7 +41,7 @@ module.exports = {
     let condition = {}
     // condition.isPublic = !req.login
     if (req.query.filter && req.query.filter !== 'all') {
-      condition.tag = new req.query.filter
+      condition.tag = req.query.filter
     }
     condition.page = Number(req.query.page) || 1
     condition.limit = Number(req.query.limit) || 10
