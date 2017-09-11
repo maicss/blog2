@@ -33,6 +33,7 @@ const routerList = {
 
 router
   .use(function (req, res, next) {
+    // console.log(req.method, req.path)
     if (!req.secure) {
       res.redirect('https://' + req.hostname + ':' + ports.secure + req.path)
     } else {
@@ -96,6 +97,7 @@ router
   .post('/postMoments', upload.any(), routerList.moments.postMoments)
   .get('/getSummary', routerList.moments.getSummary)
   .delete('/deleteMoments', routerList.moments.deleteMoments)
+  .put('/updateMoments', routerList.moments.updateMoments)
 
   .get('/getWeather', routerList.getWeather)
 

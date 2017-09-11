@@ -31,6 +31,7 @@ const updateDocument = async function (collectionName, queryCondition, newData, 
    * @param options {Object} []
    * */
   options.upsert = options.upsert || true
+  options.returnOriginal = false
   try {
     const database = await MongoClient.connect(url)
     const collection = database.collection(collectionName)
@@ -182,10 +183,17 @@ module.exports = {
   },
 
   updateMoments: async (moments) => {
-    const res = updateDocument('moments', {date: moments.date}, moments)
-    return buildMomentsSummary()
-      .then(() => res)
-      .catch(e => buildDatabaseRes(e, 'error', 'update moments - build summary error.'))
+    try {
+      console.log(moments)
+      const res = await updateDocument('moments', {date: moments.date}, {content: moments.content})
+      await buildMomentsSummary()
+      console.log(res)
+      return res
+      // .then(() => res)
+      // .catch(e => buildDatabaseRes(e, 'error', 'update moments - build summary error.'))
+    } catch (e) {
+      console.error('updateMoments in db error: ', e)
+    }
   },
 
   deleteMoments: async function (data) {
@@ -266,33 +274,33 @@ module.exports = {
 }
 
 
-aa  = async function (escapeName, attr) {
-  /**
-   * 内容的Update使用重新渲染来做，因为可能更新了摘要和内容，还要重新生成静态文件
-   * 其余的Update有两个，一个readCount，一个commentCount
-   * 这两个更新不用先查出来赋一个值再插入，直接使用mongodb自带的$inc就可以了
-   * */
+// aa  = async function (escapeName, attr) {
+//   /**
+//    * 内容的Update使用重新渲染来做，因为可能更新了摘要和内容，还要重新生成静态文件
+//    * 其余的Update有两个，一个readCount，一个commentCount
+//    * 这两个更新不用先查出来赋一个值再插入，直接使用mongodb自带的$inc就可以了
+//    * */
 
-  if (attr !== 'readCount' && attr !== 'commentCount') {
-    logger.error('invalid attr value')
-    throw Error('invalid attr value')
-  }
+//   if (attr !== 'readCount' && attr !== 'commentCount') {
+//     logger.error('invalid attr value')
+//     throw Error('invalid attr value')
+//   }
 
-  try {
-    const database = await MongoClient.connect(url)
-    const collection = database.collection('blog')
-    try {
-      const docs = await collection.findOneAndUpdate(escapeName, {$inc: { [attr] : 1}}, {returnOriginal: false, _id: 0})
-      database.close()
-      return buildDatabaseRes(docs)
-    } catch (e) {
-      return buildDatabaseRes(e, 'error', 'find documents failed.')
-    }
+//   try {
+//     const database = await MongoClient.connect(url)
+//     const collection = database.collection('blog')
+//     try {
+//       const docs = await collection.findOneAndUpdate(escapeName, {$inc: { [attr] : 1}}, {returnOriginal: false, _id: 0})
+//       database.close()
+//       return buildDatabaseRes(docs)
+//     } catch (e) {
+//       return buildDatabaseRes(e, 'error', 'find documents failed.')
+//     }
 
-  } catch (e) {
-    return buildDatabaseRes(e, 'fault', 'connect database error.')
-  }
-}
+//   } catch (e) {
+//     return buildDatabaseRes(e, 'fault', 'connect database error.')
+//   }
+// }
 // aa({escapeName: 'code-snippet'}, 'readCount').then(d=> console.log(d)).catch(e => console.log(e))
 // findDocuments('blog', {isPublic: true}, { skip: 0, limit: 10}).then(d=> console.log(d)).catch(e => console.log(e))
 // aa({}).then(d=> console.log(d)).catch(e => console.log(e))
