@@ -68,12 +68,6 @@ router
       case '/':
         res.sendFile('/frontEnd/static/index.html', {"root": './'})
         break
-      case '/moments':
-        res.sendFile('/frontEnd/static/moments.html', {"root": './'})
-        break
-      case '/blog':
-        res.sendFile('/frontEnd/static/blog.html', {"root": './'})
-        break
       case '/googlee2a049d23b90511c.html':
         res.sendFile('/frontEnd/static/googlee2a049d23b90511c.html', {"root": './'})
         break
