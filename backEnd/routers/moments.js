@@ -57,9 +57,7 @@ module.exports = {
   },
 
   updateMoments (req, res) {
-    console.log(req.body)
     let content = new marked().exec(req.body.content).html
-    console.log(content)
     updateMoments({date: req.body.date, content})
       .then(d => res.json(d.result.value))
       .catch(e => e.status === 'error' ? res.status(400).send(e) : res.status(500).send(e))

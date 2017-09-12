@@ -184,15 +184,13 @@ module.exports = {
 
   updateMoments: async (moments) => {
     try {
-      console.log(moments)
       const res = await updateDocument('moments', {date: moments.date}, {content: moments.content})
       await buildMomentsSummary()
-      console.log(res)
       return res
       // .then(() => res)
       // .catch(e => buildDatabaseRes(e, 'error', 'update moments - build summary error.'))
     } catch (e) {
-      console.error('updateMoments in db error: ', e)
+      return { status: 'error', result: e}
     }
   },
 
