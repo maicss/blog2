@@ -219,7 +219,7 @@ module.exports = {
     if (condition.tag) {
       queryObj.tags = condition.tag
     }
-    console.log(queryObj, options)
+    // console.log(queryObj, options)
     return await findDocuments('blog', queryObj, options)
   },
 
