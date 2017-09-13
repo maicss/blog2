@@ -42,7 +42,6 @@ spdyOption = {
 }
 
 app.use(routers)
-// app.get('/', (req, res) => res.sendFile('/frontEnd/html/index.html', {"root": './'}))
 
 spdy
   .createServer(spdyOption, app)

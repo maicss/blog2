@@ -1,23 +1,45 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title></title>
-  </head>
-  <body>
-    <script>
-      var hash_string = window.location.hash.substring(1),
-          parts = hash_string.split(','),
-          part,
-          result = {},
-          parent_document = window.opener ? window.opener : parent;
-      while (part = parts.shift()) {
-        part = part.split(':');
-        result[part[0]] = part[1] == undefined ? true : part[1];
+</head>
+<body>
+<script>
+  const request = (cb) => {
+    const XHR = new XMLHttpRequest()
+    XHR.open('post', 'https://127.0.0.1:9981/fun')
+    XHR.setRequestHeader('Content-Type', 'application/json')
+    XHR.send(JSON.stringify(result))
+    XHR.onload = function () {
+      if (this.status === 200 && this.readyState === 4) {
+        cb(null, this.response)
+      } else {
+        cb(this.response)
       }
-      parent_document[result.callback](result);
+    }
+  }
+  let hash_string = window.location.hash.substring(1),
+    parts = hash_string.split(','),
+    part,
+    result = {}
+  while (part = parts.shift()) {
+    part = part.split(':')
+    result[part[0]] = part[1] === undefined ? true : part[1]
+  }
+
+  request(function (err, res) {
+    if (err) {
+      // 请求本地服务区失败，就没办法上报错误信息了
+//      request()
+      console.error(err)
+    } else {
+      console.log(res)
       if (window.opener) {
-        window.close();
+//        window.close()
       }
-    </script>
-  </body>
+    }
+  })
+
+</script>
+</body>
 </html>

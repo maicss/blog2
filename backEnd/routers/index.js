@@ -23,6 +23,29 @@ let storage = multer.diskStorage({
 
 let upload = multer({storage})
 
+const identificationCheck = function (req, res, next) {
+  // check identification middleware
+  let isLogin = false
+  if (!req.cookies.uid) {
+    isLogin = false
+    next()
+  } else {
+    getUser({createTime: req.cookies.uid * 1})
+      .then(d => {
+        isLogin = !!d.result.length
+        if (req.method === 'GET' || req.path === '/login') {
+          // pass the login info
+          req.login = isLogin
+          next()
+        } else {
+          // response not login error
+          isLogin ? next() : res.status(401).send({message: 'Please login and retry.'})
+        }
+      })
+      .catch(e => console.error('check identification middleware error: ', e))
+  }
+}
+
 const routerList = {
   moments: require('./moments'),
   getWeather: require('./weather'),
@@ -40,45 +63,24 @@ router
       next()
     }
   })
-  .use((req, res, next) => {
-    // check identification middleware
-    let isLogin = false
-    if (!req.cookies.uid) {
-      isLogin = false
-      next()
-    } else { 
-      getUser({createTime: req.cookies.uid * 1})
-      .then(d => {
-        isLogin = !!d.result.length
-        if (req.method === 'GET' || req.path === '/login') {
-          // pass the login info
-          req.login = isLogin
-          next()
-        } else {
-          // response not login error
-          isLogin ? next() : res.status(401).send({message: 'Please login and retry.'})
-        }
-      })
-      .catch(e => console.error('check identification middleware error: ', e))
-     }
-  })
   .get('*', function (req, res, next) {
     switch (req.path) {
       case '/index':
       case '/':
-        res.sendFile('/frontEnd/static/index.html', {"root": './'})
+        res.sendFile('/frontEnd/static/index.html', {'root': './'})
         break
       case '/googlee2a049d23b90511c.html':
-        res.sendFile('/frontEnd/static/googlee2a049d23b90511c.html', {"root": './'})
+        res.sendFile('/frontEnd/static/googlee2a049d23b90511c.html', {'root': './'})
         break
       default:
         next()
     }
   })
   .post('/fun', (req, res) => {
-    res.send(req.body)
+    console.log(req.body)
+    res.json(req.body)
   })
-  .get('/blog/*', (req, res) => res.sendFile('/frontEnd/archives/' + req.params[0] + '.html', {"root": './'}))
+  .get('/blog/*', (req, res) => res.sendFile('/frontEnd/archives/' + req.params[0] + '.html', {'root': './'}))
   .get('/getBlog/*', routerList.blog.getBlog)
   .get('/blogList', routerList.blog.getBlogList)
   .get('/getBlogImageInfo', routerList.blog.blogImageInfo)
@@ -99,7 +101,7 @@ router
   .post('/logout', routerList.user.logout)
   .use(express.static(path.resolve('./frontEnd/')))
   .use(function (req, res) {
-    res.status(404).sendFile('/frontEnd/static/404.html', {"root": './'})
+    res.status(404).sendFile('/frontEnd/static/404.html', {'root': './'})
   })
 
 module.exports = router
