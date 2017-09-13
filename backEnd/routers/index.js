@@ -52,6 +52,7 @@ const routerList = {
   user: require('./user'),
   blog: require('./blog'),
   github: require('./githubHook'),
+  indexImage: require('./indexImage')
 }
 
 router
@@ -80,6 +81,9 @@ router
     console.log(req.body)
     res.json(req.body)
   })
+  .get('/indexImage', routerList.indexImage.getBGI)
+  .put('/indexImage', routerList.indexImage.likePicture)
+  .delete('/indexImage', routerList.indexImage.dislikePicture)
   .get('/blog/*', (req, res) => res.sendFile('/frontEnd/archives/' + req.params[0] + '.html', {'root': './'}))
   .get('/getBlog/*', routerList.blog.getBlog)
   .get('/blogList', routerList.blog.getBlogList)
