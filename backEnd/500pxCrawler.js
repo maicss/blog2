@@ -31,7 +31,7 @@ const writeStream = async (path) => {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(path);
     file.end();
-    file.on("finish", () => resolve); // not sure why you want to pass a boolean
+    file.on("end", () => resolve); // not sure why you want to pass a boolean
     file.on("error", reject); // don't forget this!
   });
 }
