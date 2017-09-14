@@ -10,20 +10,35 @@ const {logger} = require('../utils')
 const likedDir = './frontEnd/img/index/liked'
 const tempDir = './frontEnd/img/index/temp/'
 
-const _mvFile = async (prev, dist) => {
-  // 使用rename先试试，不行就使用stream copy
-  try {
-    await renameFile(prev, dist)
-  } catch (e) {
-    try {
-      const oldStream = await fs.createReadStream(prev)
-      const newStream = await fs.createWriteStream(dist)
-      oldStream.pipe(newStream)
-      rmFile(prev)
-    } catch (errorInStream) {
-      return errorInStream
+const _mvFile = (source, target) => {
+
+  return new Promise((resolve, reject) => {
+    const done = (err) => {
+      if (err) return reject(err)
+      fs.unlink(source, function (e) {
+        if (e) reject(e)
+        return resolve()
+      })
     }
-  }
+    console.log('CopyFile', source, target)
+    let targetDir = path.dirname(target)
+    if (!fs.existsSync(targetDir)) {
+      cb(targetDir + 'is not exist.')
+    }
+
+    const rd = fs.createReadStream(source)
+    rd.on('error', function (err) {
+      done(err)
+    })
+    const wr = fs.createWriteStream(target)
+    wr.on('error', function (err) {
+      done(err)
+    })
+    wr.on('close', function () {
+      done()
+    })
+    rd.pipe(wr)
+  })
 }
 
 const getOneImg = async () => {
