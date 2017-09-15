@@ -267,6 +267,20 @@ module.exports = {
     } catch (e) {
       return buildDatabaseRes(e, 'fault', 'connect database error.')
     }
+  },
+
+  // index image
+
+  saveIndexImage: async (imageInfo) => {
+    return await updateDocument('indexImage', imageInfo.id, imageInfo)
+  },
+
+  updateIndexImage: async () => {
+
+  },
+
+  removeIndexImage: async () => {
+
   }
 
 }

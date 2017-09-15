@@ -45,15 +45,15 @@ const getOneImg = async () => {
   try {
     let tempImages = await listDir(tempDir)
     tempImages = tempImages.filter(file => !file.startsWith('.'))
-    logger.info('tempImages: ', tempImages)
     let likedImages
     if (tempImages.length) {
-      return tempDir + tempImages[0]
+      let index = ~~(Math.random() * tempImages.length)
+      return tempDir + tempImages[index]
     } else if (likedImages = await listDir(likedDir)) {
       likedImages = likedImages.filter(file => !file.startsWith('.'))
-      logger.info('likedImages: ', likedImages)
+      let index = ~~(Math.random() * likedImages.length)
       if (likedImages.length) {
-        return likedDir + likedImages[0]
+        return likedDir + likedImages[index]
       }
     } else {
       // todo 没有走这个分支
@@ -70,18 +70,11 @@ const getOneImg = async () => {
 }
 
 const getBGI = (req, res) => {
-  // 先看看temp文件夹里有没有图片，如果没有就看喜欢的文件夹里有没有，如果还没有就用爬虫爬一下
-  // todo 然后用socket 通知客户端有图片了？这个等等再弄
-  (async () => {
-    try {
-      let _res = await getOneImg()
-      logger.info(_res)
-      res.send(_res)
-    } catch (e) {
-      res.status(500).send(e)
-    }
-  })()
-
+  getOneImg().then(d => {
+    // todo 去数据库查询图片信息并一并返回
+    logger.info(d)
+    res.send(d.replace('./frontEnd', ''))
+  }).catch(e => res.status(500).send(e))
 }
 
 // 暂时不考虑空文件夹的情况
@@ -114,9 +107,3 @@ module.exports = {
   likePicture,
   dislikePicture
 }
-
-// getOneImg().then(d => console.log(d))
-
-// console.log(path.join( tempDir, 'aa.jpg'))
-
-crawler().then(d => console.log(d))
