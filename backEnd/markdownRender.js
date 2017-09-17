@@ -7,14 +7,14 @@ const util = require('util')
 const readdir = util.promisify(fs.readdir)
 const lstat = util.promisify(fs.lstat)
 const readFile = util.promisify(fs.readFile)
-const writeFile = util.promisify(fs.writeFile)
+// const writeFile = util.promisify(fs.writeFile)
 const crypto = require('crypto')
 const path = require('path')
 
 const {getBlogHash, saveBlogHash, saveBlog} = require('./databaseOperation')
 const {logger} = require('./utils')
 const marked = require('maic-marked')
-const mdTem = require('./md-template')
+// const mdTem = require('./md-template')
 const {MD_OUTPUT_DIR, MD_DIR, SITE_NAME} = require('../env')
 const ALGORITHM = 'sha256'
 const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/
@@ -23,7 +23,7 @@ const singleRender = async (fileInfo) => {
 
   let fileName = fileInfo.originalFileName + '.md'
   let output = path.resolve(__dirname, MD_OUTPUT_DIR, fileInfo.escapeName + '.html')
-  let permalink = SITE_NAME + output.replace('frontEnd/', '')
+  // let permalink = SITE_NAME + output.replace('frontEnd/', '')
   let filePath = path.resolve(__dirname, MD_DIR, fileName)
   let fileStat = await lstat(filePath)
   if (fileStat.isFile()) {
@@ -41,8 +41,9 @@ const singleRender = async (fileInfo) => {
       } else if (!renderResult.title) {
         throw Error(fileName + ' has no title')
       }
-      await writeFile(output, mdTem(renderResult.html, fileInfo.escapeName, permalink))
-      logger.info('write file: [' + fileInfo.escapeName + '.html] success.')
+      // 前端渲染就不需要生成静态文件了
+      // await writeFile(output, mdTem(renderResult.html, fileInfo.escapeName, permalink))
+      // logger.info('write file: [' + fileInfo.escapeName + '.html] success.')
       return renderResult
     } catch (e) {
       logger.error(e)
@@ -75,15 +76,15 @@ const getAllMarkdownHash = async () => {
   }
 }
 
-const renderAll = async (forceRerender) => {
+const renderAll = async (forceRender) => {
   /**
-   * forceRerender: 是否忽略数据库信息强制渲染所有文件
+   * forceRender: 是否忽略数据库信息强制渲染所有文件
    * */
   try {
     const filesInfo = await getAllMarkdownHash()
     const filesInfoCopy = [...filesInfo]
     let DBFilesInfoCopy = []
-    if (!forceRerender) {
+    if (!forceRender) {
       const {result: DBFilesInfo} = await getBlogHash()
       DBFilesInfoCopy = [...DBFilesInfo]
 

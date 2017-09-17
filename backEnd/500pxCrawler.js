@@ -31,10 +31,10 @@ const crawlerOptions = {
 
 const downLoadFile = (url, path) => {
   return new Promise((resolve, reject) => {
-    _request.get(url, function (err, res, body) {
-      if (err) reject(err)
-      fs.writeFile(path, body, function (e) {
-        if (e) reject(e)
+    _request(url, (err, res, body) => {
+      if (err) return reject(err)
+      fs.writeFile(path, body, e => {
+        if (e) return reject(e)
         resolve('done')
       })
     })
@@ -55,7 +55,7 @@ module.exports = async () => {
       url: p.image_url[0]
     })).filter(image => image.width >= image.height && image.width > 1500)
     // todo images 存数据库
-    return await Promise.all([images.map(img => downLoadFile(img.url, tempDir + img.id + '.' + img.format))])
+    return await Promise.all(images.map(img => downLoadFile(img.url, tempDir + img.id + '.' + img.format)))
   } catch (e) {
     return e
   }
@@ -64,8 +64,7 @@ module.exports = async () => {
 
 const aa = async () => {
   try {
-    const body = await request(crawlerOptions)
-    const data = JSON.parse(body)
+    const data = require('../aa.json')
     const images = data.photos.map(p => ({
       name: p.name,
       author: p.user.username,
@@ -75,16 +74,15 @@ const aa = async () => {
       format: p.image_format,
       url: p.image_url[0]
     })).filter(image => image.width >= image.height && image.width > 1500)
+    console.log(images)
     // todo images 存数据库
-    Promise.all([images.map(img => downLoadFile(img.url, tempDir + img.id + '.' + img.format))]).then(d => {
-      console.log('promise all: ', d)
-    })
+    // return await Promise.all(images.map(img => downLoadFile(img.url, tempDir + img.id + '.' + img.format)))
   } catch (e) {
     return e
   }
 }
 
-// aa().then(d => {
-//   console.log('crawler: ')
-//   console.log(d)
-// }).catch(e => console.error(e))
+aa().then(d => {
+  console.log('crawler: ')
+  console.log(d)
+}).catch(e => console.error(e))
