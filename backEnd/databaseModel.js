@@ -5,10 +5,15 @@ const Schema = mongoose.Schema
 const momentsSchema = new Schema({
   date: {type: Number, required: true, unique: true, index: true},
   dateStr: String,
-  weather : {
-    "temperature" : [String, String],
-    "code" : [String, String],
-    "location" : String
+  'weather': {
+    'date': {type: String, required:true},
+    'text_day': {type: String, required:true},
+    'code_day': {type: String, required:true},
+    'text_night': {type: String, required:true},
+    'code_night': {type: String, required:true},
+    'high': {type: String, required:true},
+    'low': {type: String, required:true},
+    'location': {type: String, required:true}
   },
   "content" : String,
   "images" : [String],
@@ -24,11 +29,17 @@ const momentsSchema = new Schema({
 
 
 const momentsSummarySchema = new Schema({
-  all: {type: Number, required: true},
+  name: {type: String, required: true, index: true, enum: ['summary']},
+  content: {
+    all: {type: Number, required: true},
+  }
 })
 
 const blogSummarySchema = new Schema({
-  all: {type: Number, required: true},
+  name: {type: String, required: true, index: true, enum: ['summary']},
+  content: {
+    all: {type: Number, required: true},
+  }
 })
 
 const blogSchema = new Schema({

@@ -22,7 +22,7 @@ const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/
 const singleRender = async (fileInfo) => {
 
   let fileName = fileInfo.originalFileName + '.md'
-  let output = path.resolve(__dirname, MD_OUTPUT_DIR, fileInfo.escapeName + '.html')
+  // let output = path.resolve(__dirname, MD_OUTPUT_DIR, fileInfo.escapeName + '.html')
   // let permalink = SITE_NAME + output.replace('frontEnd/', '')
   let filePath = path.resolve(__dirname, MD_DIR, fileName)
   let fileStat = await lstat(filePath)
@@ -31,15 +31,15 @@ const singleRender = async (fileInfo) => {
       const MDContent = await readFile(filePath)
       let renderResult = new marked().exec(MDContent.toString())
       if (!renderResult.date) {
-        throw Error(fileName + ' has no date')
+        return new Error(fileName + ' has no date')
       } else if (!renderResult.toc.length) {
-        throw Error(fileName + ' has no toc')
+        return new Error(fileName + ' has no toc')
       } else if (!renderResult.abstract) {
-        throw Error(fileName + ' has no abstract')
+        return new Error(fileName + ' has no abstract')
       } else if (!renderResult.tags.length) {
-        throw Error(fileName + ' has no tags')
+        return new Error(fileName + ' has no tags')
       } else if (!renderResult.title) {
-        throw Error(fileName + ' has no title')
+        return new Error(fileName + ' has no title')
       }
       // 前端渲染就不需要生成静态文件了
       // await writeFile(output, mdTem(renderResult.html, fileInfo.escapeName, permalink))
@@ -108,10 +108,17 @@ const renderAll = async (forceRender) => {
         (async () => {
           try {
             const renderResult = await singleRender(filesInfoCopy[i])
-            let blogInfo = Object.assign({
+            let blogInfo = {
               originalFileName: filesInfoCopy[i].originalFileName,
-              escapeName: filesInfoCopy[i].escapeName
-            }, renderResult)
+              escapeName: filesInfoCopy[i].escapeName,
+              isPublic: true,
+            }
+            // private parse
+            if (renderResult.title.startsWith('pre-')) {
+              blogInfo.isPublic = false
+              renderResult.title = renderResult.title.substring('pre-'.length)
+            }
+            blogInfo = Object.assign(blogInfo, renderResult)
             if (filesInfoCopy[i].isNewFile) {
               blogInfo.readCount = 0
               blogInfo.commentCount = 0
