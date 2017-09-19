@@ -103,6 +103,7 @@ router
 
   .post('/login', routerList.user.login)
   .post('/logout', routerList.user.logout)
+  .get('/noRes', () => {})
   .use(express.static(path.resolve('./frontEnd/')))
   .use(function (req, res) {
     res.status(404).sendFile('/frontEnd/static/404.html', {'root': './'})

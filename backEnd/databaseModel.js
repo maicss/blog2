@@ -71,9 +71,10 @@ const userSchema = new Schema({
 
 
 const indexImageSchema = new Schema({
+  type: {type: String, required: true, enum: ['temp', 'liked']},
   name: {type: String, required:true},
   author: {type: String, required:true},
-  width: {type: Number, unique: true},
+  width: {type: Number, required: true},
   height: {type: Number, required: true},
   id: {type: Number, unique: true, required: true, index: true},
   format: {type: String, required:true},

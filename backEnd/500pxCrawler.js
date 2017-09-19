@@ -52,7 +52,8 @@ module.exports = async () => {
       height: p.height,
       id: p.id,
       format: p.image_format,
-      url: p.image_url[0]
+      url: p.image_url[0],
+      type: 'temp',
     })).filter(image => image.width >= image.height && image.width > 1500)
     // todo images 存数据库
     return await Promise.all(images.map(img => downLoadFile(img.url, tempDir + img.id + '.' + img.format)))
@@ -72,7 +73,8 @@ const aa = async () => {
       height: p.height,
       id: p.id,
       format: p.image_format,
-      url: p.image_url[0]
+      url: p.image_url[0],
+      type: 'temp',
     })).filter(image => image.width >= image.height && image.width > 1500)
     console.log(images)
     // todo images 存数据库
