@@ -2,20 +2,13 @@
  * Created by maic on 01/03/2017.
  */
 const fs = require('fs')
-path = require('path');
+path = require('path')
 const promisify = require('util').promisify
 const lstat = promisify(fs.lstat)
 const readdir = promisify(fs.readdir)
-const {
-  getBlogList,
-  updateBlogProp,
-  getBlogSummary
-} = require('../databaseOperation')
-const {
-  logger
-} = require('../utils')
+const {getBlogList, updateBlogProp, getBlogSummary} = require('../databaseOperation2')
 
-const getBlogImageInfo = async() => {
+const getBlogImageInfo = async () => {
   let total = 0
   let count = 0
   const base = './frontEnd/img/blog/'
@@ -33,7 +26,7 @@ const getBlogImageInfo = async() => {
 
 module.exports = {
 
-  getBlogList(req, res) {
+  getBlogList (req, res) {
     /**
      * 获取指定tag或指定页数的Blog列表
      *
@@ -47,51 +40,47 @@ module.exports = {
     condition.limit = Number(req.query.limit) || 10
     getBlogList(condition)
       .then(d => res.send(d))
-      .catch(e => e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result || e.toString()))
+      .catch(e => res.status(500).send(e))
   },
 
-  getBlog(req, res, next) {
+  getBlog (req, res, next) {
     /**
      * 获取静态的的Blog HTML
      * 这个可以在外面直接使用变量的方式返回回去，但是为了统计阅读数量，就放到这个里面了
      * */
     let pathReg = /^[\u4e00-\u9fa5\w-]+[^ /]$/
     if (pathReg.test(req.params['0'])) {
-      let query = {
-        escapeName: req.params['0']
-      }
-      updateBlogProp(query, 'readCount')
+      updateBlogProp(req.params['0'], 'readCount')
         .then(d => {
-          if (d.result.value && d.result.value.escapeName === query.escapeName) {
+          if (d.escapeName === req.params['0']) {
             // vue 重构是用客户端渲染好了
-            // res.sendFile('./frontEnd/archives/' + d.result.value.escapeName + '.html', {root: './'})
-            res.send(d.result.value)
+            // res.sendFile('./frontEnd/archives/' + d.escapeName + '.html', {root: './'})
+            res.send(d)
           } else {
             next()
           }
         })
-        .catch(e => e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result || e.toString()))
+        .catch(e => res.status(500).send(e))
     } else {
       next()
     }
   },
 
-  getBlogSummary(req, res) {
+  getBlogSummary (req, res) {
     getBlogSummary()
       .then(d => res.send(d))
-      .catch(e => e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result || e.toString()))
+      .catch(e => res.status(500).send(e))
   },
 
   blogImageUpload: function (req, res) {
-    console.log(req.files)
     res.json(req.files.map(file => ({
-        originName: file.originalname,
-        path: file.path.replace('frontEnd', ''),
-        size: file.size
-      })))
+      originName: file.originalname,
+      path: file.path.replace('frontEnd', ''),
+      size: file.size
+    })))
   },
 
-  blogImageInfo(req, res) {
+  blogImageInfo (req, res) {
     getBlogImageInfo()
       .then(d => res.send(d))
       .catch(e => res.status(500).send(e))

@@ -1,6 +1,6 @@
 const moment = require('moment')
 const marked = require('maic-marked')
-const {getMomentsList, saveMoments, getMomentsSummary, deleteMoments, updateMoments} = require('../databaseOperation')
+const {getMomentsList, saveMoments, getMomentsSummary, deleteMoments, updateMoments} = require('../databaseOperation2')
 const fs = require('fs')
 const path = require('path')
 module.exports = {
@@ -14,7 +14,7 @@ module.exports = {
     condition.limit = Number(req.query.limit)
     getMomentsList(condition)
       .then(d => res.json(d.result))
-      .catch(e => {e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result)})
+      .catch(e =>  res.status(500).send(e))
   },
 
   postMoments (req, res) {
@@ -42,7 +42,7 @@ module.exports = {
 
       saveMoments(content)
         .then(d => res.send(d.result))
-        .catch(e => e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result))
+        .catch(e =>  res.status(500).send(e))
     } catch (e) {
       res.status(400).send({
         error: 'JSON Parse Error in post data: ' + req.body.obj
@@ -53,7 +53,7 @@ module.exports = {
   getSummary (req, res) {
     getMomentsSummary()
       .then(d => res.json(d.result[0].content))
-      .catch(e => {e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result)})
+      .catch(e =>  res.status(500).send(e))
   },
 
   updateMoments (req, res) {
@@ -78,8 +78,8 @@ module.exports = {
         }
         deleteMoments(query)
           .then(d => res.send(d))
-          .catch(e => e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result))
+          .catch(e =>  res.status(500).send(e))
       })
-      .catch(e => {e.status === 'error' ? res.status(400).send(e.result) : res.status(500).send(e.result)})
+      .catch(e =>  res.status(500).send(e))
   }
 }

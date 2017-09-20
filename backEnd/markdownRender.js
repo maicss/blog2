@@ -11,7 +11,7 @@ const readFile = util.promisify(fs.readFile)
 const crypto = require('crypto')
 const path = require('path')
 
-const {getBlogHash, saveBlogHash, saveBlog} = require('./databaseOperation')
+const {getBlogHash, saveBlogHash, saveBlog} = require('./databaseOperation2')
 const {logger} = require('./utils')
 const marked = require('maic-marked')
 // const mdTem = require('./md-template')
@@ -85,7 +85,7 @@ const renderAll = async (forceRender) => {
     const filesInfoCopy = [...filesInfo]
     let DBFilesInfoCopy = []
     if (!forceRender) {
-      const {result: DBFilesInfo} = await getBlogHash()
+      const DBFilesInfo = await getBlogHash()
       DBFilesInfoCopy = [...DBFilesInfo]
 
       // 比对本地文件和数据库的hash
@@ -173,7 +173,7 @@ const renderAll = async (forceRender) => {
       // 正常情况下，本地文件的信息应该是大于等于数据库的信息
       logger.warn('hash in database is redundancy', DBFilesInfoCopy)
     }
-    return `${filesInfoCopy.map(i => i.originalFileName)} success`
+    logger.info(`${filesInfoCopy.map(i => i.originalFileName)} success`)
   } catch (e) {
     logger.error(e)
   }

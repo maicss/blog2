@@ -5,10 +5,11 @@ const rmFile = promisify(fs.unlink)
 const renameFile = promisify(fs.rename)
 const listDir = promisify(fs.readdir)
 
+const {saveIndexImage, getIndexImage, updateIndexImage} = require('../databaseOperation2')
 const crawler = require('../500pxCrawler')
 const {logger} = require('../utils')
-const likedDir = './frontEnd/img/index/liked'
-const tempDir = './frontEnd/img/index/temp/'
+const likedDir = 'img/index/liked/'
+const tempDir = 'img/index/temp/'
 
 const _mvFile = (source, target) => {
 
@@ -43,25 +44,18 @@ const _mvFile = (source, target) => {
 
 const getOneImg = async () => {
   try {
-    let tempImages = await listDir(tempDir)
-    tempImages = tempImages.filter(file => !file.startsWith('.'))
+    let tempImages = await getIndexImage('temp')
     let likedImages
     if (tempImages.length) {
-      let index = ~~(Math.random() * tempImages.length)
-      return tempDir + tempImages[index]
-    } else if (likedImages = await listDir(likedDir)) {
-      likedImages = likedImages.filter(file => !file.startsWith('.'))
-      let index = ~~(Math.random() * likedImages.length)
+      return tempImages[~~(Math.random() * tempImages.length)]
+    } else if (likedImages = await getIndexImage('liked')){
       if (likedImages.length) {
-        return likedDir + likedImages[index]
+        return likedImages[~~(Math.random() * likedImages.length)]
       }
     } else {
-      // todo 没有走这个分支
-      console.log(1)
-      let flag = await crawler()
-      if (flag) {
-        getOneImg()
-      }
+      let crawledImages = await crawler()
+      await Promise.all(crawledImages.map(img => saveIndexImage(img)))
+      return crawledImages[~~(Math.random() * crawledImages.length)]
     }
   } catch (e) {
     logger.info('step into this')
@@ -72,12 +66,12 @@ const getOneImg = async () => {
 const getBGI = (req, res) => {
   getOneImg().then(d => {
     // todo 去数据库查询图片信息并一并返回
-    logger.info(d)
-    res.send(d.replace('./frontEnd', ''))
+    let _path = (d.type === 'temp' ? tempDir : likedDir) + d.id + '.' + d.format
+    let m = Object.assign(d._doc, {path: _path})
+    logger.info(m)
+    res.send(m)
   }).catch(e => res.status(500).send(e))
 }
-
-// 暂时不考虑空文件夹的情况
 
 const likePicture = (req, res) => {
   const imageName = req.params[0]

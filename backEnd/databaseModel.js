@@ -33,14 +33,14 @@ const momentsSummarySchema = new Schema({
   content: {
     all: {type: Number, required: true},
   }
-})
+}, {strict: false})
 
 const blogSummarySchema = new Schema({
   name: {type: String, required: true, index: true, enum: ['summary']},
   content: {
     all: {type: Number, required: true},
   }
-})
+}, {strict: false})
 
 const blogSchema = new Schema({
   escapeName : {type: String, required: true, index: true, unique: true},

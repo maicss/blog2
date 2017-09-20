@@ -9,7 +9,7 @@ let multer = require('multer')
 
 const {ports} = require('../../env')
 const {logger} = require('../utils')
-const {getUser} = require('../databaseOperation')
+const {getUser} = require('../databaseOperation2')
 
 let storage = multer.diskStorage({
   destination (req, file, cb) {
@@ -32,7 +32,7 @@ const identificationCheck = function (req, res, next) {
   } else {
     getUser({createTime: req.cookies.uid * 1})
       .then(d => {
-        isLogin = !!d.result.length
+        isLogin = !!d.length
         if (req.method === 'GET' || req.path === '/login') {
           // pass the login info
           req.login = isLogin
@@ -64,6 +64,7 @@ router
       next()
     }
   })
+  .use(identificationCheck)
   .get('*', function (req, res, next) {
     switch (req.path) {
       case '/index':

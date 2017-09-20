@@ -38,7 +38,13 @@ const shellLoggerSetting = {
 };
 const logger = require('tracer').colorConsole(shellLoggerSetting);
 
+
+// todo build some private error type
+const AuthorizationError = new Error()
+AuthorizationError.name = 'AuthorizationError'
+
 module.exports = {
   buildDatabaseRes,
   logger,
+  AuthorizationError,
 }
