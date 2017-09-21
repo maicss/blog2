@@ -43,7 +43,7 @@ module.exports = {
       .catch(e => res.status(500).send(e.message))
   },
 
-  getBlog (req, res, next) {
+  getBlog (req, res) {
     /**
      * 获取静态的的Blog HTML
      * 这个可以在外面直接使用变量的方式返回回去，但是为了统计阅读数量，就放到这个里面了
@@ -52,17 +52,18 @@ module.exports = {
     if (pathReg.test(req.params['0'])) {
       updateBlogProp(req.params['0'], 'readCount')
         .then(d => {
-          if (d.escapeName === req.params['0']) {
+          console.log(d)
+          if (d && d.escapeName === req.params['0']) {
             // vue 重构是用客户端渲染好了
             // res.sendFile('./frontEnd/archives/' + d.escapeName + '.html', {root: './'})
             res.send(d)
           } else {
-            next()
+            res.status(404).send('')
           }
         })
         .catch(e => res.status(500).send(e.message))
     } else {
-      next()
+      res.status(404).send('')
     }
   },
 

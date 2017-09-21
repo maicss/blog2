@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blog Image Uploader</title>
+    <style>
+        #operator {
+            position: relative;
+            height: 402px;
+            width: 302px;
+            overflow: hidden;
+        }
+
+        #previewer {
+            border: 1px solid #0ea432;
+            border-radius: 4px;
+            width: 300px;
+            height: 400px;
+            background-size: cover;
+            position: absolute;
+        }
+
+        #progress, #progressBG {
+            position: absolute;
+            height: 30px;
+            width: 300px;
+            line-height: 30px;
+            text-align: center;
+            left: 1px;
+            bottom: 1px;
+            background-color: transparent;
+        }
+
+        #progressBG {
+            width: 0;
+            background-color: #888;
+        }
+    </style>
+</head>
+<body>
+<p style="width: 50%;float:left;">选择图片:
+    <label for="loader">
+        <input type="file" id="loader" accept="image/*">
+    </label>
+</p>
+
+<p id="imgSize" style="width: 50%; float: left;">图片大小： </p>
+<p>图片预览：</p>
+<div id="operator">
+    <div id="previewer"></div>
+    <i id="progressBG"></i>
+    <span id="progress"></span>
+</div>
+<p>图片地址：<input type="text" style="width: 60%" id="imgUrl" value=""></p>
+
+</body>
+</html>
+
+<script>
+    let input = document.querySelector('#loader');
+    let progress = document.querySelector('#progress');
+    let progressBG = document.querySelector('#progressBG');
+    let previewer = document.querySelector('#previewer');
+    let imgSize = document.querySelector('#imgSize');
+    let imgUrl = document.querySelector('#imgUrl');
+
+
+    let readableSize = function (size) {
+        return size / 1024 > 1024 ? (~~(10 * size / 1024 / 1024)) / 10 + "MB" : ~~(size / 1024) + "KB"
+    };
+
+    let imgFormData = new FormData();
+    input.onchange = function (e) {
+
+        [].forEach.call(e.target.files, function (file) {
+                let reader = new FileReader();
+                reader.onloadend = function () {
+                    let imgContent = this.result;
+                    imgSize.innerHTML = readableSize(this.result.length);
+                    previewer.style.backgroundImage = 'url( ' + imgContent + ')';
+                    imgFormData.append('photo', compressImg(imgContent, file.type), file.name);
+                    imgFormData.append('source', 'blog');
+                    let xhr = new XMLHttpRequest(), percent = 0, loop = null;
+
+                    xhr.open("POST", "/blogImageUpload");
+                    xhr.setRequestHeader('source', 'blog');
+//                    xhr.setRequestHeader('Content-Type', 'application/json');
+
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4) {
+                            if (xhr.status === 200) {
+                                let d = JSON.parse(xhr.responseText);
+                                imgUrl.value = 'https://maicss.com/' + d.path;
+                                imgUrl.focus();
+//                                imgUrl.onfocus = function () {
+//                                    this.setSelectionRange(0, this.value.length);
+//                                    try {
+//                                        let successful = document.execCommand('copy');
+//                                        if (!successful) alert('copy failed.');
+//                                    } catch (err) {
+//                                        alert('your browser not support copy Event, consider use a modern browser or update.')
+//                                    }
+//                                };
+                                imgUrl.setSelectionRange(0, imgUrl.value.length);
+//                                console.log(imgUrl.value);
+//                                document.execCommand('copy');
+//                                console.info(xhr.responseType);
+                            }
+                            else {
+                                console.error(xhr.responseText)
+                            }
+                        }
+                    }
+                    ;
+                    xhr.upload.addEventListener('progress', function (e) {
+                        if (loop) return;
+                        percent = ~~(100 * e.loaded / e.total);
+                        progressBG.style.width = percent + '%';
+                        progress.innerHTML = percent + '%';
+                        if (percent === 100) {
+                            progress.innerHTML = readableSize(e.total) + ' / ' + readableSize(imgContent.length);
+                        }
+                    }, false);
+                    xhr.send(imgFormData);
+                };
+                reader.readAsDataURL(file);
+            }
+        );
+    };
+
+    let compressImg = function (img, type) {
+        /**
+         * compress base64 img data to blob
+         * @param img: instanceof Image
+         * @param type: mimetype of img
+         * @returns: img Blob data
+         * */
+        const maxsize = 100 * 1024;
+        let imgBase64 = img;
+        let initSize = img.length;
+        if (initSize > maxsize) {
+            console.log('need compress');
+
+            let canvas = document.createElement("canvas");
+            let ctx = canvas.getContext('2d');
+
+            let _image = new Image();
+            _image.src = imgBase64;
+            let width = _image.width;
+            let height = _image.height;
+            let ratio = width * height / 4000000;
+            if (ratio > 1) {
+                ratio = Math.sqrt(ratio);
+                width /= ratio;
+                height /= ratio;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            // 如果是jpeg 就添加底色为白色，因为jpeg默认会把透明部分转为黑色, 而默认的toDataURL会把图片转为PNG格式
+            if (type === 'image/jpeg') {
+                ctx.fillStyle = "#fff";
+            }
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // 修改图片大小
+            ctx.drawImage(_image, 0, 0, width, height);
+            // 修改图片质量
+            imgBase64 = canvas.toDataURL(type);
+
+//            progress.innerHTML = readableSize(initSize) + ' / ' + readableSize(imgBase64.length);
+
+            console.log('压缩前：' + initSize);
+            console.log('压缩后：' + imgBase64.length);
+
+            console.log('压缩率：' + ~~(100 * (initSize - imgBase64.length) / initSize) + "%");
+            canvas.width = canvas.height = 0;
+        } else {
+//            progress.innerHTML = readableSize(img.length) + ' / ' + readableSize(img.length);
+        }
+
+        let text = window.atob(imgBase64.split(",")[1]);
+        let buffer = new Uint8Array(text.length);
+        for (let i = 0; i < text.length; i++) {
+            buffer[i] = text.charCodeAt(i);
+        }
+        return new Blob([buffer], {type});
+    };
+</script>

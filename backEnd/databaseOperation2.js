@@ -268,7 +268,7 @@ const saveIndexImage = async (imageInfo) => {
     return 'saved'
   } catch (e) {
     // ignore duplicate key error
-    if (e.code !== 'E11000') {
+    if (e.code !== 'E11000' && e.code !== '11000') {
       throw e
     } else {
       return 'duplicate key'
@@ -279,14 +279,10 @@ const saveIndexImage = async (imageInfo) => {
 const getIndexImage = async (type) => {
   /**
    * 找一个图片
-   * @param {'liked', 'temp'} type
+   * @param {'liked', 'temp', ''} type
    * @return {Object} indexImage instance
    * */
-  if (type === 'liked' || type === 'temp') {
-    return await indexImageModel.find({type}, '-_id -__v')
-  } else {
-    throw new Error('Invalid get index image type.')
-  }
+  return await indexImageModel.find({type}, '-_id -__v')
 }
 
 const updateIndexImage = async (id, action) => {
@@ -328,5 +324,5 @@ module.exports = {
   updateIndexImage,
 }
 
-// buildBlogSummary().then(d => console.log(d)).catch(e => console.error(e))
+indexImageModel.find(undefined).then(d => console.log(d.length)).catch(e => console.error(e))
 // momentsModel.find({ isPublic: true, date: 1505960032010 }, '-_id').sort({date: -1}).skip(undefined).limit(undefined).then(d => console.log(d)).catch(e => console.error(e))

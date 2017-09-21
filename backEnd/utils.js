@@ -26,25 +26,41 @@ const buildDatabaseRes = (e, type, desc) => {
   }
 }
 
+const array2map = (list, key) => {
+  if (Array.isArray(list)) {
+    const newMap = {}
+    list.forEach(item => {
+      let _key = item[key]
+      if (!_key) {
+        throw new Error('key not exist')
+      }
+      if (newMap[_key]) {
+        throw new Error('key value not unique')
+      }
+      newMap[_key] = item
+    })
+    return newMap
+  } else {
+    throw new TypeError ('argument 1 not an array')
+  }
+}
 
 const shellLoggerSetting = {
   format: [
-    "{{timestamp}} <{{title}}> (in {{file}}:{{line}}) {{message}}", //default format
+    '{{timestamp}} <{{title}}> (in {{file}}:{{line}}) {{message}}', //default format
     {
-      error: "{{timestamp}} <{{title}}> (in {{file}}:{{line}}) {{message}}\nCall Stack:\n{{stack}}" // error format
+      error: '{{timestamp}} <{{title}}> (in {{file}}:{{line}}) {{message}}\nCall Stack:\n{{stack}}' // error format
     }
   ],
-  dateformat : "mm-dd HH:MM:ss"
-};
-const logger = require('tracer').colorConsole(shellLoggerSetting);
-
+  dateformat: 'mm-dd HH:MM:ss'
+}
+const logger = require('tracer').colorConsole(shellLoggerSetting)
 
 // todo build some private error type
 const AuthorizationError = new Error()
 AuthorizationError.name = 'AuthorizationError'
 
 module.exports = {
-  buildDatabaseRes,
   logger,
   AuthorizationError,
 }

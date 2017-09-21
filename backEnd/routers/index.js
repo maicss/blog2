@@ -69,7 +69,7 @@ router
     switch (req.path) {
       case '/index':
       case '/':
-        res.sendFile('/frontEnd/static/index.html', {'root': './'})
+        res.sendFile('/frontEnd/index.html', {'root': './'})
         break
       case '/googlee2a049d23b90511c.html':
         res.sendFile('/frontEnd/static/googlee2a049d23b90511c.html', {'root': './'})
@@ -107,7 +107,8 @@ router
   .get('/noRes', () => {})
   .use(express.static(path.resolve('./frontEnd/')))
   .use(function (req, res) {
-    res.status(404).sendFile('/frontEnd/static/404.html', {'root': './'})
+    res.sendFile('/frontEnd/index.html', {'root': './'})
+    // res.status(404).sendFile('/frontEnd/static/404.html', {'root': './'})
   })
 
 module.exports = router
