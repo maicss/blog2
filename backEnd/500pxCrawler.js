@@ -1,7 +1,10 @@
 const request = require('request-promise')
 const _request = require('request').defaults({encoding: null})
 const fs = require('fs')
-const {logger} = require('./utils')
+
+/**
+ * 爬取图片信息、过滤尺寸，下载图片、返回下载成功的图片信息列表
+ * */
 
 let csrfToken = 'jbKRKCSc5Y/FVWi9QVzQzSNLLuZH3Kn1LrWMi45aKLYHB/UdhaGGgi+tsIRUSg6LJ5zAc3xRZbVE/chFdTutDQ=='
 const tempDir = '../frontEnd/img/index/temp/'
@@ -55,36 +58,15 @@ module.exports = async () => {
       url: p.image_url[0],
       type: 'temp',
     })).filter(image => image.width >= image.height && image.width > 1500)
-    // todo images 存数据库
-    return await Promise.all(images.map(img => downLoadFile(img.url, tempDir + img.id + '.' + img.format)))
+    let downloadRes = await Promise.all(images.map(img => downLoadFile(img.url, tempDir + img.id + '.' + img.format)))
+    return downloadRes.map((r, i) => {
+      if (r === 'done') {
+        return images[i]
+      } else {
+        return undefined
+      }
+    }).filter(image => image.id)
   } catch (e) {
     return e
   }
 }
-
-
-const aa = async () => {
-  try {
-    const data = require('../aa.json')
-    const images = data.photos.map(p => ({
-      name: p.name,
-      author: p.user.username,
-      width: p.width,
-      height: p.height,
-      id: p.id,
-      format: p.image_format,
-      url: p.image_url[0],
-      type: 'temp',
-    })).filter(image => image.width >= image.height && image.width > 1500)
-    console.log(images)
-    // todo images 存数据库
-    // return await Promise.all(images.map(img => downLoadFile(img.url, tempDir + img.id + '.' + img.format)))
-  } catch (e) {
-    return e
-  }
-}
-
-// aa().then(d => {
-//   console.log('crawler: ')
-//   console.log(d)
-// }).catch(e => console.error(e))

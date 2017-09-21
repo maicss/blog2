@@ -13,8 +13,8 @@ module.exports = {
     condition.page = Number(req.query.page)
     condition.limit = Number(req.query.limit)
     getMomentsList(condition)
-      .then(d => res.json(d.result))
-      .catch(e =>  res.status(500).send(e))
+      .then(d => res.json(d))
+      .catch(e => res.status(500).send(e.message))
   },
 
   postMoments (req, res) {
@@ -42,7 +42,7 @@ module.exports = {
 
       saveMoments(content)
         .then(d => res.send(d.result))
-        .catch(e =>  res.status(500).send(e))
+        .catch(e => res.status(500).send(e.message))
     } catch (e) {
       res.status(400).send({
         error: 'JSON Parse Error in post data: ' + req.body.obj
@@ -52,34 +52,38 @@ module.exports = {
 
   getSummary (req, res) {
     getMomentsSummary()
-      .then(d => res.json(d.result[0].content))
-      .catch(e =>  res.status(500).send(e))
+      .then(d => res.json(d))
+      .catch(e => res.status(500).send(e.message))
   },
 
   updateMoments (req, res) {
     let content = new marked().exec(req.body.content).html
     updateMoments({date: req.body.date, content})
-      .then(d => res.json(d.result.value))
-      .catch(e => e.status === 'error' ? res.status(400).send(e) : res.status(500).send(e))
+      .then(d => res.json(d))
+      .catch(e => e.status === 'error' ? res.status(400).send(e.message) : res.status(500).send(e.message))
   },
 
   deleteMoments (req, res) {
+    /**
+     * 删除一个说说。先根据说说的date查找说说，然后删除说说的图片，再执行数据库删除
+     *
+     * */
     let query = {date: req.query.date * 1}
     getMomentsList(query)
       .then(d => {
-        if (d.result[0] && d.result[0].images.length) {
+        if (d[0] && d[0].images.length) {
           try {
-            d.result[0].images.forEach(_path => {
+            d[0].images.forEach(_path => {
               fs.unlinkSync(path.resolve(__dirname, '../../frontEnd' + _path))
             })
           } catch (e) {
-            res.status(500).send({error: 'delete moments image failed'})
+            res.status(500).send(e.message)
           }
         }
-        deleteMoments(query)
+        deleteMoments(req.query.date * 1)
           .then(d => res.send(d))
-          .catch(e =>  res.status(500).send(e))
+          .catch(e => res.status(500).send(e.message))
       })
-      .catch(e =>  res.status(500).send(e))
+      .catch(e => res.status(500).send(e.message))
   }
 }

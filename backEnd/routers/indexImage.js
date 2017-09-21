@@ -2,14 +2,27 @@ const fs = require('fs')
 const path = require('path')
 const promisify = require('util').promisify
 const rmFile = promisify(fs.unlink)
-const renameFile = promisify(fs.rename)
-const listDir = promisify(fs.readdir)
 
+const {logger} = require('../utils')
 const {saveIndexImage, getIndexImage, updateIndexImage} = require('../databaseOperation2')
 const crawler = require('../500pxCrawler')
-const {logger} = require('../utils')
-const likedDir = 'img/index/liked/'
-const tempDir = 'img/index/temp/'
+const likedDir = 'frontEnd/img/index/liked/'
+const tempDir = 'frontEnd/img/index/temp/'
+
+
+/**
+ * 每天的定时爬取图片的任务
+ * */
+const cron = async () => {
+  try {
+    let crawledImages = await crawler()
+    await Promise.all(crawledImages.map(img => saveIndexImage(img)))
+    return crawledImages
+  } catch (e) {
+    logger.error(e)
+  }
+}
+
 
 const _mvFile = (source, target) => {
 
@@ -21,10 +34,9 @@ const _mvFile = (source, target) => {
         return resolve()
       })
     }
-    console.log('CopyFile', source, target)
     let targetDir = path.dirname(target)
     if (!fs.existsSync(targetDir)) {
-      cb(targetDir + 'is not exist.')
+      done(targetDir + ' is not exist.')
     }
 
     const rd = fs.createReadStream(source)
@@ -48,56 +60,74 @@ const getOneImg = async () => {
     let likedImages
     if (tempImages.length) {
       return tempImages[~~(Math.random() * tempImages.length)]
-    } else if (likedImages = await getIndexImage('liked')){
+    } else if (likedImages = await getIndexImage('liked')) {
       if (likedImages.length) {
         return likedImages[~~(Math.random() * likedImages.length)]
       }
     } else {
-      let crawledImages = await crawler()
-      await Promise.all(crawledImages.map(img => saveIndexImage(img)))
+      let crawledImages = await cron()
       return crawledImages[~~(Math.random() * crawledImages.length)]
     }
   } catch (e) {
-    logger.info('step into this')
     return e
   }
 }
 
 const getBGI = (req, res) => {
   getOneImg().then(d => {
-    // todo 去数据库查询图片信息并一并返回
-    let _path = (d.type === 'temp' ? tempDir : likedDir) + d.id + '.' + d.format
-    let m = Object.assign(d._doc, {path: _path})
-    logger.info(m)
+    let _path = (d.type === 'temp' ? tempDir : likedDir).replace('frontEnd/', '') + d.id + '.' + d.format
+    let m = Object.assign(d.toObject(), {path: _path})
     res.send(m)
-  }).catch(e => res.status(500).send(e))
+  }).catch(e => res.status(500).send(e.message))
 }
 
-const likePicture = (req, res) => {
-  const imageName = req.params[0]
-  (async () => {
-    try {
-      await _mvFile(tempDir + imageName, likedDir + imageName)
-      res.send('Liked operator succeed')
-    } catch (e) {
-      res.status(500).send(e)
+const likePicture = async (req, res) => {
+  /**
+   * 传入一个图片名称[123.jpeg]进行操作
+   * @return {Boolean}
+   * */
+  try {
+    const imageName = req.body.imageName
+    const {name: id} = path.parse(imageName)
+    await _mvFile(tempDir + imageName, likedDir + imageName)
+    let _res = await updateIndexImage(Number(id), 'like')
+    if (_res.name) {
+      res.send(true)
+    } else {
+      res.status(500).send('Invalid image name.')
     }
-  })()
+  } catch (e) {
+    res.status(500).send(e.message)
+  }
 }
 
-const dislikePicture = (req, res) => {
-  const imageName = req.params[0]
-  (async () => {
+const dislikePicture = async (req, res) => {
+  try {
+    const imageName = req.query.imageName
+    const {name: id} = path.parse(imageName)
     await rmFile(tempDir + imageName)
-    // todo choose one file and send
+    await updateIndexImage(Number(id), 'dislike')
     let newImage = await getOneImg()
-    // todo path test
-    res.send(path.join('img/index/' + newImage))
-  })()
+    res.send(newImage)
+  } catch (e) {
+    res.status(500).send(e.message)
+  }
 }
+
+/**
+ * 开启服务器的时候先爬一次
+ * */
+cron()
+
+/**
+ * 然后每天爬一次
+ * */
+setTimeout(cron, 86400 * 1000)
 
 module.exports = {
   getBGI,
   likePicture,
   dislikePicture
 }
+
+// _mvFile('img/index/temp/227293929.jpeg', 'img/index/liked/227293929.jpeg').then(d=> console.log(d)).catch(e=> console.error(e))

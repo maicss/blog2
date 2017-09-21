@@ -9,6 +9,7 @@ const {
 } = require('./databaseModel')
 mongoose.Promise = global.Promise
 mongoose.connect(url, {useMongoClient: true})
+const {logger} = require('./utils')
 
 /*======================     user     ======================*/
 const getUser = async (condition) => {
@@ -34,12 +35,16 @@ const getMomentsList = async (condition) => {
    * @param {Object} condition
    * @param {Number} condition.limit - items count
    * @param {Number} condition.page - page base on limit
-   * @param {Boolean} condition.isPublic - moments private of false
+   * @param {Boolean} condition.isPublic=true - moments private of false
+   * @param {Number} condition.date - 查询某个说说
    * */
-  if (condition.limit && condition.page) {
+  if (condition.limit && condition.page || condition.date) {
     let skip = (condition.page - 1) * condition.limit
-    const isPublic = condition.isPublic || true
-    return await momentsModel.find({isPublic}, {_id: 0}).sort({date: -1}).skip(skip).limit(condition.limit)
+    const query = {}
+    query.isPublic = condition.isPublic || true
+    if (condition.date) {query.date = condition.date}
+    if (condition.dateStr) {query.dateStr = condition.dateStr}
+    return await momentsModel.find(query, '-_id -__v').sort({date: -1}).skip(skip).limit(condition.limit)
   } else {
     throw new Error('Invalid moments query condition')
   }
@@ -106,11 +111,15 @@ const deleteMoments = async (date) => {
    * @param {Number} date - date of one moments
    * @return {Boolean} true - delete success
    * */
-  let res = await momentsModel.deleteOne({date})
-  if (res.result.n === 1) {
-    return true
+  if (typeof date === 'number') {
+    let res = await momentsModel.deleteOne({date})
+    if (res.result.n === 1) {
+      return true
+    } else {
+      throw new Error('Invalid delete argument.')
+    }
   } else {
-    throw new Error('Bad delete arguments.')
+    throw new TypeError('Delete moments argument not Number type.')
   }
 
 }
@@ -207,6 +216,10 @@ const saveBlogHash = async (data) => {
 }
 
 const getBlogHash = async () => {
+  /**
+   * 获得所有blog的hash值
+   * @return {Array} list of blog hash
+   * */
   return await blogHashModel.find({}, '-_id -__v')
 }
 
@@ -249,11 +262,18 @@ const saveIndexImage = async (imageInfo) => {
    * @param {String} imageInfo.url
    * @return {Object} imageInfo
    * */
-
-  const model = new indexImageModel(imageInfo)
-  // model.isNew = false
-  // todo 第一次不存储
-  return await model.save()
+  try {
+    const model = new indexImageModel(imageInfo)
+    await model.save()
+    return 'saved'
+  } catch (e) {
+    // ignore duplicate key error
+    if (e.code !== 'E11000') {
+      throw e
+    } else {
+      return 'duplicate key'
+    }
+  }
 }
 
 const getIndexImage = async (type) => {
@@ -276,7 +296,6 @@ const updateIndexImage = async (id, action) => {
    * @param {'like', 'dislike'} action
    * @return {Boolean} action result
    * */
-
   if (typeof id === 'number' && (action === 'like' || action === 'dislike')) {
     if (action === 'like') {
       return await indexImageModel.findOneAndUpdate({id}, {type: 'liked'}, {new: true})
@@ -310,4 +329,4 @@ module.exports = {
 }
 
 // buildBlogSummary().then(d => console.log(d)).catch(e => console.error(e))
-// getBlogSummary().then(d => console.log(d)).catch(e => console.error(e))
+// momentsModel.find({ isPublic: true, date: 1505960032010 }, '-_id').sort({date: -1}).skip(undefined).limit(undefined).then(d => console.log(d)).catch(e => console.error(e))

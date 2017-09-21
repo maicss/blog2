@@ -13,7 +13,7 @@ module.exports = function (req, res) {
       if (stdout.trim() === 'Already up-to-date.') {
         res.send('Already up-to-date.')
       } else {
-        scanAndRender.then(d => res.send(d)).catch(e => res.status(500).send(e))
+        scanAndRender.then(d => res.send(d)).catch(e => res.status(500).send(e.message))
       }
     }
   })

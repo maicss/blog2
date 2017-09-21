@@ -11,6 +11,6 @@ module.exports = function (req, res) {
   }
   request(`https://api.seniverse.com/v3/weather/daily.json?key=cqihb9cchivbqjl8&location=${ip}&start=0&days=3`)
     .then(d => res.json(JSON.parse(d)))
-    .catch(e => res.status(500).send(e))
+    .catch(e => res.status(500).send(e.message))
 
 }

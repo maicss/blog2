@@ -40,7 +40,7 @@ module.exports = {
     condition.limit = Number(req.query.limit) || 10
     getBlogList(condition)
       .then(d => res.send(d))
-      .catch(e => res.status(500).send(e))
+      .catch(e => res.status(500).send(e.message))
   },
 
   getBlog (req, res, next) {
@@ -60,7 +60,7 @@ module.exports = {
             next()
           }
         })
-        .catch(e => res.status(500).send(e))
+        .catch(e => res.status(500).send(e.message))
     } else {
       next()
     }
@@ -69,7 +69,7 @@ module.exports = {
   getBlogSummary (req, res) {
     getBlogSummary()
       .then(d => res.send(d))
-      .catch(e => res.status(500).send(e))
+      .catch(e => res.status(500).send(e.message))
   },
 
   blogImageUpload: function (req, res) {
@@ -83,6 +83,6 @@ module.exports = {
   blogImageInfo (req, res) {
     getBlogImageInfo()
       .then(d => res.send(d))
-      .catch(e => res.status(500).send(e))
+      .catch(e => res.status(500).send(e.message))
   },
 }
