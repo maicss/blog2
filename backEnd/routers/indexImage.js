@@ -17,7 +17,6 @@ const cron = async () => {
   try {
     let crawledImages = await crawler()
     await Promise.all(crawledImages.map(img => saveIndexImage(img)))
-    // todo 这里还是出现了重复键的错误
     return crawledImages
   } catch (e) {
     logger.error(e)

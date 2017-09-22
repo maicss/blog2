@@ -16,14 +16,12 @@ date: 2017-03-16 13:34
 这里假设既有文件目录结构是这样的：
 
 ```javascript
-/*
- aa
-   - test.js
- bb
-   - a.md => this is file1
-   - b.md => this is file2
-   - c.md => this is file3
-*/
+ // aa
+ //   - test.js
+ // bb
+ //   - a.md => this is file1
+ //   - b.md => this is file2
+ //   - c.md => this is file3
 ```
 
 <!--more-->
@@ -117,7 +115,9 @@ readDir(path).then(files => {
 ```
 ### 使用Promise库bluebird
 
-> 这个比较厉害，建议就是替代自带的全局Promise
+这个Promise跟现在Javascript自带的Promise还是有区别的，但是区别也就是一些API上的区别，大部分都一样。
+
+> 这个比较霸道，建议直接是替代自带的全局Promise
 
 ```javascript
 const fs = require('fs');
@@ -221,9 +221,10 @@ let aa = (readDir)();
 
 aa.next();
 ```
+
 - 2，第一次改造。目标：能运行就行。
 
-```
+```javascript
 const fs = require('fs');
 let path = '../bb/';
 
@@ -253,7 +254,8 @@ double(gen);
 
 - 3，第二次改造。目标：只需要输入一个参数。
 
-```
+
+```javascript
 const fs = require('fs');
 let path = '../bb/';
 
@@ -297,11 +299,13 @@ co(gen);
 
 - 4，终极改造。目标：弄出来一个Promise自动执行的版本
 
-```
+
+```javascript
 const fs = require('fs');
 let path = '../bb/';
 
-// 但是到现在为止，我还是想不明白，上面的代码已经解决了同步代码解决异步的需求。为啥还要Promise
+// 原来不明白，上面的代码已经解决了同步代码解决异步的需求。为啥还要Promise
+// 后来想明白了，是为了跟现有的Promise结合，更有链式调用的好处
 let readDir  = function (path) {
     return new Promise((res, rej) => {
         fs.readdir(path, function (e, data) {

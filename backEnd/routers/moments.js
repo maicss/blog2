@@ -2,6 +2,7 @@ const moment = require('moment')
 const marked = require('maic-marked')
 const {getMomentsList, saveMoments, getMomentsSummary, deleteMoments, updateMoments} = require('../databaseOperation2')
 const fs = require('fs')
+const unlink = require('util').promisify(fs.unlink)
 const path = require('path')
 module.exports = {
   getMomentsList (req, res) {
@@ -63,12 +64,22 @@ module.exports = {
       .catch(e => e.status === 'error' ? res.status(400).send(e.message) : res.status(500).send(e.message))
   },
 
-  deleteMoments (req, res) {
+  deleteMoments: async (req, res) => {
     /**
      * 删除一个说说。先根据说说的date查找说说，然后删除说说的图片，再执行数据库删除
      *
      * */
-    let query = {date: req.query.date * 1}
+    try {
+      let query = {date: req.query.date * 1}
+      const moments = await getMomentsList(query)
+      if (moments[0] && moments[0].images.length) {
+        await unlink(path.resolve(__dirname, '../../frontEnd' + _path))
+      }
+      const _res = await deleteMoments(query.date)
+      res.send(_res)
+    } catch (e) {
+      res.status(500).send(e.message)
+    }
     getMomentsList(query)
       .then(d => {
         if (d[0] && d[0].images.length) {

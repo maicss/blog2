@@ -63,4 +63,5 @@ AuthorizationError.name = 'AuthorizationError'
 module.exports = {
   logger,
   AuthorizationError,
+  array2map,
 }
