@@ -9,7 +9,7 @@ let multer = require('multer')
 
 const {ports} = require('../../env')
 const {logger} = require('../utils')
-const {getUser} = require('../databaseOperation2')
+const {getUser} = require('../database')
 
 let storage = multer.diskStorage({
   destination (req, file, cb) {
@@ -27,8 +27,12 @@ const identificationCheck = function (req, res, next) {
   // check identification middleware
   let isLogin = false
   if (!req.cookies.uid) {
-    isLogin = false
-    next()
+    if (req.method === 'GET' || req.path === '/login') {
+      req.login = isLogin
+      next()
+    } else {
+      res.status(401).send({message: 'Please login and retry.'})
+    }
   } else {
     getUser({createTime: req.cookies.uid * 1})
       .then(d => {
@@ -38,11 +42,10 @@ const identificationCheck = function (req, res, next) {
           req.login = isLogin
           next()
         } else {
-          // response not login error
           isLogin ? next() : res.status(401).send({message: 'Please login and retry.'})
         }
       })
-      .catch(e => console.error('check identification middleware error: ', e))
+      .catch(e => logger.error('check identification middleware error: ', e))
   }
 }
 

@@ -1,4 +1,4 @@
-const url = require('../env').mongoConfig.url
+const url = require('../../env').mongoConfig.url
 const mongoose = require('mongoose')
 
 const {
@@ -9,7 +9,7 @@ const {
 } = require('./databaseModel')
 mongoose.Promise = global.Promise
 mongoose.connect(url, {useMongoClient: true})
-const {logger} = require('./utils')
+const {logger} = require('../utils')
 
 /*======================     user     ======================*/
 /**
@@ -334,5 +334,5 @@ module.exports = {
   updateIndexImage,
 }
 
-indexImageModel.find(undefined).then(d => console.log(d.length)).catch(e => console.error(e))
+// indexImageModel.find(undefined).then(d => console.log(d.length)).catch(e => console.error(e))
 // momentsModel.find({ isPublic: true, date: 1505960032010 }, '-_id').sort({date: -1}).skip(undefined).limit(undefined).then(d => console.log(d)).catch(e => console.error(e))

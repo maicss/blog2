@@ -11,7 +11,7 @@ const readFile = util.promisify(fs.readFile)
 const crypto = require('crypto')
 const path = require('path')
 
-const {getBlogHash, saveBlogHash, saveBlog} = require('./databaseOperation2')
+const {getBlogHash, saveBlogHash, saveBlog} = require('./database')
 const {logger} = require('./utils')
 const marked = require('maic-marked')
 // const mdTem = require('./md-template')

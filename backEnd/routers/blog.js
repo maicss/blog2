@@ -6,7 +6,7 @@ path = require('path')
 const promisify = require('util').promisify
 const lstat = promisify(fs.lstat)
 const readdir = promisify(fs.readdir)
-const {getBlogList, updateBlogProp, getBlogSummary} = require('../databaseOperation2')
+const {getBlogList, updateBlogProp, getBlogSummary} = require('../database')
 
 const getBlogImageInfo = async () => {
   let total = 0
@@ -52,7 +52,6 @@ module.exports = {
     if (pathReg.test(req.params['0'])) {
       updateBlogProp(req.params['0'], 'readCount')
         .then(d => {
-          console.log(d)
           if (d && d.escapeName === req.params['0']) {
             // vue 重构是用客户端渲染好了
             // res.sendFile('./frontEnd/archives/' + d.escapeName + '.html', {root: './'})

@@ -4,7 +4,7 @@ const promisify = require('util').promisify
 const rmFile = promisify(fs.unlink)
 
 const {logger} = require('../utils')
-const {saveIndexImage, getIndexImage, updateIndexImage} = require('../databaseOperation2')
+const {saveIndexImage, getIndexImage, updateIndexImage} = require('../database')
 const crawler = require('../500pxCrawler')
 const likedDir = 'frontEnd/img/index/liked/'
 const tempDir = 'frontEnd/img/index/temp/'
@@ -78,7 +78,10 @@ const getBGI = (req, res) => {
     let _path = (d.type === 'temp' ? tempDir : likedDir).replace('frontEnd/', '') + d.id + '.' + d.format
     let m = Object.assign(d.toObject(), {path: _path})
     res.send(m)
-  }).catch(e => res.status(500).send(e.message))
+  }).catch(e => {
+    logger.error(e)
+    res.status(500).send(e.message)
+  })
 }
 
 const likePicture = async (req, res) => {
@@ -117,12 +120,12 @@ const dislikePicture = async (req, res) => {
 /**
  * 开启服务器的时候先爬一次
  * */
-cron()
+// cron()
 
 /**
  * 然后每天爬一次
  * */
-setTimeout(cron, 86400 * 1000)
+// setTimeout(cron, 86400 * 1000)
 
 module.exports = {
   getBGI,

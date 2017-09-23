@@ -1,6 +1,6 @@
 const moment = require('moment')
 const marked = require('maic-marked')
-const {getMomentsList, saveMoments, getMomentsSummary, deleteMoments, updateMoments} = require('../databaseOperation2')
+const {getMomentsList, saveMoments, getMomentsSummary, deleteMoments, updateMoments} = require('../database')
 const fs = require('fs')
 const unlink = require('util').promisify(fs.unlink)
 const path = require('path')

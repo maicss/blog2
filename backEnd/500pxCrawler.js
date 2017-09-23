@@ -1,7 +1,7 @@
 const request = require('request-promise')
 const _request = require('request').defaults({encoding: null})
 const fs = require('fs')
-const {getIndexImage} = require('./databaseOperation2')
+const {getIndexImage} = require('./database')
 const {array2map} = require('./utils')
 /**
  * 爬取图片信息、过滤尺寸，下载图片、返回下载成功的图片信息列表

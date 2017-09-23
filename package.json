@@ -29,6 +29,7 @@
     "tracer": "^0.8.11"
   },
   "devDependencies": {
+    "cqc": "^0.2.0",
     "jsdoc": "^3.5.5"
   }
 }
