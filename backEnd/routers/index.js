@@ -88,7 +88,6 @@ router
   .get('/indexImage', routerList.indexImage.getBGI)
   .put('/indexImage', routerList.indexImage.likePicture)
   .delete('/indexImage', routerList.indexImage.dislikePicture)
-  .get('/blog/*', (req, res) => res.sendFile('/frontEnd/archives/' + req.params[0] + '.html', {'root': './'}))
   .get('/getBlog/*', routerList.blog.getBlog)
   .get('/blogList', routerList.blog.getBlogList)
   .get('/getBlogImageInfo', routerList.blog.blogImageInfo)

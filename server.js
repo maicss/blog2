@@ -10,7 +10,7 @@ const bodyParser = require('body-parser')
 
 moment.defaultFormat = 'YYYY-MM-DD HH:mm:ss'
 const {ports, credentials} = require('./env')
-const routers = require('./backEnd/routers/index')
+const routers = require('./backEnd/routers')
 
 let app = express()
 
