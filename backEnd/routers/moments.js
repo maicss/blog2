@@ -80,21 +80,5 @@ module.exports = {
     } catch (e) {
       res.status(500).send(e.message)
     }
-    getMomentsList(query)
-      .then(d => {
-        if (d[0] && d[0].images.length) {
-          try {
-            d[0].images.forEach(_path => {
-              fs.unlinkSync(path.resolve(__dirname, '../../frontEnd' + _path))
-            })
-          } catch (e) {
-            res.status(500).send(e.message)
-          }
-        }
-        deleteMoments(req.query.date * 1)
-          .then(d => res.send(d))
-          .catch(e => res.status(500).send(e.message))
-      })
-      .catch(e => res.status(500).send(e.message))
   }
 }

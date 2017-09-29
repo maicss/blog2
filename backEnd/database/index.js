@@ -278,10 +278,10 @@ const saveIndexImage = async (imageInfo) => {
     return 'saved'
   } catch (e) {
     // ignore duplicate key error
-    if (e.code !== 'E11000' && e.code !== '11000') {
-      throw e
-    } else {
+    if (e.code === 'E11000' || e.code === 11000) {
       return 'duplicate key'
+    } else {
+      throw e
     }
   }
 }
