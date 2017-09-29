@@ -21,7 +21,11 @@
     "highlight.js": "^9.9.0",
     "koa": "^2.3.0",
     "koa-body": "^2.3.0",
+    "koa-bodyparser": "^4.2.0",
+    "koa-logger": "^3.0.1",
+    "koa-onerror": "^3.1.0",
     "koa-router": "^7.2.1",
+    "koa-static": "^4.0.1",
     "maic-marked": "*",
     "moment": "^2.17.1",
     "mongoose": "^4.11.11",
@@ -32,7 +36,6 @@
     "tracer": "^0.8.11"
   },
   "devDependencies": {
-    "cqc": "^0.2.0",
     "jsdoc": "^3.5.5"
   }
 }

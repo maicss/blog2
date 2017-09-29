@@ -1,12 +1,15 @@
 const Koa = require('koa')
 const spdy = require('spdy')
+const http = require('http')
 const bodyParser = require('koa-body')()
+const koaLogger = require('koa-logger')
+const onerror = require('koa-onerror')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
 const router = require('./backEnd/routers/koaIndex')
 const {ports, credentials} = require('./env')
-spdyOption = {
+const spdyOption = {
   key: credentials.key,
   // cert: credentials.chain,
   cert: credentials.cert,
@@ -35,11 +38,12 @@ class KoaOnHttps extends Koa {
 }
 
 const app = new KoaOnHttps()
+// const app = new Koa()
 app.use(bodyParser)
+app.use(koaLogger())
+onerror(app)
 
-app
-  .use(router.routes())
-  .use(router.allowedMethods())
+
 
 // x-response-time
 
@@ -50,5 +54,12 @@ app.use(async function (ctx, next) {
   ctx.set('X-Response-Time', `${ms}ms`)
 })
 
-if (!module.parent) app.listen(ports.secure)
+app.use(router.routes(), router.allowedMethods())
+
+if (!module.parent) {
+  app.listen(ports.secure)
+  http.createServer(app.callback()).listen(ports['non-secure'])
+}
+
+app.on('error', err => console.log(err))
 console.log('server on https://localhost:' + ports.secure)

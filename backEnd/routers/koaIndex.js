@@ -4,7 +4,17 @@
 
 const router = require('koa-router')()
 
+const {ports} = require('../../env')
+const indexImage = require('./koaIndexImage')
+
 router
+  .use(async (ctx, next) => {
+    if (!ctx.secure) {
+      ctx.redirect('https://' + ctx.hostname + ':' + ports.secure + ctx.path)
+    } else {
+      await next()
+    }
+  })
   .get('/', async ctx => {
     ctx.body = 'Hello World'
   })
@@ -12,22 +22,7 @@ router
     console.log(ctx.request.body)
     ctx.body = ctx.request.body
   })
-  .all('/indexImage', async ctx => {
-    switch (ctx.method) {
-      case 'get':
-        break
-      case 'post':
-        break
-      case 'delete':
-        break
-    }
-  })
-  .all('/moments', async ctx => {
-    switch (ctx.method) {
-      case 'get':
-        break
-    }
-  })
+  .use('/indexImage', indexImage.routes())
 
 module.exports = router
 
