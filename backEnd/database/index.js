@@ -117,6 +117,7 @@ const updateMoments = async (moments) => {
 const deleteMoments = async (date) => {
   if (typeof date === 'number') {
     let res = await momentsModel.deleteOne({date})
+    await buildMomentsSummary()
     if (res.result.n === 1) {
       return true
     } else {
