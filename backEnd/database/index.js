@@ -177,7 +177,8 @@ const getBlogList = async (condition) => {
     const skip = (condition.page - 1) * condition.limit
     const query = {}
     if (condition.tag) query.tags = condition.tag
-    query.isPublic = condition.isPublic || true
+    // 还没想好私有的是什么样的，就没添加isPublic这个key
+    if (condition.isPublic) query.isPublic = condition.isPublic
     return await blogModel.find(query, '-_id').sort({date: -1}).skip(skip).limit(condition.limit)
   } else {
     throw new Error('Invalid blog query condition')
@@ -335,5 +336,5 @@ module.exports = {
   updateIndexImage,
 }
 
-// indexImageModel.find(undefined).then(d => console.log(d.length)).catch(e => console.error(e))
+// blogModel.find({}).then(d => console.log(d)).catch(e => console.error(e))
 // momentsModel.find({ isPublic: true, date: 1505960032010 }, '-_id').sort({date: -1}).skip(undefined).limit(undefined).then(d => console.log(d)).catch(e => console.error(e))
