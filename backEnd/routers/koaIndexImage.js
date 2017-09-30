@@ -114,7 +114,7 @@ const dislikePicture = async ctx => {
 
 router
   .get('/', getOneImage)
-  .put('', likePicture)
+  .put('/', likePicture)
   .delete('/', dislikePicture)
 
 /**
