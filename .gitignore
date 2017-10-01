@@ -75,18 +75,12 @@ jspm_packages
 # Yarn Integrity file
 .yarn-integrity
 
-### Windows template
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
-
 # Folder config file
 Desktop.ini
 $RECYCLE.BIN/
 .idea/
 env.js
-test.js
-test.html
+test*
 envProduct.js
 yarn.lock
 todos

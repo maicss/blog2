@@ -120,7 +120,7 @@ router
 /**
  * 开启服务器的时候先爬一次
  * */
-cron().then(() => logger.info('daily image crawled success.'))
+// cron().then(() => logger.info('daily image crawled success.'))
 
 /**
  * 然后每天爬一次

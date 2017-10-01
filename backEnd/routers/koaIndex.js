@@ -6,6 +6,7 @@ const router = require('koa-router')()
 
 const {ports} = require('../../env')
 const indexImage = require('./koaIndexImage')
+const user = require('./koaUser')
 
 router
   .use(async (ctx, next) => {
@@ -23,6 +24,8 @@ router
     ctx.body = ctx.request.body
   })
   .use('/indexImage', indexImage.routes())
+  .post('/login', user.routes())
+  .post('/logout', user.routes())
 
 module.exports = router
 

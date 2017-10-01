@@ -7,15 +7,13 @@ const util = require('util')
 const readdir = util.promisify(fs.readdir)
 const lstat = util.promisify(fs.lstat)
 const readFile = util.promisify(fs.readFile)
-// const writeFile = util.promisify(fs.writeFile)
 const crypto = require('crypto')
 const path = require('path')
 
 const {getBlogHash, saveBlogHash, saveBlog} = require('./database')
 const {logger} = require('./utils')
 const marked = require('maic-marked')
-// const mdTem = require('./md-template')
-const {MD_OUTPUT_DIR, MD_DIR, SITE_NAME} = require('../env')
+const {MD_DIR} = require('../env')
 const ALGORITHM = 'sha256'
 const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/
 

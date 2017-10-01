@@ -4,6 +4,7 @@ const http = require('http')
 const bodyParser = require('koa-body')()
 const koaLogger = require('koa-logger')
 const onerror = require('koa-onerror')
+const compress = require('koa-compress')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
@@ -40,8 +41,15 @@ class KoaOnHttps extends Koa {
 const app = new KoaOnHttps()
 // const app = new Koa()
 app.use(bodyParser)
-app.use(koaLogger())
-onerror(app)
+// app.use(koaLogger())
+app.use(compress({
+  filter: function (content_type) {
+    return /text/i.test(content_type)
+  },
+  threshold: 2048,
+  flush: require('zlib').Z_SYNC_FLUSH
+}))
+// onerror(app)
 
 
 
@@ -61,5 +69,7 @@ if (!module.parent) {
   http.createServer(app.callback()).listen(ports['non-secure'])
 }
 
-app.on('error', err => console.log(err))
+// app.on('error', err => console.log(err))
 console.log('server on https://localhost:' + ports.secure)
+
+module.exports = app
