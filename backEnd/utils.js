@@ -1,30 +1,30 @@
-/**
- * 构建统一的返回错误
- * @param e{Error | Object} 错误对象
- * @param type {String}[] 错误的级别
- * @param desc {String}[] 错误描述
- * @return {Object}
- * */
-const buildDatabaseRes = (e, type, desc) => {
-  if (e instanceof Error) {
-    if (!['fault', 'error'].includes(type)) {
-      throw Error('build param - type invalid.')
-    }
-    return Promise.reject({
-      status: type,
-      result: {
-        name: e.name,
-        message: e.message,
-        desc
-      }
+const fs = require('fs')
+const promisify = require('util').promisify
+const path = require('path')
+
+
+const saveFileFromStream = async (fileStreamArr, destination) => {
+  const promisifyPipe = (fileStream) => {
+    return new Promise((res, rej) => {
+      const finalPath = path.join(destination, new Date() * 1 + '-' + fileStream.name)
+      const outStream = fs.createWriteStream(finalPath)
+      const inStream = fs.createReadStream(fileStream.path)
+      inStream.pipe(outStream)
+      outStream.on('error', e => rej(e))
+      inStream.on('error', e => rej(e))
+      outStream.on('finish', function () {
+        res(null, {
+          destination: destination,
+          filename: fileStream.name,
+          path: finalPath,
+          size: outStream.bytesWritten
+        })
+      })
     })
-  } else {
-    return {
-      status: 'success',
-      result: e
-    }
   }
+  return await Promise.all(fileStreamArr.map(fileStream => promisifyPipe(fileStream)))
 }
+
 
 const array2map = (list, key) => {
   if (Array.isArray(list)) {
@@ -60,8 +60,12 @@ const logger = require('tracer').colorConsole(shellLoggerSetting)
 const AuthorizationError = new Error()
 AuthorizationError.name = 'AuthorizationError'
 
+const AttrError = new Error()
+AttrError.name = 'Attribute Missing Error'
+
 module.exports = {
   logger,
   AuthorizationError,
   array2map,
+  saveFileFromStream,
 }

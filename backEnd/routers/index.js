@@ -96,11 +96,11 @@ router
 
   .post('/github', routerList.github)
 
-  .get('/getMomentsList', routerList.moments.getMomentsList)
-  .post('/postMoments', upload.any(), routerList.moments.postMoments)
-  .get('/getSummary', routerList.moments.getSummary)
-  .delete('/deleteMoments', routerList.moments.deleteMoments)
-  .put('/updateMoments', routerList.moments.updateMoments)
+  .get('/moments', routerList.moments.getMomentsList)
+  .post('/moments', upload.any(), routerList.moments.postMoments)
+  .get('/momentsSummary', routerList.moments.getSummary)
+  .delete('/moments', routerList.moments.deleteMoments)
+  .put('/moments', routerList.moments.updateMoments)
 
   .get('/getWeather', routerList.getWeather)
 

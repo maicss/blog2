@@ -1,10 +1,14 @@
+const http = require('http')
+
 const Koa = require('koa')
 const spdy = require('spdy')
-const http = require('http')
-const bodyParser = require('koa-body')()
+
+const bodyParser = require('koa-body')
 const koaLogger = require('koa-logger')
 const onerror = require('koa-onerror')
+const helmet = require('koa-helmet')
 const compress = require('koa-compress')
+const staticServer = require('koa-static')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
@@ -40,8 +44,9 @@ class KoaOnHttps extends Koa {
 
 const app = new KoaOnHttps()
 // const app = new Koa()
-app.use(bodyParser)
-// app.use(koaLogger())
+app.use(bodyParser({ multipart: true }))
+app.use(koaLogger())
+app.use(helmet())
 app.use(compress({
   filter: function (content_type) {
     return /text/i.test(content_type)
@@ -49,7 +54,7 @@ app.use(compress({
   threshold: 2048,
   flush: require('zlib').Z_SYNC_FLUSH
 }))
-// onerror(app)
+onerror(app)
 
 
 
@@ -61,7 +66,7 @@ app.use(async function (ctx, next) {
   const ms = new Date() - start
   ctx.set('X-Response-Time', `${ms}ms`)
 })
-
+app.use(staticServer('frontEnd'))
 app.use(router.routes(), router.allowedMethods())
 
 if (!module.parent) {

@@ -22,7 +22,7 @@ module.exports = {
 
     let date = moment()
     try {
-      let body = JSON.parse(req.body.obj)
+      let body = JSON.parse(req.body.moments)
       body.isPublic = true
       if (body.content.trim().startsWith('pre-')) {
         body.isPublic = false
@@ -46,7 +46,7 @@ module.exports = {
         .catch(e => res.status(500).send(e.message))
     } catch (e) {
       res.status(400).send({
-        error: 'JSON Parse Error in post data: ' + req.body.obj
+        error: 'JSON Parse Error in post data: ' + req.body.moments
       })
     }
   },

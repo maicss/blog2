@@ -6,7 +6,7 @@ const momentsSchema = new Schema({
   date: {type: Number, required: true, unique: true, index: true},
   dateStr: String,
   'weather': {
-    'date': {type: String, required: true},
+    'date': {type: String},
     'text_day': {type: String, required: true},
     'code_day': {type: String, required: true},
     'text_night': {type: String, required: true},
