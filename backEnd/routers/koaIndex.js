@@ -2,15 +2,17 @@
  * Created by maic on 24/09/2017.
  */
 
-const path = require('path')
 const fs = require('fs')
 
 const router = require('koa-router')()
 
 const {ports} = require('../../env')
+// routers
 const indexImage = require('./koaIndexImage')
 const user = require('./koaUser')
 const moments = require('./koaMoments')
+const weather = require('./koaWeather')
+
 const {getUser} = require('../database')
 
 const {logger, saveFileFromStream} = require('../utils')
@@ -44,15 +46,18 @@ const identificationCheck = async (ctx, next) => {
 const imageUploader = async (ctx, next) => {
   // 图片上传中间件
   const basePath = 'frontEnd/img/'
-  if (!ctx.headers.source) return ctx.throw(400, 'Missing source filed in headers.')
-  if ((ctx.path === '/fun' || ctx.path === '/imageUploader') && ctx.method === 'POST' && ctx.request.body && ctx.request.body.files) {
+  // koa2的files一直是一个对象
+  ctx.request.body._files = []
+  // 注意这里的photo属性是由前端指定的，正常中间件是不依赖任何前端的关键字，在里面对每一个属性的类型进行判断再进行下一步
+  if ((ctx.path === '/moments' || ctx.path === '/imageUploader') && ctx.method === 'POST' && ctx.request.body && ctx.request.body.files && ctx.request.body.files.photos) {
+    if (!ctx.headers.source) return ctx.throw(400, 'Missing source filed in headers.')
     let files;
-    if (Array.isArray(ctx.request.body.files.photo)) {
-      files = ctx.request.body.files.photo
+    if (Array.isArray(ctx.request.body.files.photos)) {
+      files = ctx.request.body.files.photos
     } else {
-      files = [ctx.request.body.files.photo]
+      files = [ctx.request.body.files.photos]
     }
-    await saveFileFromStream(files, basePath + ctx.headers.source)
+    ctx.request.body._files = await saveFileFromStream(files, basePath + ctx.headers.source)
     await next()
   } else {
     await next()
@@ -74,21 +79,19 @@ router
   })
   .use(identificationCheck)
   .get('/', async ctx => {
-    ctx.body = 'Hello World'
+    ctx.type = 'html'
+    ctx.body = fs.createReadStream('frontEnd/static/index.html');
   })
   .get('/googlee2a049d23b90511c.html', async ctx => {
     ctx.type = 'html'
     ctx.body = fs.createReadStream('frontEnd/static/googlee2a049d23b90511c.html');
   })
-  .use('/indexImage', indexImage.routes())
-  .use('/moments', moments.routes())
-  .post('/login', user.routes())
-  .post('/logout', user.routes())
-  .use('*', async ctx => {
-    // 所有的其他请求都交给vue的404处理
-    ctx.type = 'html'
-    ctx.body = fs.createReadStream('frontEnd/static/index.html');
-  })
+  .use('/indexImage', indexImage.routes(), indexImage.allowedMethods())
+  .use('/moments', moments.routes(), moments.allowedMethods())
+  .post('/login', user.routes(), user.allowedMethods())
+  .post('/logout', user.routes(), user.allowedMethods())
+  .use('/weather', weather.routes(), weather.allowedMethods())
+
 
 module.exports = router
 

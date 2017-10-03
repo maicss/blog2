@@ -77,7 +77,7 @@ const getOneImage = async ctx => {
   const image = await getOneImg()
   const _path = (image.type === 'temp' ? tempDir : likedDir).replace('frontEnd/', '') + image.id + '.' + image.format
   // todo 创建一个indexImage类，做到这里可以直接console.assert
-  return ctx.body = Object.assign(image, {path: _path})
+  return ctx.body = Object.assign({path: _path}, image._doc)
 }
 
 const likePicture = async ctx => {

@@ -1,5 +1,5 @@
 const http = require('http')
-
+const fs = require('fs')
 const Koa = require('koa')
 const spdy = require('spdy')
 
@@ -44,9 +44,9 @@ class KoaOnHttps extends Koa {
 
 const app = new KoaOnHttps()
 // const app = new Koa()
-app.use(bodyParser({ multipart: true }))
-app.use(koaLogger())
-app.use(helmet())
+app.use(bodyParser({multipart: true}))
+// app.use(koaLogger())
+// app.use(helmet())
 app.use(compress({
   filter: function (content_type) {
     return /text/i.test(content_type)
@@ -55,8 +55,6 @@ app.use(compress({
   flush: require('zlib').Z_SYNC_FLUSH
 }))
 onerror(app)
-
-
 
 // x-response-time
 
@@ -68,6 +66,12 @@ app.use(async function (ctx, next) {
 })
 app.use(staticServer('frontEnd'))
 app.use(router.routes(), router.allowedMethods())
+app.use(async (ctx, next) => {
+  await next()
+  // 所有的其他请求都交给vue的404处理
+  ctx.type = 'html'
+  ctx.body = fs.createReadStream('frontEnd/index.html')
+})
 
 if (!module.parent) {
   app.listen(ports.secure)

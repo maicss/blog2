@@ -1,5 +1,4 @@
 const fs = require('fs')
-const promisify = require('util').promisify
 const path = require('path')
 
 
@@ -13,7 +12,8 @@ const saveFileFromStream = async (fileStreamArr, destination) => {
       outStream.on('error', e => rej(e))
       inStream.on('error', e => rej(e))
       outStream.on('finish', function () {
-        res(null, {
+        res({
+          rawFile: fileStream,
           destination: destination,
           filename: fileStream.name,
           path: finalPath,
@@ -56,16 +56,22 @@ const shellLoggerSetting = {
 }
 const logger = require('tracer').colorConsole(shellLoggerSetting)
 
-// todo build some private error type
-const AuthorizationError = new Error()
-AuthorizationError.name = 'AuthorizationError'
 
-const AttrError = new Error()
-AttrError.name = 'Attribute Missing Error'
+class ExtendableError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, this.constructor);
+    } else {
+      this.stack = (new Error(message)).stack;
+    }
+  }
+}
 
 module.exports = {
   logger,
-  AuthorizationError,
   array2map,
   saveFileFromStream,
+  ExtendableError,
 }
