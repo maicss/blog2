@@ -11,10 +11,10 @@ const {ports} = require('../../env')
 const indexImage = require('./koaIndexImage')
 const user = require('./koaUser')
 const moments = require('./koaMoments')
+const blog = require('./koaBlog')
 const weather = require('./koaWeather')
 
 const {getUser} = require('../database')
-
 const {logger, saveFileFromStream} = require('../utils')
 
 const identificationCheck = async (ctx, next) => {
@@ -42,7 +42,6 @@ const identificationCheck = async (ctx, next) => {
     }
   }
 }
-
 const imageUploader = async (ctx, next) => {
   // 图片上传中间件
   const basePath = 'frontEnd/img/'
@@ -91,6 +90,7 @@ router
   .post('/login', user.routes(), user.allowedMethods())
   .post('/logout', user.routes(), user.allowedMethods())
   .use('/weather', weather.routes(), weather.allowedMethods())
+  .use('/blog', blog.routes(), weather.allowedMethods())
 
 
 module.exports = router
