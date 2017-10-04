@@ -48,7 +48,7 @@ const imageUploader = async (ctx, next) => {
   // koa2的files一直是一个对象
   ctx.request.body._files = []
   // 注意这里的photo属性是由前端指定的，正常中间件是不依赖任何前端的关键字，在里面对每一个属性的类型进行判断再进行下一步
-  if ((ctx.path === '/moments' || ctx.path === '/imageUploader') && ctx.method === 'POST' && ctx.request.body && ctx.request.body.files && ctx.request.body.files.photos) {
+  if ((ctx.path === '/moments' || ctx.path === '/blog/imageUpload') && ctx.method === 'POST' && ctx.request.body && ctx.request.body.files && ctx.request.body.files.photos) {
     if (!ctx.headers.source) return ctx.throw(400, 'Missing source filed in headers.')
     let files;
     if (Array.isArray(ctx.request.body.files.photos)) {

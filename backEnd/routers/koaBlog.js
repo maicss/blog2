@@ -49,10 +49,22 @@ const _getBlogContent = async ctx => {
   ctx.body = await updateBlogProp(ctx.params.name, 'readCount')
 }
 
+const _blogImageUpload = async ctx => {
+  ctx.body = ctx.request.body._files.map(file => ({
+    originName: file.filename,
+    path: file.path.replace('frontEnd', ''),
+    size: file.size
+  }))
+}
+
+const _blogImageInfo = async ctx => {
+  ctx.body = await getBlogImageInfo()
+}
+
 router.get('/list', _getBlogList)
 router.get('/summary', _getSummary)
 router.get('/archive/:name', _getBlogContent)
-router.get('/imageInfo')
-router.post('/imageUpload')
+router.get('/imageInfo', _blogImageInfo)
+router.post('/imageUpload', _blogImageUpload)
 
 module.exports = router

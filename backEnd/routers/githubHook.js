@@ -5,15 +5,15 @@
 const scanAndRender = require('../markdownRender')
 const exec = require('child_process').exec
 
-module.exports = function (req, res) {
+module.exports = async ctx => {
   exec('git pull', function (err, stdout) {
     if (err) {
-      res.send('git pull error: ', err)
+      ctx.throw(500, err)
     } else {
       if (stdout.trim() === 'Already up-to-date.') {
-        res.send('Already up-to-date.')
+        ctx.body = 'Already up-to-date.'
       } else {
-        scanAndRender.then(d => res.send(d)).catch(e => res.status(500).send(e.message))
+        scanAndRender.then(d => ctx.body = d).catch(e => ctx.throw(e))
       }
     }
   })
