@@ -290,26 +290,41 @@ const saveIndexImage = async (imageInfo) => {
 
 /**
  * 找一个图片
- * @param {String} type ['liked', 'temp', '']
+ * @param {String} type ['like', 'temp', undefined] - 如果为空，则认为是'like'+'temp'，因为还有一个dislike
  * @return {Object} indexImage instance
  * */
 const getIndexImage = async (type) => {
-  return await indexImageModel.find({type}, '-_id -__v')
+  if (!type) {
+    return await indexImageModel.find({'type': {$ne: 'dislike'}}, '-_id -__v')
+  } else if (type === 'like' || type === 'temp') {
+    return await indexImageModel.find({type}, '-_id -__v')
+  } else {
+    throw new Error('Invalid get index image argument')
+  }
 }
 
 /**
- * 更新首页背景图片信息，目前只有两个操作，一个是喜欢 -> 把图片的type修改成liked，一个是删除 -> 删除图片信息
+ * 删除index image 信息
+ * @param {Number} id - 图片id的
+ * @return {Promise}
+ * */
+const deleteIndexImage = async (id) => {
+  if (typeof  id === 'number') {
+    return await indexImageModel.deleteOne({id})
+  } else {
+    throw new TypeError('Invalid delete index image argument')
+  }
+}
+
+/**
+ * 更新首页背景图片信息，目前只有两个操作，一个是喜欢，一个是不喜欢，都是修改图片的type
  * @param {Number} id - id of image
  * @param {String} action ['like', 'dislike']
  * @return {Boolean} action result
  * */
 const updateIndexImage = async (id, action) => {
   if (typeof id === 'number' && (action === 'like' || action === 'dislike')) {
-    if (action === 'like') {
-      return await indexImageModel.findOneAndUpdate({id}, {type: 'liked'}, {new: true})
-    } else {
-      return await indexImageModel.findOneAndRemove({id})
-    }
+    return await indexImageModel.findOneAndUpdate({id}, {type: action}, {new: true})
   } else {
     throw new Error('Invalid update index image action')
   }
@@ -334,7 +349,12 @@ module.exports = {
   saveIndexImage,
   getIndexImage,
   updateIndexImage,
+  deleteIndexImage,
 }
 
-// updateMoments({content: 'aa', date: 1541910142000}).then(d => console.log(d)).catch(e => console.error(e))
+// indexImageModel.find({type: 'liked'}).then(d => console.log(d)).catch(e => console.error(e))
+// indexImageModel.find({type: 'liked'}).then(d => console.log(d)).catch(e => console.error(e))
+// indexImageModel.updateMany({type: 'liked'}, {type: 'like'}).then(d => {
+//   console.log(d)
+// }).catch(e => console.error(e))
 // momentsModel.find({ isPublic: true, date: 1505960032010 }, '-_id').sort({date: -1}).skip(undefined).limit(undefined).then(d => console.log(d)).catch(e => console.error(e))
