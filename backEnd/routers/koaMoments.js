@@ -1,7 +1,6 @@
 const path = require('path')
 const unlink = require('util').promisify(require('fs').unlink)
 
-const moment = require('moment')
 const marked = require('maic-marked')
 const {getMomentsList, saveMoments, getMomentsSummary, deleteMoments, updateMoments} = require('../database')
 const router = require('koa-router')()
@@ -28,7 +27,11 @@ const momentsList = async (ctx) => {
 
 const postMoments = async (ctx) => {
   try {
-    let date = moment()
+    let date = new Date()
+    const dateStr = date.getFullYear() + '-' + date.getMonth().toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0') + ' ' + date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0') + ':' + date.getSeconds().toString().padStart(2, '0')
+    if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateStr)) {
+      throw new Error('data format for moments error')
+    }
     let body = JSON.parse(ctx.request.body.fields.moments)
     body.isPublic = true
     if (body.content.trim().startsWith('pre-')) {
@@ -36,8 +39,7 @@ const postMoments = async (ctx) => {
       body.content = body.content.substring(body.content.indexOf('pre-') + 'pre-'.length)
     }
     let content = {
-      'date': date * 1,
-      'dateStr': date.format('YYYY-MM-DD HH:ss:mm'),
+      'date': date * 1,dateStr,
       'weather': body.weather,
       'content': new marked().exec(body.content).html,
       'images': [],

@@ -13,6 +13,7 @@ const user = require('./koaUser')
 const moments = require('./koaMoments')
 const blog = require('./koaBlog')
 const weather = require('./koaWeather')
+const githubHook = require('./githubHook')
 
 const {getUser} = require('../database')
 const {logger, saveFileFromStream} = require('../utils')
@@ -21,7 +22,7 @@ const identificationCheck = async (ctx, next) => {
   // check identification middleware
   let isLogin = false
   if (!ctx.cookies.get('uid')) {
-    if (ctx.method === 'GET' || ctx.path === '/login') {
+    if (ctx.method === 'GET' || ctx.path === '/login' || ctx.path === '/githubHook') {
       ctx.login = isLogin
       await next()
     } else {
@@ -47,7 +48,7 @@ const imageUploader = async (ctx, next) => {
   const basePath = 'frontEnd/img/'
   // koa2的files一直是一个对象
   ctx.request.body._files = []
-  // 注意这里的photo属性是由前端指定的，正常中间件是不依赖任何前端的关键字，在里面对每一个属性的类型进行判断再进行下一步
+  // 注意这里的photos属性是由前端指定的，正常中间件是不依赖任何前端的关键字，在里面对每一个属性的类型进行判断再进行下一步
   if ((ctx.path === '/moments' || ctx.path === '/blog/imageUpload') && ctx.method === 'POST' && ctx.request.body && ctx.request.body.files && ctx.request.body.files.photos) {
     if (!ctx.headers.source) return ctx.throw(400, 'Missing source filed in headers.')
     let files;
@@ -91,7 +92,6 @@ router
   .post('/logout', user.routes(), user.allowedMethods())
   .use('/weather', weather.routes(), weather.allowedMethods())
   .use('/blog', blog.routes(), weather.allowedMethods())
-
+  .post('/githubHook', githubHook)
 
 module.exports = router
-

@@ -1,6 +1,6 @@
 # Blog 历程
 
-tags: blog
+tags: 闲话
 
 date: 2017-09-12 17:49
 

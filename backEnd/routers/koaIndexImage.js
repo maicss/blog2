@@ -3,22 +3,44 @@ const path = require('path')
 const promisify = require('util').promisify
 const rmFile = promisify(fs.unlink)
 const Router = require('koa-router')
+const _request = require('request').defaults({encoding: null})
 
 const {logger} = require('../utils')
-const {saveIndexImage, getIndexImage, updateIndexImage} = require('../database')
+const {saveIndexImage, getIndexImage, updateIndexImage, deleteIndexImage} = require('../database')
 const crawler = require('../500pxCrawler')
 const likedDir = 'frontEnd/img/index/liked/'
 const tempDir = 'frontEnd/img/index/temp/'
 const router = Router()
+
+
+const downloadFile = (url, path) => {
+  return new Promise((resolve, reject) => {
+    _request(url, (err, res, body) => {
+      if (err) return reject(err)
+      fs.writeFile(path, body, e => {
+        if (e) return reject(e)
+        resolve('done')
+      })
+    })
+  })
+}
 
 /**
  * 每天的定时爬取图片的任务
  * */
 const cron = async () => {
   try {
+    // 先爬取信息
     let crawledImages = await crawler()
-    await Promise.all(crawledImages.map(img => saveIndexImage(img)))
-    return crawledImages
+    // 去数据库去重
+    const newImages = await Promise.all(crawledImages.map(img => saveIndexImage(img)))
+    // 下载图片
+    const downloadInfo = await Promise.all(newImages.map(image => downloadFile(img.url, tempDir + img.id + '.' + img.format)))
+    // 删除下载失败的
+    const succeed = downloadInfo.map((info, i) => info === 'done' ? newImages[i] : undefined).filter(v => v)
+    const failedIds = downloadInfo.map((info, i) => info === 'done' ? undefined : newImages[i].id)
+    await Promise.all(failedIds.map(id => deleteIndexImage(id)))
+    return succeed
   } catch (e) {
     logger.error(e)
   }
@@ -85,18 +107,19 @@ const likePicture = async ctx => {
    * 传入一个图片名称[123.jpeg]进行操作
    * @return {Boolean}
    * */
+  const {imageName} = ctx.request.body
+  const {name: id} = path.parse(imageName)
+  await _mvFile(tempDir + imageName, likedDir + imageName)
+  let _res
   try {
-    const {imageName} = ctx.body
-    const {name: id} = path.parse(imageName)
-    await _mvFile(tempDir + imageName, likedDir + imageName)
-    let _res = await updateIndexImage(Number(id), 'like')
-    if (_res.name) {
-      ctx.body = true
-    } else {
-      ctx.throw(400, 'Invalid image name.')
-    }
+    _res = await updateIndexImage(Number(id), 'like')
   } catch (e) {
-    ctx.throw(500, e.message)
+    ctx.throw(400, e.message)
+  }
+  if (_res.name) {
+    ctx.body = true
+  } else {
+    ctx.throw(400, 'Invalid image name.')
   }
 }
 
@@ -106,7 +129,7 @@ const dislikePicture = async ctx => {
     const {name: id} = path.parse(imageName)
     await rmFile(tempDir + imageName)
     await updateIndexImage(Number(id), 'dislike')
-    ctx.body  = await getOneImg()
+    ctx.body = await getOneImg()
   } catch (e) {
     ctx.throw(500, e.message)
   }
@@ -120,11 +143,20 @@ router
 /**
  * 开启服务器的时候先爬一次
  * */
-// cron().then(() => logger.info('daily image crawled success.'))
+// cron().then(() => logger.info('daily image crawled success.')).catch(e => logger.warn(e))
 
 /**
- * 然后每天爬一次
+ * 然后每天中午12点爬一次
  * */
-// setTimeout(cron, 86400 * 1000)
+setTimeout(function() {
+  // 下面两种不确定用哪个好，先用计算都这种吧
+  const someDaysNoon = 1507262400000 // 2017-10-06 12:00:00
+  if ((Date.now() - someDaysNoon) % 86400000 < 1000){
+  // const _now = new Date()
+  // const time = _now.getHours()+''+_now.getMinutes()+_now.getSeconds()
+  // if (time === '1200'){
+    cron().then(() => logger.info('daily image crawled success.')).catch(e => logger.warn(e))
+  }
+}, 1000)
 
 module.exports = router

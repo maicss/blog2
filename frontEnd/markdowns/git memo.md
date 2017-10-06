@@ -11,7 +11,9 @@ date: 2017-03-08 17:41
 
 ## untrack file
 
-`git rm --cache file`
+```bash
+git rm --cache file
+```
 
 这个是GitHub推荐的方法。
 
@@ -23,13 +25,20 @@ date: 2017-03-08 17:41
 
 ## list tracked file
 
-`git ls-tree -r master --name-only`
+```bash
+git ls-tree -r master --name-only
+```
 
 ## git merge 和 git rebase
 
 ## 线上强制覆盖本地
 
-```$xslt
+```bash
 git fetch --all
 git reset --hard origin/master # master 为分支名称
+```
+
+## 恢复没有提交的本地删除文件
+```bash
+git checkout HEAD <path>
 ```
