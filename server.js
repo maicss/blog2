@@ -46,7 +46,7 @@ const app = new KoaOnHttps()
 // const app = new Koa()
 app.use(bodyParser({multipart: true}))
 // app.use(koaLogger())
-// app.use(helmet())
+app.use(helmet())
 app.use(compress({
   filter: function (content_type) {
     return /text/i.test(content_type)

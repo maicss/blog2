@@ -77,16 +77,16 @@ const _mvFile = (source, target) => {
 
 const getOneImg = async () => {
   let tempImages = await getIndexImage('temp')
-  let likedImages
   if (tempImages.length) {
     return tempImages[~~(Math.random() * tempImages.length)]
-  } else if (likedImages = await getIndexImage('liked')) {
+  } else {
+    const likedImages = await getIndexImage('like')
     if (likedImages.length) {
       return likedImages[~~(Math.random() * likedImages.length)]
+    } else {
+      let crawledImages = await cron()
+      return crawledImages[~~(Math.random() * crawledImages.length)]
     }
-  } else {
-    let crawledImages = await cron()
-    return crawledImages[~~(Math.random() * crawledImages.length)]
   }
 }
 
@@ -94,7 +94,7 @@ const getOneImage = async ctx => {
   const image = await getOneImg()
   const _path = (image.type === 'temp' ? tempDir : likedDir).replace('frontEnd/', '') + image.id + '.' + image.format
   // todo 创建一个indexImage类，做到这里可以直接console.assert
-  return ctx.body = Object.assign({path: _path}, image._doc)
+  ctx.body = Object.assign({path: _path}, image._doc)
 }
 
 const likePicture = async ctx => {
