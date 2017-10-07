@@ -68,9 +68,14 @@ app.use(staticServer('frontEnd'))
 app.use(router.routes(), router.allowedMethods())
 app.use(async (ctx, next) => {
   await next()
-  // 所有的其他请求都交给vue的404处理
-  ctx.type = 'html'
-  ctx.body = fs.createReadStream('frontEnd/index.html')
+  if (ctx.method === 'get') {
+    // 所有的其他请求都交给vue的404处理
+    ctx.type = 'html'
+    ctx.body = fs.createReadStream('frontEnd/index.html')
+  } else {
+    ctx.throw(404, 'Not Found')
+  }
+
 })
 
 if (!module.parent) {
