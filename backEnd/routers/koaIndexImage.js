@@ -12,7 +12,6 @@ const likedDir = 'frontEnd/img/index/liked/'
 const tempDir = 'frontEnd/img/index/temp/'
 const router = Router()
 
-
 const downloadFile = (url, path) => {
   return new Promise((resolve, reject) => {
     _request(url, (err, res, body) => {
@@ -77,21 +76,17 @@ const _mvFile = (source, target) => {
 }
 
 const getOneImg = async () => {
-  try {
-    let tempImages = await getIndexImage('temp')
-    let likedImages
-    if (tempImages.length) {
-      return tempImages[~~(Math.random() * tempImages.length)]
-    } else if (likedImages = await getIndexImage('liked')) {
-      if (likedImages.length) {
-        return likedImages[~~(Math.random() * likedImages.length)]
-      }
-    } else {
-      let crawledImages = await cron()
-      return crawledImages[~~(Math.random() * crawledImages.length)]
+  let tempImages = await getIndexImage('temp')
+  let likedImages
+  if (tempImages.length) {
+    return tempImages[~~(Math.random() * tempImages.length)]
+  } else if (likedImages = await getIndexImage('liked')) {
+    if (likedImages.length) {
+      return likedImages[~~(Math.random() * likedImages.length)]
     }
-  } catch (e) {
-    return e
+  } else {
+    let crawledImages = await cron()
+    return crawledImages[~~(Math.random() * crawledImages.length)]
   }
 }
 
@@ -148,13 +143,13 @@ router
 /**
  * 然后每天中午12点爬一次
  * */
-setTimeout(function() {
+setTimeout(function () {
   // 下面两种不确定用哪个好，先用计算都这种吧
   const someDaysNoon = 1507262400000 // 2017-10-06 12:00:00
-  if ((Date.now() - someDaysNoon) % 86400000 < 1000){
-  // const _now = new Date()
-  // const time = _now.getHours()+''+_now.getMinutes()+_now.getSeconds()
-  // if (time === '1200'){
+  if ((Date.now() - someDaysNoon) % 86400000 < 1000) {
+    // const _now = new Date()
+    // const time = _now.getHours()+''+_now.getMinutes()+_now.getSeconds()
+    // if (time === '1200'){
     cron().then(() => logger.info('daily image crawled success.')).catch(e => logger.warn(e))
   }
 }, 1000)

@@ -28,7 +28,12 @@ const momentsList = async (ctx) => {
 const postMoments = async (ctx) => {
   try {
     let date = new Date()
-    const dateStr = date.getFullYear() + '-' + date.getMonth().toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0') + ' ' + date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0') + ':' + date.getSeconds().toString().padStart(2, '0')
+    const dateStr = date.getFullYear() + '-'
+      + (date.getMonth() + 1).toString().padStart(2, '0') + '-'
+      + date.getDate().toString().padStart(2, '0') + ' '
+      + date.getHours().toString().padStart(2, '0') + ':'
+      + date.getMinutes().toString().padStart(2, '0') + ':'
+      + date.getSeconds().toString().padStart(2, '0')
     if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateStr)) {
       throw new Error('data format for moments error')
     }
@@ -39,7 +44,7 @@ const postMoments = async (ctx) => {
       body.content = body.content.substring(body.content.indexOf('pre-') + 'pre-'.length)
     }
     let content = {
-      'date': date * 1,dateStr,
+      'date': date * 1, dateStr,
       'weather': body.weather,
       'content': new marked().exec(body.content).html,
       'images': [],

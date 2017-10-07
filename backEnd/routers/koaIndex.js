@@ -29,16 +29,17 @@ const identificationCheck = async (ctx, next) => {
       return ctx.throw(401, 'Please login and retry.')
     }
   } else {
-    const user = await getUser({createTime: ctx.cookies.get('uid') * 1})
-    isLogin = !!user.length
-    if (ctx.method === 'GET' || ctx.path === '/login') {
-      ctx.login = isLogin
+    try {
+      await getUser({createTime: ctx.cookies.get('uid') * 1})
+      ctx.login = true
       await next()
-    } else {
-      if (isLogin) {
+    } catch (e) {
+      if (ctx.method === 'GET' || ctx.path === '/login' || ctx.path === '/githubHook') {
         await next()
-      } else {
+      } else if (e.message === 'Cannot find user.') {
         return ctx.throw(401, 'Please login and retry.')
+      } else {
+        ctx.throw(e)
       }
     }
   }
