@@ -68,7 +68,7 @@ app.use(staticServer('frontEnd'))
 app.use(router.routes(), router.allowedMethods())
 app.use(async (ctx, next) => {
   await next()
-  if (ctx.method === 'get') {
+  if (ctx.method === 'GET') {
     // 所有的其他请求都交给vue的404处理
     ctx.type = 'html'
     ctx.body = fs.createReadStream('frontEnd/index.html')
