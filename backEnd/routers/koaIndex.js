@@ -52,7 +52,7 @@ const imageUploader = async (ctx, next) => {
   // 注意这里的photos属性是由前端指定的，正常中间件是不依赖任何前端的关键字，在里面对每一个属性的类型进行判断再进行下一步
   if ((ctx.path === '/moments' || ctx.path === '/blog/imageUpload') && ctx.method === 'POST' && ctx.request.body && ctx.request.body.files && ctx.request.body.files.photos) {
     if (!ctx.headers.source) return ctx.throw(400, 'Missing source filed in headers.')
-    let files;
+    let files
     if (Array.isArray(ctx.request.body.files.photos)) {
       files = ctx.request.body.files.photos
     } else {
@@ -66,26 +66,19 @@ const imageUploader = async (ctx, next) => {
 }
 
 router
-  .use(async (ctx, next) => {
-    if (!ctx.secure) {
-      ctx.redirect('https://' + ctx.hostname + ':' + ports.secure + ctx.path)
-    } else {
-      await next()
-    }
-  })
-  .use(imageUploader)
   .post('/fun', async ctx => {
     logger.info(ctx.request.body)
     ctx.body = ctx.request.body
   })
   .use(identificationCheck)
+  .use(imageUploader)
   .get('/', async ctx => {
     ctx.type = 'html'
-    ctx.body = fs.createReadStream('frontEnd/static/index.html');
+    ctx.body = fs.createReadStream('frontEnd/static/index.html')
   })
   .get('/googlee2a049d23b90511c.html', async ctx => {
     ctx.type = 'html'
-    ctx.body = fs.createReadStream('frontEnd/static/googlee2a049d23b90511c.html');
+    ctx.body = fs.createReadStream('frontEnd/static/googlee2a049d23b90511c.html')
   })
   .use('/indexImage', indexImage.routes(), indexImage.allowedMethods())
   .use('/moments', moments.routes(), moments.allowedMethods())

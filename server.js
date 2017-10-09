@@ -13,7 +13,7 @@ const staticServer = require('koa-static')
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
 const router = require('./backEnd/routers/koaIndex')
-const {ports, credentials} = require('./env')
+const {ports, credentials, env} = require('./env')
 const spdyOption = {
   key: credentials.key,
   // cert: credentials.chain,
@@ -43,10 +43,19 @@ class KoaOnHttps extends Koa {
 }
 
 const app = new KoaOnHttps()
+app.use((ctx, next) => {
+  if (!ctx.secure && ctx.method === 'GET') {
+    ctx.status = 302
+    return ctx.redirect('https://' + ctx.hostname + ':' + ports.secure + ctx.path)
+  }
+  return next()
+})
 // const app = new Koa()
 app.use(bodyParser({multipart: true}))
 // app.use(koaLogger())
-app.use(helmet())
+if (env === 'product'){
+  app.use(helmet())
+}
 app.use(compress({
   filter: function (content_type) {
     return /text/i.test(content_type)
