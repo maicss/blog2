@@ -93,7 +93,6 @@ const getOneImg = async () => {
 const getOneImage = async ctx => {
   const image = await getOneImg()
   const _path = (image.type === 'temp' ? tempDir : likedDir).replace('frontEnd/', '') + image.id + '.' + image.format
-  // todo 创建一个indexImage类，做到这里可以直接console.assert
   ctx.body = Object.assign({path: _path}, image._doc)
 }
 
@@ -119,15 +118,11 @@ const likePicture = async ctx => {
 }
 
 const dislikePicture = async ctx => {
-  try {
-    const imageName = ctx.query.imageName
-    const {name: id} = path.parse(imageName)
-    await rmFile(tempDir + imageName)
-    await updateIndexImage(Number(id), 'dislike')
-    ctx.body = await getOneImg()
-  } catch (e) {
-    ctx.throw(500, e.message)
-  }
+  const imageName = ctx.query.imageName
+  const {name: id} = path.parse(imageName)
+  await rmFile(tempDir + imageName)
+  await updateIndexImage(Number(id), 'dislike')
+  ctx.body = await getOneImg()
 }
 
 router

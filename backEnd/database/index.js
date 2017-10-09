@@ -36,10 +36,10 @@ const getUser = async (condition) => {
 /**
  * 根据限制条件获得一组说说
  * @param {Object} condition
- * @param {Number} condition.limit[] - items count
- * @param {Number} condition.page[] - page base on limit
- * @param {Boolean} condition.isPublic=true[] - moments private of false
- * @param {Number} condition.date[] - 查询某个说说
+ * @param {Number} condition[].limit - items count
+ * @param {Number} condition[].page - page base on limit
+ * @param {Boolean} condition[].isPublic=true - moments private of false
+ * @param {Number} condition[].date - 查询某个说说
  * */
 const getMomentsList = async (condition) => {
   if (condition.limit && condition.page || condition.date) {

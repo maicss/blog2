@@ -7,37 +7,34 @@ const router = require('koa-router')()
 const {logger} = require('../utils')
 
 const momentsList = async (ctx) => {
+  let condition = {}
+  condition.isPublic = !ctx.login
+  if (ctx.query.filter && ctx.query.filter !== 'all') {
+    condition.dateStr = new RegExp('^' + ctx.query.filter)
+  }
+  condition.page = Number(ctx.query.page)
+  condition.limit = Number(ctx.query.limit)
   try {
-    let condition = {}
-    condition.isPublic = !ctx.login
-    if (ctx.query.filter && ctx.query.filter !== 'all') {
-      condition.dateStr = new RegExp('^' + ctx.query.filter)
-    }
-    condition.page = Number(ctx.query.page)
-    condition.limit = Number(ctx.query.limit)
     ctx.body = await getMomentsList(condition)
   } catch (e) {
-    if (e.message === 'Invalid moments query condition') {
-      return ctx.throw(400, e.message)
-    } else {
-      return ctx.throw(500, e.message)
-    }
+    return ctx.throw(400, e.message)
   }
 }
 
 const postMoments = async (ctx) => {
+  let date = new Date()
+  const dateStr = date.getFullYear() + '-'
+    + (date.getMonth() + 1).toString().padStart(2, '0') + '-'
+    + date.getDate().toString().padStart(2, '0') + ' '
+    + date.getHours().toString().padStart(2, '0') + ':'
+    + date.getMinutes().toString().padStart(2, '0') + ':'
+    + date.getSeconds().toString().padStart(2, '0')
+  let body
   try {
-    let date = new Date()
-    const dateStr = date.getFullYear() + '-'
-      + (date.getMonth() + 1).toString().padStart(2, '0') + '-'
-      + date.getDate().toString().padStart(2, '0') + ' '
-      + date.getHours().toString().padStart(2, '0') + ':'
-      + date.getMinutes().toString().padStart(2, '0') + ':'
-      + date.getSeconds().toString().padStart(2, '0')
-    if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateStr)) {
-      throw new Error('data format for moments error')
-    }
-    let body = JSON.parse(ctx.request.body.fields.moments)
+    body = JSON.parse(ctx.request.body.fields.moments)
+  } catch (e) {
+    return ctx.throw(400, 'parse body json error: ' + e.message)
+  }
     body.isPublic = true
     if (body.content.trim().startsWith('pre-')) {
       body.isPublic = false
@@ -56,9 +53,6 @@ const postMoments = async (ctx) => {
     })
 
     ctx.body = await saveMoments(content)
-  } catch (e) {
-    return ctx.throw(400, e.message)
-  }
 }
 
 const getSummary = async (ctx) => {
@@ -70,25 +64,22 @@ const _updateMoments = async (ctx) => {
   ctx.body = await updateMoments({date: ctx.request.body.date, content})
 }
 
+/**
+ * 删除一个说说。先根据说说的date查找说说，然后删除说说的图片，再执行数据库删除
+ *
+ * */
 const _deleteMoments = async ctx => {
-  /**
-   * 删除一个说说。先根据说说的date查找说说，然后删除说说的图片，再执行数据库删除
-   *
-   * */
+  let query = {date: ctx.query.date * 1}
+  let moments
   try {
-    let query = {date: ctx.query.date * 1}
-    const moments = await getMomentsList(query)
-    if (moments[0] && moments[0].images.length) {
-      await Promise.all(moments[0].images.map(_path => unlink(path.resolve(__dirname, '../../frontEnd' + _path))))
-    }
-    ctx.body = await deleteMoments(query.date)
+    moments = await getMomentsList(query)
   } catch (e) {
-    if (e.message === 'Invalid delete argument.') {
-      return ctx.throw(400, e.message)
-    } else {
-      return ctx.throw(500, e.message)
-    }
+    ctx.throw(400, e.message)
   }
+  if (moments[0] && moments[0].images.length) {
+    await Promise.all(moments[0].images.map(_path => unlink(path.resolve(__dirname, '../../frontEnd' + _path))))
+  }
+  ctx.body = await deleteMoments(query.date)
 }
 
 router.get('/list', momentsList)

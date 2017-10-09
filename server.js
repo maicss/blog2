@@ -56,13 +56,7 @@ app.use(bodyParser({multipart: true}))
 if (env === 'product'){
   app.use(helmet())
 }
-app.use(compress({
-  filter: function (content_type) {
-    return /text/i.test(content_type)
-  },
-  threshold: 2048,
-  flush: require('zlib').Z_SYNC_FLUSH
-}))
+app.use(compress())
 onerror(app)
 
 // x-response-time
@@ -73,7 +67,7 @@ app.use(async function (ctx, next) {
   const ms = new Date() - start
   ctx.set('X-Response-Time', `${ms}ms`)
 })
-app.use(staticServer('frontEnd'))
+app.use(staticServer('frontEnd', {maxage: 8640000}))
 app.use(router.routes(), router.allowedMethods())
 app.use(async (ctx, next) => {
   await next()

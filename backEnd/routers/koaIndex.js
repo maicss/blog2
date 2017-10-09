@@ -6,7 +6,6 @@ const fs = require('fs')
 
 const router = require('koa-router')()
 
-const {ports} = require('../../env')
 // routers
 const indexImage = require('./koaIndexImage')
 const user = require('./koaUser')
