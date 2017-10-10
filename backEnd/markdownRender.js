@@ -10,9 +10,10 @@ const readFile = util.promisify(fs.readFile)
 const crypto = require('crypto')
 const path = require('path')
 
+const marked = require('maic-marked')
+
 const {getBlogHash, saveBlogHash, saveBlog} = require('./database')
 const {logger} = require('./utils')
-const marked = require('maic-marked')
 const {MD_DIR} = require('../env')
 const ALGORITHM = 'sha256'
 const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/
@@ -56,7 +57,6 @@ const getAllMarkdownHash = async () => {
     let files = await readdir(path.resolve(__dirname, MD_DIR))
     return Promise.all(files.map(file => {
       if (!fileNameRegExp.test(file)) {
-        logger.error(file, ' not match given format')
         throw Error(file + ' not match given format')
       }
       let filename = path.parse(file).name
@@ -104,24 +104,30 @@ const renderAll = async (forceRender) => {
     if (needRenderFileCount) {
       for (let i = 0; i < needRenderFileCount; i++) {
         (async () => {
+          let renderResult
           try {
-            const renderResult = await singleRender(filesInfoCopy[i])
-            let blogInfo = {
-              originalFileName: filesInfoCopy[i].originalFileName,
-              escapeName: filesInfoCopy[i].escapeName,
-              isPublic: true,
-            }
-            // private parse
-            if (renderResult.title.startsWith('pre-')) {
-              blogInfo.isPublic = false
-              renderResult.title = renderResult.title.substring('pre-'.length)
-            }
-            blogInfo = Object.assign(blogInfo, renderResult)
-            if (filesInfoCopy[i].isNewFile) {
-              blogInfo.readCount = 0
-              blogInfo.commentCount = 0
-            }
-            delete filesInfoCopy[i].isNewFile
+            renderResult = await singleRender(filesInfoCopy[i])
+          } catch (e) {
+            throw Error(e)
+          }
+
+          let blogInfo = {
+            originalFileName: filesInfoCopy[i].originalFileName,
+            escapeName: filesInfoCopy[i].escapeName,
+            isPublic: true,
+          }
+          // private parse
+          if (renderResult.title.startsWith('pre-')) {
+            blogInfo.isPublic = false
+            renderResult.title = renderResult.title.substring('pre-'.length)
+          }
+          blogInfo = Object.assign(blogInfo, renderResult)
+          if (filesInfoCopy[i].isNewFile) {
+            blogInfo.readCount = 0
+            blogInfo.commentCount = 0
+          }
+          delete filesInfoCopy[i].isNewFile
+          try {
             await saveBlog(blogInfo)
             await saveBlogHash(filesInfoCopy[i])
           } catch (e) {

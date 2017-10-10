@@ -203,7 +203,6 @@ const getBlogList = async (condition) => {
  * @return {Object} blog saved
  * */
 const saveBlog = async (blog) => {
-  // todo 这里应该是更新
   console.log(blog.escapeName)
   const res = await blogModel.update({escapeName: blog.escapeName}, blog, {upsert: true})
   await buildBlogSummary()
