@@ -58,7 +58,7 @@ const blogSchema = new Schema({
 const blogHashSchema = new Schema({
   'originalFileName': {type: String, required: true},
   'escapeName': {type: String, required: true},
-  'hash': {type: String, required: true}
+  'hash': {type: String, required: true, index: true, unique: true}
 })
 
 const userSchema = new Schema({

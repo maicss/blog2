@@ -79,7 +79,15 @@ const _deleteMoments = async ctx => {
   if (moments[0] && moments[0].images.length) {
     await Promise.all(moments[0].images.map(_path => unlink(path.resolve(__dirname, '../../frontEnd' + _path))))
   }
-  ctx.body = await deleteMoments(query.date)
+  try {
+    ctx.body = await deleteMoments(query.date)
+  } catch (e) {
+    if (e.message === 'Invalid delete argument.') {
+      return ctx.throw(400, e.message)
+    }
+    ctx.throw(e)
+  }
+
 }
 
 router.get('/list', momentsList)

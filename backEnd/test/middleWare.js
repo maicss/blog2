@@ -3,7 +3,7 @@ require('should-http')
 
 const app = require('../../server')
 
-const uid = 1506766620306
+const uid = 1490173421950
 
 describe('中间件 => identificationCheck测试套件', function () {
   it('带UID的post请求', function (done) {
