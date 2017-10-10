@@ -31,17 +31,13 @@ const cron = async () => {
   try {
     // 先爬取信息
     let crawledImages = await crawler()
-    logger.info('crawledImages: ', crawledImages.length)
     // 去数据库去重
     const newImages = await Promise.all(crawledImages.map(img => saveIndexImage(img)))
-    logger.info('newImages: ', newImages.length)
-    logger.info('newImages[0]: ', newImages[0])
     // 下载图片
     const downloadInfo = await Promise.all(newImages.map(img => downloadFile(img.url, tempDir + img.id + '.' + img.format)))
-    logger.info('downloadInfo: ', downloadInfo)
     // 删除下载失败的
     const succeed = downloadInfo.map((info, i) => info === 'done' ? newImages[i] : undefined).filter(v => v)
-    const failedIds = downloadInfo.map((info, i) => info === 'done' ? undefined : newImages[i].id)
+    const failedIds = downloadInfo.map((info, i) => info === 'done' ? undefined : newImages[i].id).filter(v => v)
     await Promise.all(failedIds.map(id => deleteIndexImage(id)))
     return succeed
   } catch (e) {
@@ -81,12 +77,10 @@ const _mvFile = (source, target) => {
 
 const getOneImg = async () => {
   let tempImages = await getIndexImage('temp')
-  logger.info(tempImages.length)
   if (tempImages.length) {
     return tempImages[~~(Math.random() * tempImages.length)]
   } else {
     const likedImages = await getIndexImage('like')
-    logger.info(tempImages.length)
     if (likedImages.length) {
       return likedImages[~~(Math.random() * likedImages.length)]
     } else {
@@ -128,7 +122,7 @@ const dislikePicture = async ctx => {
   const {name: id} = path.parse(imageName)
   await rmFile(tempDir + imageName)
   await updateIndexImage(Number(id), 'dislike')
-  ctx.body = await getOneImg()
+  ctx.body = 'succeed'
 }
 
 router
