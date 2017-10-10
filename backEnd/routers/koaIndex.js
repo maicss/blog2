@@ -32,11 +32,14 @@ const identificationCheck = async (ctx, next) => {
       await getUser({createTime: ctx.cookies.get('uid') * 1})
       ctx.login = true
       await next()
+      // todo 这里的逻辑好像不对
     } catch (e) {
-      if (ctx.method === 'GET' || ctx.path === '/login' || ctx.path === '/githubHook') {
-        await next()
-      } else if (e.message === 'Cannot find user.') {
-        return ctx.throw(401, 'Please login and retry.')
+      if (e.message === 'Cannot find user.') {
+        if (ctx.method === 'GET' || ctx.path === '/login' || ctx.path === '/githubHook') {
+          await next()
+        } else {
+          return ctx.throw(401, 'Please login and retry.')
+        }
       } else {
         ctx.throw(e)
       }
