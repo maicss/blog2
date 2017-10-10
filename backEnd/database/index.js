@@ -273,18 +273,7 @@ const updateBlogProp = async (escapeName, attr) => {
  * @return {Object} imageInfo
  * */
 const saveIndexImage = async (imageInfo) => {
-  try {
-    const model = new indexImageModel(imageInfo)
-    await model.save()
-    return 'saved'
-  } catch (e) {
-    // ignore duplicate key error
-    if (e.code === 'E11000' || e.code === 11000) {
-      return 'duplicate key'
-    } else {
-      throw e
-    }
-  }
+  return await indexImageModel.findOneAndUpdate({id: imageInfo.id}, imageInfo, {upsert: true, new: true})
 }
 
 /**

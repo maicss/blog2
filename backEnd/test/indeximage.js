@@ -10,6 +10,7 @@ describe('路由 => 【首页图片】测试套件', function () {
       .get('/indexImage')
       .expect(200, (err, res) => {
         should.not.exist(err)
+        console.log(res.body)
         res.body.should.be.an.Object()
         res.body.path.should.be.a.String()
         res.body.type.should.be.a.String()
