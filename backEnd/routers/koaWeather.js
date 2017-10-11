@@ -7,6 +7,9 @@ const weather = async ctx => {
     ip = Math.random() > 0.5 ? '116.246.19.150' : '112.22.233.200'
   } else if (ctx.ip.startsWith('::ffff:')) {
     ip = ctx.ip.substring('::ffff:'.length)
+    if (ip.startsWith('10.200')) {
+      ip = Math.random() > 0.5 ? '116.246.19.150' : '112.22.233.200'
+    }
   } else {
     throw new Error('IP exception: ', ctx.ip)
   }
