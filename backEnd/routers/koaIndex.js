@@ -68,6 +68,14 @@ const imageUploader = async (ctx, next) => {
 }
 
 router
+  .post('/report-violation', async ctx => {
+    if(ctx.request.body) {
+        logger.info('CSP Violation: ', ctx.request.body)
+    } else {
+        logger.warn('CSP Violation: No data received!')
+    }
+    ctx.status = 204
+  })
   .post('/fun', async ctx => {
     logger.info(ctx.request.body)
     ctx.body = ctx.request.body
