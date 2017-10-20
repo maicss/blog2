@@ -44,8 +44,8 @@ const getUser = async (condition) => {
 const getMomentsList = async (condition) => {
   if (condition.limit && condition.page || condition.date) {
     let skip = (condition.page - 1) * condition.limit
-    const query = {}
-    query.isPublic = condition.isPublic || true
+    const query = {isPublic: true}
+    if (condition.isPublic === false) delete query.isPublic
     if (condition.date) {query.date = condition.date}
     if (condition.dateStr) {query.dateStr = condition.dateStr}
     return await momentsModel.find(query, '-_id -__v').sort({date: -1}).skip(skip).limit(condition.limit)
