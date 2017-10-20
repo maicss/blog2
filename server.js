@@ -58,7 +58,7 @@ app.use((ctx, next) => {
 // const app = new Koa()
 app.use(bodyParser({multipart: true}))
 // app.use(koaLogger())
-if (1){
+if (env === 'product'){
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
@@ -69,7 +69,7 @@ if (1){
         reportUri: '/report-violation',
         frameSrc: ["https://googleads.g.doubleclick.net"],
         connectSrc: ["'self'", 'https://googleads.g.doubleclick.net'],
-        imgSrc: ["'self'", 'https://www.google-analytics.com', 'https://googleads.g.doubleclick.net', 'https://www.google.com', 'https://www.google.cn', 'https://stats.g.doubleclick.net'],
+        imgSrc: ["'self'", 'https://www.google-analytics.com', 'https://googleads.g.doubleclick.net', 'https://www.google.com', 'https://www.google.cn', 'https://stats.g.doubleclick.net', 'data:'],
         objectSrc: ["'none'"]
       }
     }
