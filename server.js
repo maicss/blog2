@@ -54,7 +54,12 @@ app.use((ctx, next) => {
 app.use(bodyParser({multipart: true}))
 // app.use(koaLogger())
 if (env === 'product'){
-  app.use(helmet())
+  app.use(helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self', 'https://www.google-analytics.com', 'https://api.github.com', 'https://www.googletagmanager.com', 'https://pagead2.googlesyndication.com'"]
+    }
+  }))
 }
 app.use(compress())
 onerror(app)
