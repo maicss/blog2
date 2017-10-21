@@ -69,7 +69,7 @@ if (env === 'product'){
         reportUri: '/report-violation',
         frameSrc: ["https://googleads.g.doubleclick.net"],
         connectSrc: ["'self'", 'https://googleads.g.doubleclick.net', 'https://api.github.com', 'https://gh-oauth.imsun.net/'],
-        imgSrc: ["'self'", 'https://www.google-analytics.com', 'https://googleads.g.doubleclick.net', 'https://www.google.com', 'https://www.google.cn', 'https://stats.g.doubleclick.net', 'data:', 'blob:'],
+        imgSrc: ["'self'", 'https://www.google-analytics.com', 'https://googleads.g.doubleclick.net', 'https://www.google.com', 'https://www.google.cn', 'https://stats.g.doubleclick.net', 'data:', 'blob:', 'https://avatars2.githubusercontent.com'],
         objectSrc: ["'none'"]
       }
     }
