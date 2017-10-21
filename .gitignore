@@ -80,7 +80,6 @@ Desktop.ini
 $RECYCLE.BIN/
 .idea/
 env.js
-test*
 envProduct.js
 yarn.lock
 todos
@@ -89,3 +88,5 @@ launch.json
 .vscode/
 aa.*
 .gitignore
+frontEnd/index.html
+frontEnd/static
