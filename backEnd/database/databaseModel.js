@@ -58,7 +58,7 @@ const blogSchema = new Schema({
 const blogHashSchema = new Schema({
   'originalFileName': {type: String, required: true},
   'escapeName': {type: String, required: true},
-  'hash': {type: String, required: true}
+  'hash': {type: String, required: true, index: true, unique: true}
 })
 
 const userSchema = new Schema({
@@ -68,7 +68,7 @@ const userSchema = new Schema({
 })
 
 const indexImageSchema = new Schema({
-  type: {type: String, required: true, enum: ['temp', 'liked']},
+  type: {type: String, required: true, enum: ['temp', 'like', 'dislike']},
   name: {type: String, required: true},
   author: {type: String, required: true},
   width: {type: Number, required: true},

@@ -16,10 +16,13 @@ const moments = {
   }
 }
 
+const uid = 1490173421950
+const momentsDate = 0
+
 describe('路由 =>【说说】测试套件：', function () {
   it('获取说说列表', function (done) {
     request(app.listen())
-      .get('/moments/list?limit=10&page=1')
+      .get('/moments/list?limit=10&page=1&filter=2017')
       .expect(200, function (err, res) {
         should.not.exist(err)
         res.body.should.be.an.Array()
@@ -38,6 +41,7 @@ describe('路由 =>【说说】测试套件：', function () {
   it.skip('发表一个有图片的说说', function (done) {
     request(app.listen())
       .post('/moments')
+      .set('cookie', `uid=${uid}`)
       .send(moments)
       .expect(200, function (err, res) {
         should.not.exist(err)
@@ -49,53 +53,52 @@ describe('路由 =>【说说】测试套件：', function () {
         done()
       })
   })
-  it.skip('发表一个没有图片的说说', function (done) {
+  it('发表一个没有图片的说说', function (done) {
     request(app.listen())
       .post('/moments')
+      .set('cookie', `uid=${uid}`)
       .send(moments)
       .expect(200, function (err, res) {
         should.not.exist(err)
         res.body.should.be.an.Object()
-        res.body.date.should.equals(moments.date)
-        res.body.dateStr.should.equals(moments.dateStr)
         res.body.content.should.equals(moments.content)
         res.body.weather.should.deepEqual(moments.weather)
         done()
       })
   })
-  it.skip('更新一个说说', function (done) {
+  it('更新一个说说', function (done) {
     request(app.listen())
       .put('/moments')
-      .set('cookie', 'uid=1506766620306')
-      .send({content: '<p>API测试moments put one</p>\n', date: moments.date})
+      .set('cookie', `uid=${uid}`)
+      .send({content: '<p>测试使用说说 modify</p>\n', date: 1507606513299})
       .expect(200, (err, res) => {
         should.not.exist(err)
-        res.body.content.should.equals('<p>API测试moments put one</p>\n')
-        res.body.date.should.equals(moments.date)
+        res.body.content.should.equals('<p>测试使用说说 modify</p>\n')
+        res.body.date.should.equals(1507606513299)
         done()
       })
   })
-  it.skip('更新一个不存在的说说', function (done) {
+  it('更新一个不存在的说说', function (done) {
     request(app.listen())
       .put('/moments')
-      .set('cookie', 'uid=1506766620306')
-      .send({content: '<p>API测试moments put one</p>\n', date: 1541910142000})
+      .set('cookie', `uid=${uid}`)
+      .send({content: '<p>API测试moments put one</p>\n', date: 1507606035189})
       .expect(204, done)
   })
-  it.skip('删除一个说说', function (done) {
+  it('删除一个说说', function (done) {
     request(app.listen())
-      .delete('/moments?date=1506959859958')
-      .set('cookie', 'uid=1506766620306')
+      .delete('/moments?date=1507606035187')
+      .set('cookie', `uid=${uid}`)
       .expect(200, function (err, res) {
         should.not.exist(err)
         res.body.should.be.true()
         done()
       })
   })
-  it.skip('删除一个不存在的说说', function (done) {
+  it('删除一个不存在的说说', function (done) {
     request(app.listen())
-      .delete('/moments?date=1506766620306')
-      .set('cookie', 'uid=1506766620306')
+      .delete('/moments?date=1507606035187')
+      .set('cookie', `uid=${uid}`)
       .expect(400, done)
   })
   it('获取说说总结', function (done) {

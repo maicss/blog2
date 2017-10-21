@@ -13,9 +13,7 @@ const _pull = async () => {
         res('Already up-to-date.')
       } else {
         res('something new')
-        scanAndRender.then(d => ctx.body = d).catch(e => ctx.throw(e))
       }
-
     })
   })
 }

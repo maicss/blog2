@@ -34,10 +34,10 @@ const cron = async () => {
     // 去数据库去重
     const newImages = await Promise.all(crawledImages.map(img => saveIndexImage(img)))
     // 下载图片
-    const downloadInfo = await Promise.all(newImages.map(image => downloadFile(img.url, tempDir + img.id + '.' + img.format)))
+    const downloadInfo = await Promise.all(newImages.map(img => downloadFile(img.url, tempDir + img.id + '.' + img.format)))
     // 删除下载失败的
     const succeed = downloadInfo.map((info, i) => info === 'done' ? newImages[i] : undefined).filter(v => v)
-    const failedIds = downloadInfo.map((info, i) => info === 'done' ? undefined : newImages[i].id)
+    const failedIds = downloadInfo.map((info, i) => info === 'done' ? undefined : newImages[i].id).filter(v => v)
     await Promise.all(failedIds.map(id => deleteIndexImage(id)))
     return succeed
   } catch (e) {
@@ -122,7 +122,7 @@ const dislikePicture = async ctx => {
   const {name: id} = path.parse(imageName)
   await rmFile(tempDir + imageName)
   await updateIndexImage(Number(id), 'dislike')
-  ctx.body = await getOneImg()
+  ctx.body = 'succeed'
 }
 
 router
@@ -150,3 +150,15 @@ setTimeout(function () {
 }, 1000)
 
 module.exports = router
+
+// const img = {"name" : "СПб", "author" : "maratneva", "width" : 1680, "height" : 1114, "id" : 230250209, "format" : "jpeg", "url" : "https://drscdn.500px.org/photo/230250207/m%3D2048/v2?user_id=20263175&webp=true&sig=c23d03848a2497acdc78002b2aead5d8862ec570503f27b9a3f2696c263945af", "type" : "temp", "__v" : 0 }
+
+// _request(img.url, (err, res, body) => {
+//   if (err) return console.error(err)
+//   fs.writeFile(img.id + '.' + img.format, body, e => {
+//     if (e) return console.error(e)
+//     console.log(111)
+//   })
+// })
+
+// downloadFile(img.url, img.id + '.' + img.format).then(d => console.log(d)).catch(e => console.error(e))

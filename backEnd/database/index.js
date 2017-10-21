@@ -44,8 +44,8 @@ const getUser = async (condition) => {
 const getMomentsList = async (condition) => {
   if (condition.limit && condition.page || condition.date) {
     let skip = (condition.page - 1) * condition.limit
-    const query = {}
-    query.isPublic = condition.isPublic || true
+    const query = {isPublic: true}
+    if (condition.isPublic === false) delete query.isPublic
     if (condition.date) {query.date = condition.date}
     if (condition.dateStr) {query.dateStr = condition.dateStr}
     return await momentsModel.find(query, '-_id -__v').sort({date: -1}).skip(skip).limit(condition.limit)
@@ -203,8 +203,8 @@ const getBlogList = async (condition) => {
  * @return {Object} blog saved
  * */
 const saveBlog = async (blog) => {
-
-  const res = await new blogModel(blog).save()
+  console.log(blog.escapeName)
+  const res = await blogModel.update({escapeName: blog.escapeName}, blog, {upsert: true})
   await buildBlogSummary()
   return res
 }
@@ -218,9 +218,8 @@ const saveBlog = async (blog) => {
  * @return {Object} data saved
  * */
 const saveBlogHash = async (data) => {
-
   if (data.hash && data.escapeName && data.originalFileName) {
-    return await new blogHashModel(data).save()
+    return await blogHashModel.update({hash: data.hash}, data, {upsert: true})
   } else {
     throw new Error('Invalid hash data to save.')
   }
@@ -274,18 +273,7 @@ const updateBlogProp = async (escapeName, attr) => {
  * @return {Object} imageInfo
  * */
 const saveIndexImage = async (imageInfo) => {
-  try {
-    const model = new indexImageModel(imageInfo)
-    await model.save()
-    return 'saved'
-  } catch (e) {
-    // ignore duplicate key error
-    if (e.code === 'E11000' || e.code === 11000) {
-      return 'duplicate key'
-    } else {
-      throw e
-    }
-  }
+  return await indexImageModel.findOneAndUpdate({id: imageInfo.id}, imageInfo, {upsert: true, new: true})
 }
 
 /**

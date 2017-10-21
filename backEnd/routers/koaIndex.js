@@ -32,11 +32,14 @@ const identificationCheck = async (ctx, next) => {
       await getUser({createTime: ctx.cookies.get('uid') * 1})
       ctx.login = true
       await next()
+      // todo 这里的逻辑好像不对
     } catch (e) {
-      if (ctx.method === 'GET' || ctx.path === '/login' || ctx.path === '/githubHook') {
-        await next()
-      } else if (e.message === 'Cannot find user.') {
-        return ctx.throw(401, 'Please login and retry.')
+      if (e.message === 'Cannot find user.') {
+        if (ctx.method === 'GET' || ctx.path === '/login' || ctx.path === '/githubHook') {
+          await next()
+        } else {
+          return ctx.throw(401, 'Please login and retry.')
+        }
       } else {
         ctx.throw(e)
       }
@@ -65,6 +68,14 @@ const imageUploader = async (ctx, next) => {
 }
 
 router
+  .post('/report-violation', async ctx => {
+    if(ctx.request.body) {
+        logger.info('CSP Violation: ', ctx.request.body)
+    } else {
+        logger.warn('CSP Violation: No data received!')
+    }
+    ctx.status = 204
+  })
   .post('/fun', async ctx => {
     logger.info(ctx.request.body)
     ctx.body = ctx.request.body

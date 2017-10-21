@@ -9,8 +9,7 @@ describe('路由 =>【github】测试套件：', function () {
       // .set('cookie', 'uid=1506766620306')
       .expect(200, (err, res) => {
         should.not.exist(err)
-        console.log(res.body)
-        res.body.should.be.a.String()
+        res.text.should.be.a.String()
         done()
       })
   })

@@ -36,7 +36,6 @@ const _getBlogList = async ctx => {
   }
   ctx.body = await getBlogList(condition)
 }
-// todo moments filter by tag test
 
 const _getSummary = async ctx => {
   ctx.body = await getBlogSummary()
