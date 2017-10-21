@@ -31,6 +31,10 @@ const spdyOption = {
   }
 }
 
+if (env === 'product') {
+  spdyOption.cert = credentials.chain
+}
+
 class KoaOnHttps extends Koa {
   constructor () {
     super()
