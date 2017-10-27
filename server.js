@@ -90,7 +90,7 @@ app.use(async function (ctx, next) {
   const ms = new Date() - start
   ctx.set('X-Response-Time', `${ms}ms`)
 })
-app.use(staticServer('frontEnd', {maxage: 8640000}))
+app.use(staticServer('frontEnd', {maxage: 86400000}))
 app.use(router.routes(), router.allowedMethods())
 app.use(async (ctx, next) => {
   await next()
