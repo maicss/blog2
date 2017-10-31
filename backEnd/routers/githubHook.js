@@ -10,7 +10,7 @@ const _pull = async () => {
     exec('git pull', function (err, stdout) {
       if (err) return rej(err)
       if (stdout.trim() === 'Already up-to-date.') {
-        res('Already up-to-date.')
+        res('Already up-to-date')
       } else {
         res('something new')
       }
@@ -23,7 +23,7 @@ module.exports = async ctx => {
   if (r === 'something new') {
     ctx.body = await scanAndRender()
   } else {
-    ctx.body = 'Already up-to-date.'
+    ctx.body = 'Already up-to-date'
   }
 
 }

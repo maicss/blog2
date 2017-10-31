@@ -178,6 +178,7 @@ const renderAll = async (forceRender) => {
       logger.warn('hash in database is redundancy', DBFilesInfoCopy)
     }
     logger.info(`${filesInfoCopy.map(i => i.originalFileName)} success`)
+    return `${filesInfoCopy.map(i => i.originalFileName)} success`
   } catch (e) {
     logger.error(e)
   }
