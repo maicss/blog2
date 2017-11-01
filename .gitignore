@@ -83,5 +83,4 @@ aa.*
 frontEnd/index.html
 frontEnd/static
 out
-frontEnd/index.html
-frontEnd/static
+*.log

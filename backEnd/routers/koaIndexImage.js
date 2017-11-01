@@ -125,7 +125,15 @@ const dislikePicture = async ctx => {
   logger.info('dislike picture: ', ctx.query.imageName)
   const imageName = ctx.query.imageName
   const {name: id} = path.parse(imageName)
-  await rmFile(tempDir + imageName)
+  try{
+    await rmFile(tempDir + imageName)
+  } catch (e) {
+    try {
+      await rmFile(likedDir + imageName)
+    } catch (e) {
+      logger.error('dislike picture rm error: ', e)
+    }
+  }
   await updateIndexImage(Number(id), 'dislike')
   logger.info(`dislike picture ${ctx.query.imageName} successful.`)
   ctx.body = 'succeed'
