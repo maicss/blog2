@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-
+const tracer = require('tracer')
 
 const saveFileFromStream = async (fileStreamArr, destination) => {
   const promisifyPipe = (fileStream) => {
@@ -47,14 +47,20 @@ const array2map = (list, key) => {
 
 const shellLoggerSetting = {
   format: [
-    '{{timestamp}} <{{title}}> (in {{file}}:{{line}}) {{message}}', //default format
+    '{{timestamp}} [{{title}}] (in {{file}}:{{line}}) {{message}}', //default format
     {
-      error: '{{timestamp}} <{{title}}> (in {{file}}:{{line}}) {{message}}\nCall Stack:\n{{stack}}' // error format
+      error: '{{timestamp}} [{{title}}] (in {{file}}:{{line}}) {{message}}\nCall Stack:\n{{stack}}' // error format
     }
   ],
-  dateformat: 'mm-dd HH:MM:ss'
+  dateformat: 'yyyy-mm-dd HH:MM:ss',
+  transport (data) {
+    console.log(data.output);
+    fs.appendFile('./WEBSITE.log', data.output + '\n', (err) => {
+      if (err) throw err;
+    });
+  }
 }
-const logger = require('tracer').colorConsole(shellLoggerSetting)
+const logger = tracer.colorConsole(shellLoggerSetting)
 
 
 class ExtendableError extends Error {

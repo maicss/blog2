@@ -49,11 +49,14 @@ const _getBlogContent = async ctx => {
 }
 
 const _blogImageUpload = async ctx => {
-  ctx.body = ctx.request.body._files.map(file => ({
-    originName: file.filename,
-    path: file.path.replace('frontEnd', ''),
-    size: file.size
-  }))
+  ctx.body = ctx.request.body._files.map(file => {
+    logger.info('upload images: ', file.filename)
+    return {
+      originName: file.filename,
+      path: file.path.replace('frontEnd', ''),
+      size: file.size
+    }
+  })
 }
 
 const _blogImageInfo = async ctx => {

@@ -35,24 +35,24 @@ const postMoments = async (ctx) => {
   } catch (e) {
     return ctx.throw(400, 'parse body json error: ' + e.message)
   }
-    body.isPublic = true
-    if (body.content.trim().startsWith('pre-')) {
-      body.isPublic = false
-      body.content = body.content.substring(body.content.indexOf('pre-') + 'pre-'.length)
-    }
-    let content = {
-      'date': date * 1, dateStr,
-      'weather': body.weather,
-      'content': new marked().exec(body.content).html,
-      'images': [],
-      'isPublic': body.isPublic
-    }
+  body.isPublic = true
+  if (body.content.trim().startsWith('pre-')) {
+    body.isPublic = false
+    body.content = body.content.substring(body.content.indexOf('pre-') + 'pre-'.length)
+  }
+  let content = {
+    'date': date * 1, dateStr,
+    'weather': body.weather,
+    'content': new marked().exec(body.content).html,
+    'images': [],
+    'isPublic': body.isPublic
+  }
 
-    ctx.request.body._files.forEach(function (v) {
-      content.images.push(v.path.substring('frontEnd'.length))
-    })
-
-    ctx.body = await saveMoments(content)
+  ctx.request.body._files.forEach(function (v) {
+    content.images.push(v.path.substring('frontEnd'.length))
+  })
+  logger.info(`save moments: ${JSON.stringify(content)}`)
+  ctx.body = await saveMoments(content)
 }
 
 const getSummary = async (ctx) => {
@@ -61,6 +61,7 @@ const getSummary = async (ctx) => {
 
 const _updateMoments = async (ctx) => {
   let content = new marked().exec(ctx.request.body.content).html
+  logger.info(`update moments: ${ctx.request.body.date} => ${content}`)
   ctx.body = await updateMoments({date: ctx.request.body.date, content})
 }
 
@@ -73,15 +74,19 @@ const _deleteMoments = async ctx => {
   let moments
   try {
     moments = await getMomentsList(query)
+    logger.info(`deleting moments: ${JSON.stringify(moments)}`)
   } catch (e) {
+    logger.info(`delete moments failed: ${JSON.stringify(moments)}`)
     ctx.throw(400, e.message)
   }
   if (moments[0] && moments[0].images.length) {
     await Promise.all(moments[0].images.map(_path => unlink(path.resolve(__dirname, '../../frontEnd' + _path))))
   }
   try {
+    logger.info(`delete moments successful: ${JSON.stringify(moments)}`)
     ctx.body = await deleteMoments(query.date)
   } catch (e) {
+    logger.info(`delete moments failed: ${JSON.stringify(moments)}`)
     if (e.message === 'Invalid delete argument.') {
       return ctx.throw(400, e.message)
     }

@@ -4,14 +4,20 @@
 
 const scanAndRender = require('../markdownRender')
 const exec = require('child_process').exec
+const {logger} = require('../utils')
 
 const _pull = async () => {
   return new Promise((res, rej) => {
     exec('git pull', function (err, stdout) {
-      if (err) return rej(err)
+      if (err) {
+        logger.error('git pull error: ', err)
+        return rej(err)
+      }
       if (stdout.trim() === 'Already up-to-date.') {
+        logger.info('git pull: Already up-to-date')
         res('Already up-to-date')
       } else {
+        logger.info('git pull: something new')
         res('something new')
       }
     })

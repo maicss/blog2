@@ -101,6 +101,7 @@ const likePicture = async ctx => {
    * 传入一个图片名称[123.jpeg]进行操作
    * @return {Boolean}
    * */
+  logger.info('like picture: ', ctx.request.body.imageName)
   const {imageName} = ctx.request.body
   const {name: id} = path.parse(imageName)
   await _mvFile(tempDir + imageName, likedDir + imageName)
@@ -108,20 +109,25 @@ const likePicture = async ctx => {
   try {
     _res = await updateIndexImage(Number(id), 'like')
   } catch (e) {
-    ctx.throw(400, e.message)
+    logger.info(`like picture ${ctx.request.body.imageName} failed.`)
+    ctx.throw(500, e.message)
   }
   if (_res.name) {
     ctx.body = true
+    logger.info(`like picture ${ctx.request.body.imageName} successful.`)
   } else {
+    logger.info(`like picture ${ctx.request.body.imageName} failed.`)
     ctx.throw(400, 'Invalid image name.')
   }
 }
 
 const dislikePicture = async ctx => {
+  logger.info('dislike picture: ', ctx.query.imageName)
   const imageName = ctx.query.imageName
   const {name: id} = path.parse(imageName)
   await rmFile(tempDir + imageName)
   await updateIndexImage(Number(id), 'dislike')
+  logger.info(`dislike picture ${ctx.query.imageName} successful.`)
   ctx.body = 'succeed'
 }
 
@@ -138,27 +144,16 @@ router
 /**
  * 然后每天中午12点爬一次
  * */
-setTimeout(function () {
-  // 下面两种不确定用哪个好，先用计算都这种吧
+setInterval(function () {
+  // 下面两种不确定用哪个好，先用计算的这种吧
   const someDaysNoon = 1507262400000 // 2017-10-06 12:00:00
   if ((Date.now() - someDaysNoon) % 86400000 < 1000) {
     // const _now = new Date()
     // const time = _now.getHours()+''+_now.getMinutes()+_now.getSeconds()
     // if (time === '1200'){
+    logger.info('start crawl 500px image')
     cron().then(() => logger.info('daily image crawled success.')).catch(e => logger.warn(e))
   }
 }, 1000)
 
 module.exports = router
-
-// const img = {"name" : "СПб", "author" : "maratneva", "width" : 1680, "height" : 1114, "id" : 230250209, "format" : "jpeg", "url" : "https://drscdn.500px.org/photo/230250207/m%3D2048/v2?user_id=20263175&webp=true&sig=c23d03848a2497acdc78002b2aead5d8862ec570503f27b9a3f2696c263945af", "type" : "temp", "__v" : 0 }
-
-// _request(img.url, (err, res, body) => {
-//   if (err) return console.error(err)
-//   fs.writeFile(img.id + '.' + img.format, body, e => {
-//     if (e) return console.error(e)
-//     console.log(111)
-//   })
-// })
-
-// downloadFile(img.url, img.id + '.' + img.format).then(d => console.log(d)).catch(e => console.error(e))

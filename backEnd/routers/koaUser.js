@@ -8,6 +8,7 @@ const {logger} = require('../utils')
 
 const login = async (ctx) => {
   const {username, password, rememberMe} = ctx.request.body
+  logger.info(`login action: IP => ${ctx.ip} info => ${JSON.stringify({username, password, rememberMe})}`)
   if (!username || !password) {
     ctx.throw(400)
   }
