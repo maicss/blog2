@@ -62,23 +62,23 @@ app.use((ctx, next) => {
 // const app = new Koa()
 app.use(bodyParser({multipart: true}))
 // app.use(koaLogger())
-// if (env === 'product'){
-//   app.use(helmet({
-//     contentSecurityPolicy: {
-//       directives: {
-//         defaultSrc: ['\'self\''],
-//         scriptSrc: ["'self'", '\'unsafe-inline\'', 'https://www.google-analytics.com', 'https://api.github.com', 'https://www.googletagmanager.com', 'https://pagead2.googlesyndication.com', 'https://adservice.google.com', "'unsafe-eval'"],
-//         fontSrc: ["'self'", 'data:'],
-//         styleSrc: ["'self'", '\'unsafe-inline\''],
-//         reportUri: '/report-violation',
-//         frameSrc: ["https://googleads.g.doubleclick.net"],
-//         connectSrc: ["'self'", 'https://googleads.g.doubleclick.net', 'https://api.github.com', 'https://gh-oauth.imsun.net/'],
-//         imgSrc: ["'self'", 'https://www.google-analytics.com', 'https://googleads.g.doubleclick.net', 'https://www.google.com', 'https://www.google.cn', 'https://stats.g.doubleclick.net', 'data:', 'blob:', 'https://avatars2.githubusercontent.com', 'https://www.google.co.jp'],
-//         objectSrc: ["'none'"]
-//       }
-//     }
-//   }))
-// }
+if (env === 'product') {
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ['\'self\''],
+        scriptSrc: ['\'self\'', '\'unsafe-inline\'', 'https://www.google-analytics.com', 'https://api.github.com', 'https://www.googletagmanager.com', 'https://pagead2.googlesyndication.com', 'https://adservice.google.com', '\'unsafe-eval\''],
+        fontSrc: ['\'self\'', 'data:'],
+        styleSrc: ['\'self\'', '\'unsafe-inline\''],
+        reportUri: '/report-violation',
+        frameSrc: ['https://googleads.g.doubleclick.net'],
+        connectSrc: ['\'self\'', 'https://googleads.g.doubleclick.net', 'https://api.github.com', 'https://gh-oauth.imsun.net/'],
+        imgSrc: ['\'self\'', 'https://www.google-analytics.com', 'https://googleads.g.doubleclick.net', 'https://www.google.com', 'https://www.google.cn', 'https://stats.g.doubleclick.net', 'data:', 'blob:', 'https://avatars2.githubusercontent.com', 'https://www.google.co.jp'],
+        objectSrc: ['\'none\'']
+      }
+    }
+  }))
+}
 app.use(compress())
 onerror(app)
 
