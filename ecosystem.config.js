@@ -8,6 +8,7 @@ module.exports = {
       name      : 'web',
       script    : 'server.js',
       watch     : ["backEnd", "server.js", "frontEnd/markdowns"],
+      "restart_delay" : "4000"
     }
   ]
 };
