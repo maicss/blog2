@@ -31,7 +31,7 @@ const spdyOption = {
   }
 }
 
-if (env === 'product') {
+if (env === 'product' && credentials.chain) {
   spdyOption.cert = credentials.chain
 }
 

@@ -33,15 +33,17 @@ const cron = async () => {
     let crawledImages = await crawler()
     // 去数据库去重
     const newImages = await Promise.all(crawledImages.map(img => saveIndexImage(img)))
+    logger.info('newImages: ', newImages.length)
     // 下载图片
     const downloadInfo = await Promise.all(newImages.map(img => downloadFile(img.url, tempDir + img.id + '.' + img.format)))
     // 删除下载失败的
     const succeed = downloadInfo.map((info, i) => info === 'done' ? newImages[i] : undefined).filter(v => v)
     const failedIds = downloadInfo.map((info, i) => info === 'done' ? undefined : newImages[i].id).filter(v => v)
+    logger.info('download success Images: ', succeed.length)
     await Promise.all(failedIds.map(id => deleteIndexImage(id)))
     return succeed
   } catch (e) {
-    logger.error(e)
+    return e
   }
 }
 
