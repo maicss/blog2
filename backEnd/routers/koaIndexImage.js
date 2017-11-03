@@ -32,7 +32,7 @@ const cron = async () => {
     // 先爬取信息
     let crawledImages = await crawler()
     // 去数据库去重
-    const newImages = await Promise.all(crawledImages.map(img => saveIndexImage(img)))
+    const newImages = (await Promise.all(crawledImages.map(img => saveIndexImage(img)))).filter(info => info)
     logger.info('newImages: ', newImages.length)
     // 下载图片
     const downloadInfo = await Promise.all(newImages.map(img => downloadFile(img.url, tempDir + img.id + '.' + img.format)))
@@ -149,7 +149,7 @@ router
 /**
  * 开启服务器的时候先爬一次
  * */
-// cron().then(() => logger.info('daily image crawled success.')).catch(e => logger.warn(e))
+cron().then(() => logger.info('daily image crawled success.')).catch(e => logger.warn(e))
 
 /**
  * 然后每天中午12点爬一次

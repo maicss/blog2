@@ -84,3 +84,4 @@ frontEnd/index.html
 frontEnd/static
 out
 *.log
+test.*
