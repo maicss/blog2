@@ -149,7 +149,7 @@ router
 /**
  * 开启服务器的时候先爬一次
  * */
-cron().then(() => logger.info('daily image crawled success.')).catch(e => logger.warn(e))
+// cron().then(() => logger.info('daily image crawled success.')).catch(e => logger.warn(e))
 
 /**
  * 然后每天中午12点爬一次

@@ -7,7 +7,7 @@ module.exports = {
     {
       name      : 'web',
       script    : 'server.js',
-      watch     : ["backEnd", "server.js", "frontEnd/markdowns"],
+      watch     : ["backEnd", "server.js"],
       "restart_delay" : "4000"
     }
   ]
