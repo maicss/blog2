@@ -40,7 +40,7 @@ date: 2017-03-16 13:34
 
 > 这个是我们的终极目标，也就是写同步的代码，但是异步执行。
 
-``` javascript
+```javascript
 const fs = require('fs');
 const path = '../bb';
 
