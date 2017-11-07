@@ -63,7 +63,8 @@ app.use((ctx, next) => {
 app.use(bodyParser({multipart: true}))
 // app.use(koaLogger())
 if (env === 'product') {
-  app.use(helmet({
+  app.use(helmet())
+  // {
     // contentSecurityPolicy: {
     //   directives: {
     //     defaultSrc: ['\'self\''],
@@ -77,7 +78,7 @@ if (env === 'product') {
     //     objectSrc: ['\'none\'']
     //   }
     // }
-  }))
+  // }
 }
 app.use(compress())
 onerror(app)
@@ -90,7 +91,7 @@ app.use(async function (ctx, next) {
   const ms = new Date() - start
   ctx.set('X-Response-Time', `${ms}ms`)
 })
-app.use(staticServer('frontEnd', {maxage: 86400000}))
+app.use(staticServer('frontEnd', {maxage: 30 * 86400 * 1000}))
 app.use(router.routes(), router.allowedMethods())
 app.use(async (ctx, next) => {
   await next()
