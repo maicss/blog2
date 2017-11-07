@@ -126,5 +126,6 @@ curl入门稍高一点点，但是学会了就更加得心应手，更能满足�
 
 
 而且：
-
-
+(chrome)[https://maicss.com/img/blog/1510047203024-chrome-curl.png]
+(firefox)[https://maicss.com/img/blog/1510047203024-firefox-curl.png]
+(chrome)[https://maicss.com/img/blog/1510047203024-safari-curl.png]
