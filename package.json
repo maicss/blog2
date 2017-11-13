@@ -26,12 +26,15 @@
     "maic-marked": "latest",
     "mongoose": "^4.11.11",
     "request": "^2.81.0",
-    "request-promise": "^4.1.1",
     "spdy": "^3.4.7",
-    "tracer": "^0.8.11"
+    "tracer": "^0.8.11",
+    "ts-node": "^3.3.0"
   },
   "devDependencies": {
+    "@types/koa": "^2.0.40",
+    "@types/mongoose": "^4.7.26",
     "@types/node": "^8.0.33",
+    "@types/request": "^2.0.8",
     "babel-preset-env": "^1.6.0",
     "jsdoc": "^3.5.5",
     "mocha": "^3.5.3",
@@ -41,6 +44,6 @@
     "supertest": "^3.0.0",
     "tslint": "^5.7.0",
     "tslint-config-standard": "^6.0.1",
-    "typescript": "^2.5.3"
+    "typescript": "^2.6.1"
   }
 }

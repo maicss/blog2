@@ -84,3 +84,4 @@ out
 frontEnd/index.html
 frontEnd/static
 package-lock.json
+*.log
