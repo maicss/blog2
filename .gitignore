@@ -85,3 +85,4 @@ frontEnd/static
 out
 *.log
 test.*
+package-lock.json
