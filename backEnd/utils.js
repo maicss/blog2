@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const tracer = require('tracer')
+const r = require('request')
 
 const saveFileFromStream = async (fileStreamArr, destination) => {
   const promisifyPipe = (fileStream) => {
@@ -26,24 +27,24 @@ const saveFileFromStream = async (fileStreamArr, destination) => {
 }
 
 
-const array2map = (list, key) => {
-  if (Array.isArray(list)) {
-    const newMap = {}
-    list.forEach(item => {
-      let _key = item[key]
-      if (!_key) {
-        throw new Error('key not exist')
-      }
-      if (newMap[_key]) {
-        throw new Error('key value not unique')
-      }
-      newMap[_key] = item
-    })
-    return newMap
-  } else {
-    throw new TypeError ('argument 1 not an array')
-  }
-}
+// const array2map = (list, key) => {
+//   if (Array.isArray(list)) {
+//     const newMap = {}
+//     list.forEach(item => {
+//       let _key = item[key]
+//       if (!_key) {
+//         throw new Error('key not exist')
+//       }
+//       if (newMap[_key]) {
+//         throw new Error('key value not unique')
+//       }
+//       newMap[_key] = item
+//     })
+//     return newMap
+//   } else {
+//     throw new TypeError ('argument 1 not an array')
+//   }
+// }
 
 const shellLoggerSetting = {
   format: [
@@ -62,22 +63,31 @@ const shellLoggerSetting = {
 }
 const logger = tracer.colorConsole(shellLoggerSetting)
 
-
-class ExtendableError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = this.constructor.name;
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, this.constructor);
-    } else {
-      this.stack = (new Error(message)).stack;
-    }
-  }
+const request = url => {
+  return new Promise((res, rej) => {
+    r(url, (err, resp) => {
+      if (err) rej(err)
+      res(resp.body)
+    })
+  })
 }
+
+// class ExtendableError extends Error {
+//   constructor(message) {
+//     super(message);
+//     this.name = this.constructor.name;
+//     if (typeof Error.captureStackTrace === 'function') {
+//       Error.captureStackTrace(this, this.constructor);
+//     } else {
+//       this.stack = (new Error(message)).stack;
+//     }
+//   }
+// }
 
 module.exports = {
   logger,
-  array2map,
+  request,
+  // array2map,
   saveFileFromStream,
-  ExtendableError,
+  // ExtendableError,
 }

@@ -1,4 +1,4 @@
-const request = require('request-promise')
+const {request} = require('../utils')
 const router = require('koa-router')()
 
 const weather = async ctx => {

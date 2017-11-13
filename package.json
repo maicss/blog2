@@ -26,7 +26,6 @@
     "maic-marked": "latest",
     "mongoose": "^4.11.11",
     "request": "^2.81.0",
-    "request-promise": "^4.1.1",
     "spdy": "^3.4.7",
     "tracer": "^0.8.11"
   },

@@ -1,4 +1,4 @@
-const request = require('request-promise')
+const {request} = require('./utils')
 /**
  * 爬取图片信息、过滤尺寸，下载图片、返回下载成功的图片信息列表
  * */
