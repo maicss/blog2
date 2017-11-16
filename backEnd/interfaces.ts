@@ -1,0 +1,105 @@
+import {Document} from "mongoose";
+
+export namespace MarkdownRender {
+    export interface renderRes {
+        date: string,
+        toc: {
+            level: number,
+            text: string
+        }[],
+        html: string,
+        tags: string[],
+        more?: string,
+        title: string,
+        abstract: string,
+    }
+}
+
+export namespace UploadFile {
+    export interface file extends File {
+        path: string
+    }
+}
+
+export namespace DatabaseInterfaces {
+    export interface userQuery {
+        username?: string,
+        createTime?: number
+    }
+
+    export interface momentsQuery {
+        limit?: number,
+        page?: number,
+        date?: number,
+        isPublic?: boolean,
+        dateStr?: string
+    }
+
+    export interface moments {
+        weather: {
+            day: string,
+            code_day: string,
+            code_night: string,
+            high: string,
+            low: string,
+            location: string,
+            text_day: string,
+            text_night: string
+        },
+        content: string,
+        date: number,
+        dateStr: string,
+        images: string[],
+        isPublic: boolean
+    }
+
+    export interface momentsDocument extends moments{
+        _id: string,
+        __v: number
+    }
+
+    export interface updateMoments {
+        date: number,
+        content: string
+    }
+
+    export interface summary {
+        all: number,
+
+        [tag: string]: number
+    }
+
+    export interface blog extends MarkdownRender.renderRes{
+        escapeName: string,
+        commentCount: number,
+        readCount: number,
+        originalFileName: string,
+        isPublic?: boolean
+    }
+
+    export interface blogDocument extends blog, Document{}
+
+    export interface blogQuery {
+        limit: number,
+        page: number,
+        tag?: string,
+        isPublic?: boolean
+    }
+
+    export interface blogHash {
+        hash: string,
+        escapeName: string,
+        originalFileName: string
+    }
+
+    export interface imageInfo {
+        name: string,
+        author: string,
+        width: number,
+        height: number,
+        id: number,
+        format: string,
+        url: string,
+        type: 'dislike' | 'like' | 'temp',
+    }
+}

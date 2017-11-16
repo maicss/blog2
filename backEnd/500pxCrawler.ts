@@ -1,11 +1,12 @@
-const request = require('request-promise')
+import {crawledInfo, request} from './utils'
+
 /**
  * 爬取图片信息、过滤尺寸，下载图片、返回下载成功的图片信息列表
  * */
 
-let csrfToken = 'jbKRKCSc5Y/FVWi9QVzQzSNLLuZH3Kn1LrWMi45aKLYHB/UdhaGGgi+tsIRUSg6LJ5zAc3xRZbVE/chFdTutDQ=='
+let csrfToken = 'jbKRKCSc5Y/FVWi9QVzQzSNLLuZH3Kn1LrWMi45aKLYHB/UdhaGGgi+tsIRUSg6LJ5zAc3xRZbVE/chFdTutDQ==';
 const hpx1 = 'BAh7C0kiD3Nlc3Npb25faWQGOgZFVEkiJWQ2OTViYzVhZDhjOGNlNzNjZjNkZjhlMjEyOWIyYjE1BjsAVEkiCWhvc3QGOw' + 'BGIg41MDBweC5jb21JIhl3YXJkZW4udXNlci51c2VyLmtleQY7AFRbB1sGaQQHMTUBSSIiJDJhJDEwJEUvTExQWjBUN2g1TTR3Sm5XMm1XZ2U' + 'GOwBUSSIQX2NzcmZfdG9rZW4GOwBGSSIxaXJWa05hRTlZdzNxK05nNUZSYmVSZ1RYN3BVN2pjeEFha2hFenZ0aGhicz0GOwBGSSIYc3VwZXJfc2' +
-  'VjcmV0X3BpeDNscwY7AEZGSSIRcHJldmlvdXNfdXJsBjsARkkiDS9lZGl0b3JzBjsAVA%3D%3D--bfe4d50c92632915c19b42af178d428d9a7b5e9e'
+  'VjcmV0X3BpeDNscwY7AEZGSSIRcHJldmlvdXNfdXJsBjsARkkiDS9lZGl0b3JzBjsAVA%3D%3D--bfe4d50c92632915c19b42af178d428d9a7b5e9e';
 
 const crawlerOptions = {
   method: 'GET',
@@ -26,13 +27,13 @@ const crawlerOptions = {
     feature: 'editors',
     page: '1',
   }
-}
+};
 
 
-module.exports = async () => {
-  const body = await request(crawlerOptions)
-  const data = JSON.parse(body)
-  return data.photos.map(p => ({
+export default async ():Promise<Array<crawledInfo>> => {
+  const body = await request('https://api.500px.com/v1/photos', crawlerOptions);
+  const data = JSON.parse(body.toString());
+  return data.photos.map((p:any) => ({
     name: p.name,
     author: p.user.username,
     width: p.width,
@@ -41,5 +42,5 @@ module.exports = async () => {
     format: p.image_format,
     url: p.image_url[0],
     type: 'temp',
-  })).filter(image => image.width >= image.height && image.width > 1500)
+  })).filter((image:crawledInfo) => image.width >= image.height && image.width > 1500)
 }

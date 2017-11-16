@@ -1,13 +1,10 @@
-/**
- * Created by maic on 10/10/2017.
- */
+import * as fs from 'fs'
+import * as Router from 'koa-router'
 
-const fs = require('fs')
-
-const router = require('koa-router')()
+const router = new Router();
 
 // routers
-const indexImage = require('./koaIndexImage');
+const indexImage = require('./koaIndexImage')
 const user = require('./koaUser')
 const moments = require('./koaMoments')
 const blog = require('./koaBlog')
@@ -68,6 +65,14 @@ const imageUploader = async (ctx, next) => {
 }
 
 router
+    .post('/report-violation', async ctx => {
+        if(ctx.request.body) {
+            logger.info('CSP Violation: ', ctx.request.body)
+        } else {
+            logger.warn('CSP Violation: No data received!')
+        }
+        ctx.status = 204
+    })
     .post('/fun', async ctx => {
         logger.info(ctx.request.body)
         ctx.body = ctx.request.body

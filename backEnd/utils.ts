@@ -2,18 +2,37 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as r from 'request'
 
-const request = (url: string): Promise<Buffer> => {
+const request = (url: string, options?:object): Promise<Buffer> => {
+    let queryOptions = {
+        url,
+        encoding:null
+    };
+    if (options)queryOptions = Object.assign(queryOptions, options);
     return new Promise((res, rej) => {
-        r({url, encoding: null}, (err, resp) => {
+        r(queryOptions, (err, resp) => {
             if (err) return rej(err);
             return res(resp.body)
         })
     })
 };
 
-interface file {
-    name: string,
+interface file extends File{
     path: string
+}
+
+interface crawledInfo {
+    name: string,
+    author: string,
+    width: number,
+    height: number,
+    id: number,
+    format: string,
+    url: string,
+    type: 'temp',
+}
+
+interface getUserParam {
+
 }
 
 const saveFileFromStream = async (fileStreamArr: file[], destination: string) => {
@@ -52,7 +71,7 @@ const logger = require('tracer').colorConsole(shellLoggerSetting);
 
 
 class ExtendableError extends Error {
-    constructor(message) {
+    constructor(message:string) {
         super(message);
         this.name = this.constructor.name;
         if (typeof Error.captureStackTrace === 'function') {
@@ -63,15 +82,11 @@ class ExtendableError extends Error {
     }
 }
 
-(async () => {
-    const buf = fs.readFileSync('aa.jpg')
 
-})()
-
-//
-// module.exports = {
-//     logger,
-//     saveFileFromStream,
-//     ExtendableError,
-//     request
-// };
+export {
+    logger,
+    saveFileFromStream,
+    ExtendableError,
+    request,
+    crawledInfo,
+};
