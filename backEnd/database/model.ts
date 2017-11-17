@@ -6,7 +6,6 @@ const momentsSchema = new Schema({
     date: {type: Number, required: true, unique: true, index: true},
     dateStr: String,
     "weather": {
-        "date": {type: String},
         "text_day": {type: String, required: true},
         "code_day": {type: String, required: true},
         "text_night": {type: String, required: true},
@@ -71,10 +70,10 @@ const indexImageSchema = new Schema({
     url: {type: String, required: true}
 });
 
-export const momentsModel = mongoose.model("moments", momentsSchema, "moments");
-export const momentsSummaryModel = mongoose.model("momentsSummary", momentsSummarySchema, "momentsSummary");
-export const blogModel = mongoose.model("blog", blogSchema, "blog");
-export const blogSummaryModel = mongoose.model("blogSummary", blogSummarySchema, "blogSummary");
-export const blogHashModel = mongoose.model("blogHash", blogHashSchema, "blogHash");
-export const userModel = mongoose.model("user", userSchema, "user");
-export const indexImageModel = mongoose.model("indexImage", indexImageSchema, "indexImage");
+export const momentsModel = mongoose.model("moments", momentsSchema);
+export const momentsSummaryModel = mongoose.model("momentsSummary", momentsSummarySchema);
+export const blogModel = mongoose.model("blog", blogSchema);
+export const blogSummaryModel = mongoose.model("blogSummary", blogSummarySchema);
+export const blogHashModel = mongoose.model("blogHash", blogHashSchema);
+export const userModel = mongoose.model("user", userSchema);
+export const indexImageModel = mongoose.model("indexImage", indexImageSchema);

@@ -1,4 +1,4 @@
-import {Document} from "mongoose";
+import mongoose = require("mongoose");
 
 export namespace MarkdownRender {
     export interface renderRes {
@@ -37,7 +37,6 @@ export namespace DatabaseInterfaces {
 
     export interface moments {
         weather: {
-            day: string,
             code_day: string,
             code_night: string,
             high: string,
@@ -53,9 +52,7 @@ export namespace DatabaseInterfaces {
         isPublic: boolean
     }
 
-    export interface momentsDocument extends moments{
-        _id: string,
-        __v: number
+    export interface momentsDocument extends moments, mongoose.Document {
     }
 
     export interface updateMoments {
@@ -69,7 +66,7 @@ export namespace DatabaseInterfaces {
         [tag: string]: number
     }
 
-    export interface blog extends MarkdownRender.renderRes{
+    export interface blog extends MarkdownRender.renderRes {
         escapeName: string,
         commentCount: number,
         readCount: number,
@@ -77,7 +74,8 @@ export namespace DatabaseInterfaces {
         isPublic?: boolean
     }
 
-    export interface blogDocument extends blog, Document{}
+    export interface blogDocument extends blog, mongoose.Document {
+    }
 
     export interface blogQuery {
         limit: number,
@@ -100,6 +98,6 @@ export namespace DatabaseInterfaces {
         id: number,
         format: string,
         url: string,
-        type: 'dislike' | 'like' | 'temp',
+        type: "dislike" | "like" | "temp",
     }
 }

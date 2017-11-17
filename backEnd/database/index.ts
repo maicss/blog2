@@ -70,7 +70,7 @@ const getMomentsList = async (condition: DatabaseInterfaces.momentsQuery) => {
  * */
 const buildMomentsSummary = async () => {
     const summary: DatabaseInterfaces.summary = {all: 0};
-    const allMoments = await momentsModel.find({});
+    const allMoments: DatabaseInterfaces.momentsDocument[] = await momentsModel.find({});
     summary.all = allMoments.length;
     allMoments.forEach((item: DatabaseInterfaces.momentsDocument) => {
         let year = item.dateStr.substring(0, 4);
