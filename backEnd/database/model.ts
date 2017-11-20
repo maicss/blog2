@@ -1,4 +1,5 @@
 import * as mongoose from "mongoose"
+import {DatabaseInterfaces} from "../interfaces";
 
 const Schema = mongoose.Schema;
 
@@ -70,10 +71,10 @@ const indexImageSchema = new Schema({
     url: {type: String, required: true}
 });
 
-export const momentsModel = mongoose.model("moments", momentsSchema);
+export const momentsModel = mongoose.model<DatabaseInterfaces.momentsDocument>("moments", momentsSchema);
 export const momentsSummaryModel = mongoose.model("momentsSummary", momentsSummarySchema);
-export const blogModel = mongoose.model("blog", blogSchema);
+export const blogModel = mongoose.model<DatabaseInterfaces.blogDocument>("blog", blogSchema);
 export const blogSummaryModel = mongoose.model("blogSummary", blogSummarySchema);
-export const blogHashModel = mongoose.model("blogHash", blogHashSchema);
+export const blogHashModel = mongoose.model<DatabaseInterfaces.blogHashDocument>("blogHash", blogHashSchema);
 export const userModel = mongoose.model("user", userSchema);
 export const indexImageModel = mongoose.model("indexImage", indexImageSchema);

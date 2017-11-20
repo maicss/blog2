@@ -66,6 +66,8 @@ export namespace DatabaseInterfaces {
         [tag: string]: number
     }
 
+    // export interface summaryDocument extends summary, mongoose.Document {}
+
     export interface blog extends MarkdownRender.renderRes {
         escapeName: string,
         commentCount: number,
@@ -90,7 +92,10 @@ export namespace DatabaseInterfaces {
         originalFileName: string
     }
 
-    export interface imageInfo {
+    export interface blogHashDocument extends blogHash, mongoose.Document {
+    }
+
+    export interface indexImage {
         name: string,
         author: string,
         width: number,
@@ -100,4 +105,9 @@ export namespace DatabaseInterfaces {
         url: string,
         type: "dislike" | "like" | "temp",
     }
+
+    export interface indexImageDocument extends mongoose.Document {
+    }
+
+    // todo 這裏所有的document都可以使用裝飾器實現
 }

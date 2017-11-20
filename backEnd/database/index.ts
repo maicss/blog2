@@ -10,7 +10,7 @@ import {
     userModel
 } from "./model";
 
-const mongoose = require("mongoose");
+import mongoose = require("mongoose");
 
 mongoose.Promise = global.Promise;
 mongoose.connect(mongoUrl, {useMongoClient: true});
@@ -123,9 +123,9 @@ const updateMoments = async (moments: DatabaseInterfaces.updateMoments) => {
  * @return {Boolean} true - delete success
  * */
 const deleteMoments = async (date: number) => {
-    let res = await momentsModel.findOneAndRemove({date});
+    let res: DatabaseInterfaces.momentsDocument | null = await momentsModel.findOneAndRemove({date});
     try {
-        if (res && res.result.n === 1) {
+        if (res) {
             await buildMomentsSummary();
             return true
         }
@@ -177,7 +177,7 @@ const buildBlogSummary = async () => {
  * @param {String} [condition.tag]
  * @return {Array} blog list
  * */
-const getBlogList = async (condition: DatabaseInterfaces.blogQuery) => {
+const getBlogList = async (condition: DatabaseInterfaces.blogQuery): Promise<Array<DatabaseInterfaces.blogDocument>> => {
     const skip = (condition.page - 1) * condition.limit;
     const query: any = {};
     if (condition.tag) query.tags = condition.tag;
@@ -202,8 +202,7 @@ const getBlogList = async (condition: DatabaseInterfaces.blogQuery) => {
  * @param {Boolean} blog.isPublic=true
  * @return {Object} blog saved
  * */
-const saveBlog = async (blog: DatabaseInterfaces.blog) => {
-    console.log(blog.escapeName);
+const saveBlog = async (blog: DatabaseInterfaces.blog): Promise<DatabaseInterfaces.blogDocument> => {
     const res = await blogModel.update({escapeName: blog.escapeName}, blog, {upsert: true});
     await buildBlogSummary();
     return res
@@ -217,20 +216,15 @@ const saveBlog = async (blog: DatabaseInterfaces.blog) => {
  * @param {String} data.escapeName
  * @return {Object} data saved
  * */
-const saveBlogHash = async (data: DatabaseInterfaces.blogHash) => {
-    if (data.hash && data.escapeName && data.originalFileName) {
-        return await blogHashModel.update({hash: data.hash}, data, {upsert: true})
-    } else {
-        throw new Error("Invalid hash data to save.")
-    }
-
+const saveBlogHash = async (data: DatabaseInterfaces.blogHash): Promise<DatabaseInterfaces.blogHash> => {
+    return await blogHashModel.update({hash: data.hash}, data, {upsert: true})
 };
 
 /**
  * 获得所有blog的hash值
  * @return {Array} list of blog hash
  * */
-const getBlogHash = async () => {
+const getBlogHash = async (): Promise<Array<DatabaseInterfaces.blogHashDocument>> => {
     return await blogHashModel.find({}, "-_id -__v")
 };
 
@@ -241,8 +235,7 @@ const getBlogHash = async () => {
  * @return {Number} content[someTag]
  * */
 const getBlogSummary = async () => {
-    let res = await blogSummaryModel.find({}, "-_id content");
-    return res[0]
+    return (await blogSummaryModel.find({}, "-_id content"))[0];
 };
 
 /**
@@ -250,7 +243,7 @@ const getBlogSummary = async () => {
  * @param {string} escapeName - blog的名称
  * @param {String} attr - ['readCount', 'commentCount']想要更新的值
  * */
-const updateBlogProp = async (escapeName: string, attr: "readCount" | "commentCount") => {
+const updateBlogProp = async (escapeName: string, attr: "readCount" | "commentCount"): Promise<DatabaseInterfaces.blogDocument | null> => {
     return await blogModel.findOneAndUpdate({escapeName}, {$inc: {[attr]: 1}})
 };
 
@@ -268,7 +261,7 @@ const updateBlogProp = async (escapeName: string, attr: "readCount" | "commentCo
  * @param {String} imageInfo.url
  * @return {Object} imageInfo
  * */
-const saveIndexImage = async (imageInfo: DatabaseInterfaces.imageInfo) => {
+const saveIndexImage = async (imageInfo: DatabaseInterfaces.indexImage): Promise<"saved" | "duplicate key"> => {
     try {
         const model = new indexImageModel(imageInfo);
         await model.save();
@@ -289,7 +282,7 @@ const saveIndexImage = async (imageInfo: DatabaseInterfaces.imageInfo) => {
  * @return {Object} indexImage instance
  * */
 type imageInfoType = "like" | "temp"
-const getIndexImage = async (type?: imageInfoType) => {
+const getIndexImage = async (type?: imageInfoType): Promise<Array<DatabaseInterfaces.indexImageDocument>> => {
     if (!type) {
         return await indexImageModel.find({"type": {$ne: "dislike"}}, "-_id -__v")
     } else if (type === "like" || type === "temp") {
@@ -304,7 +297,7 @@ const getIndexImage = async (type?: imageInfoType) => {
  * @param {Number} id - 图片id的
  * @return {Promise}
  * */
-const deleteIndexImage = async (id: number) => {
+const deleteIndexImage = async (id: number): Promise<DatabaseInterfaces.indexImageDocument | null> => {
     return await indexImageModel.findOneAndRemove({id})
 };
 
@@ -314,7 +307,7 @@ const deleteIndexImage = async (id: number) => {
  * @param {String} action ['like', 'dislike']
  * @return {Boolean} action result
  * */
-const updateIndexImage = async (id: number, action: "like" | "dislike") => {
+const updateIndexImage = async (id: number, action: "like" | "dislike"): Promise<DatabaseInterfaces.indexImageDocument | null> => {
     return await indexImageModel.findOneAndUpdate({id}, {type: action}, {"new": true})
 };
 
