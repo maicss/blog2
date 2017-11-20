@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as r from 'request'
+import {UploadFile} from "./interfaces";
 
 const request = (url: string, options?:object): Promise<Buffer> => {
     let queryOptions = {
@@ -16,27 +17,8 @@ const request = (url: string, options?:object): Promise<Buffer> => {
     })
 };
 
-interface file extends File{
-    path: string
-}
-
-interface crawledInfo {
-    name: string,
-    author: string,
-    width: number,
-    height: number,
-    id: number,
-    format: string,
-    url: string,
-    type: 'temp',
-}
-
-interface getUserParam {
-
-}
-
-const saveFileFromStream = async (fileStreamArr: file[], destination: string) => {
-    const promisifyPipe = (fileStream: file) => {
+const saveFileFromStream = async (fileStreamArr: UploadFile.file[], destination: string) => {
+    const promisifyPipe = (fileStream: UploadFile.file) => {
         return new Promise((res, rej) => {
             const finalPath = path.join(destination, new Date().valueOf() + '-' + fileStream.name);
             const outStream = fs.createWriteStream(finalPath);
@@ -88,5 +70,4 @@ export {
     saveFileFromStream,
     ExtendableError,
     request,
-    crawledInfo,
 };

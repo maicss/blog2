@@ -18,7 +18,7 @@ const login = async (ctx:Koa.Context) => {
     } catch (e) {
         return ctx.throw(401, 'Invalid username or password')
     }
-    if (dbUser.length && dbUser[0].password === password) {
+    if (dbUser && dbUser.password === password) {
         if (rememberMe === true) {
             // cookie encrypt
             // let salt = 'naive';
@@ -26,10 +26,10 @@ const login = async (ctx:Koa.Context) => {
             // let uid = crypto.createHmac('sha256', str).digest('hex').toString();
             // uid = '03d586e45633a254db46bdbb62b4e97abe1f074786eb50ddbe9dba009f2e1f82';
             let maxAge = 10 * 24 * 60 * 60 * 1000; // 10d
-            ctx.cookies.set('uid', dbUser[0].createTime, {maxAge, httpOnly: true, secure: true});
+            ctx.cookies.set("uid", dbUser.createTime.toString(), {maxAge, httpOnly: true, secure: true});
             ctx.cookies.set('login', 'bingo', {maxAge, httpOnly: false, secure: true});
         } else {
-            ctx.cookies.set('uid', dbUser[0].createTime, {httpOnly: true, secure: true});
+            ctx.cookies.set("uid", dbUser.createTime.toString(), {httpOnly: true, secure: true});
             ctx.cookies.set('login', 'bingo', {httpOnly: false, secure: true});
         }
         ctx.status = 200

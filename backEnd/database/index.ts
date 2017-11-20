@@ -9,7 +9,6 @@ import {
     momentsSummaryModel,
     userModel
 } from "./model";
-
 import mongoose = require("mongoose");
 
 mongoose.Promise = global.Promise;
@@ -23,17 +22,8 @@ mongoose.connect(mongoUrl, {useMongoClient: true});
  * @param {String} condition[].username
  * @return {Object} user
  * */
-const getUser = async (condition: DatabaseInterfaces.userQuery) => {
-    if (condition.createTime || condition.username) {
-        const res = await userModel.find(condition, {"_id": 0});
-        if (res.length) {
-            return res
-        } else {
-            throw new Error("Cannot find user.")
-        }
-    } else {
-        throw new Error("Invalid user query condition")
-    }
+const getUser = async (condition: DatabaseInterfaces.userQuery): Promise<DatabaseInterfaces.userDocument | null> => {
+    return await userModel.findOne(condition, {"_id": 0});
 };
 
 /*======================    moments    ======================*/
@@ -261,15 +251,13 @@ const updateBlogProp = async (escapeName: string, attr: "readCount" | "commentCo
  * @param {String} imageInfo.url
  * @return {Object} imageInfo
  * */
-const saveIndexImage = async (imageInfo: DatabaseInterfaces.indexImage): Promise<"saved" | "duplicate key"> => {
+const saveIndexImage = async (imageInfo: DatabaseInterfaces.indexImage): Promise<DatabaseInterfaces.indexImage | undefined> => {
     try {
-        const model = new indexImageModel(imageInfo);
-        await model.save();
-        return "saved"
+        return (await indexImageModel.insertMany([imageInfo]))[0]
     } catch (e) {
         // ignore duplicate key error
         if (e.code === "E11000" || e.code === 11000) {
-            return "duplicate key"
+            return undefined
         } else {
             throw e
         }

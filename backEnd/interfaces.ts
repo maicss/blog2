@@ -18,6 +18,7 @@ export namespace MarkdownRender {
 export namespace UploadFile {
     export interface file extends File {
         path: string
+        filename: string
     }
 }
 
@@ -25,6 +26,12 @@ export namespace DatabaseInterfaces {
     export interface userQuery {
         username?: string,
         createTime?: number
+    }
+
+    export interface userDocument extends mongoose.Document {
+        username: string,
+        createTime: number,
+        password: string
     }
 
     export interface momentsQuery {
@@ -106,7 +113,7 @@ export namespace DatabaseInterfaces {
         type: "dislike" | "like" | "temp",
     }
 
-    export interface indexImageDocument extends mongoose.Document {
+    export interface indexImageDocument extends indexImage, mongoose.Document {
     }
 
     // todo 這裏所有的document都可以使用裝飾器實現

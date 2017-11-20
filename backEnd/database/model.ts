@@ -76,5 +76,5 @@ export const momentsSummaryModel = mongoose.model("momentsSummary", momentsSumma
 export const blogModel = mongoose.model<DatabaseInterfaces.blogDocument>("blog", blogSchema);
 export const blogSummaryModel = mongoose.model("blogSummary", blogSummarySchema);
 export const blogHashModel = mongoose.model<DatabaseInterfaces.blogHashDocument>("blogHash", blogHashSchema);
-export const userModel = mongoose.model("user", userSchema);
-export const indexImageModel = mongoose.model("indexImage", indexImageSchema);
+export const userModel = mongoose.model<DatabaseInterfaces.userDocument>("user", userSchema);
+export const indexImageModel = mongoose.model<DatabaseInterfaces.indexImageDocument>("indexImage", indexImageSchema);

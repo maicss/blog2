@@ -81,7 +81,7 @@ const _deleteMoments = async (ctx: Koa.Context) => {
     } catch (e) {
         ctx.throw(400, e.message)
     }
-    if (moments[0] && moments[0].images.length) {
+    if (moments && moments[0] && moments[0].images.length) {
         await Promise.all(moments[0].images.map((_path: string) => unlink(path.resolve(__dirname, "../../frontEnd" + _path))))
     }
     try {

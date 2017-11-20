@@ -22,7 +22,7 @@ const _pull = async () => {
     })
 };
 
-module.exports = async (ctx: Koa.Context) => {
+export default async (ctx: Koa.Context) => {
     const r = await _pull();
     if (r === "something new") {
         ctx.body = await scanAndRender()
