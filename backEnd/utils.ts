@@ -64,6 +64,10 @@ class ExtendableError extends Error {
     }
 }
 
+const buildDocumentInterface = () => {
+
+};
+
 
 export {
     logger,

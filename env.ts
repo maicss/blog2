@@ -21,10 +21,12 @@ const credentials = {
     requestCert: false,
     rejectUnauthorized: false
 };
+const env: string = "dev";
 
 export {
     credentials,
     ports,
     url as mongoUrl,
     MD_DIR,
+    env,
 };
