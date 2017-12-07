@@ -68,12 +68,14 @@ export namespace DatabaseInterfaces {
     }
 
     export interface summary {
-        all: number,
+        all: number
 
-        [tag: string]: number
+        // todo
+        [tag: string]: any
     }
 
-    // export interface summaryDocument extends summary, mongoose.Document {}
+    export interface summaryDocument extends summary, mongoose.Document {
+    }
 
     export interface blog extends MarkdownRender.renderRes {
         escapeName: string,
@@ -102,7 +104,7 @@ export namespace DatabaseInterfaces {
     export interface blogHashDocument extends blogHash, mongoose.Document {
     }
 
-    export interface indexImage {
+    export interface indexImage extends mongoose.Document {
         name: string,
         author: string,
         width: number,
@@ -113,7 +115,7 @@ export namespace DatabaseInterfaces {
         type: "dislike" | "like" | "temp",
     }
 
-    export interface indexImageDocument extends indexImage, mongoose.Document {
+    export interface indexImageDocument extends indexImage {
     }
 
     // todo 這裏所有的document都可以使用裝飾器實現

@@ -20,14 +20,7 @@ const momentsSchema = new Schema({
     "isPublic": Boolean
 });
 
-const momentsSummarySchema = new Schema({
-    name: {type: String, required: true, index: true, 'enum': ["summary"]},
-    content: {
-        all: {type: Number, required: true},
-    }
-}, {strict: false});
-
-const blogSummarySchema = new Schema({
+const summarySchema = new Schema({
     name: {type: String, required: true, index: true, 'enum': ["summary"]},
     content: {
         all: {type: Number, required: true},
@@ -60,7 +53,7 @@ const userSchema = new Schema({
     "createTime": {type: Number, required: true, unique: true}
 });
 
-const indexImageSchema = new Schema({
+const indexImageSchema: mongoose.Schema = new Schema({
     type: {type: String, required: true, "enum": ["temp", "like", "dislike"]},
     name: {type: String, required: true},
     author: {type: String, required: true},
@@ -69,12 +62,15 @@ const indexImageSchema = new Schema({
     id: {type: Number, unique: true, required: true, index: true},
     format: {type: String, required: true},
     url: {type: String, required: true}
-});
+}, {id: false});
+
+
+type summaryDoc = DatabaseInterfaces.summary & mongoose.Document
 
 export const momentsModel = mongoose.model<DatabaseInterfaces.momentsDocument>("moments", momentsSchema);
-export const momentsSummaryModel = mongoose.model("momentsSummary", momentsSummarySchema);
+export const momentsSummaryModel = mongoose.model("momentsSummary", summarySchema);
 export const blogModel = mongoose.model<DatabaseInterfaces.blogDocument>("blog", blogSchema);
-export const blogSummaryModel = mongoose.model("blogSummary", blogSummarySchema);
+export const blogSummaryModel = mongoose.model<summaryDoc>("blogSummary", summarySchema);
 export const blogHashModel = mongoose.model<DatabaseInterfaces.blogHashDocument>("blogHash", blogHashSchema);
 export const userModel = mongoose.model<DatabaseInterfaces.userDocument>("user", userSchema);
-export const indexImageModel = mongoose.model<DatabaseInterfaces.indexImageDocument>("indexImage", indexImageSchema);
+export const indexImageModel = mongoose.model<DatabaseInterfaces.indexImage>("indexImage", indexImageSchema);
