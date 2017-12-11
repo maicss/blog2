@@ -1,4 +1,9 @@
-# Nodejs 实现类似Python的readlines
+# Nodejs实现Python的readlines
+tags: node 
+date: 2017-12-11 12:29
+<abstract>
+使用Nodejs实现Python的readlines方法, 每次读取一行文本内容.
+<abstract>
 ## 需求
 这样的好处:
 
