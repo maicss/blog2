@@ -44,9 +44,9 @@ function * readLines (filePath) {
       if (buffer[i] === LF || (buffer[i] === CR && buffer[i + 1] === LF)) {
         yield buffer.slice(startIndex, i).toString()
         if (buffer[i] === LF) {
-          startIndex = i
+          startIndex = i + 1
         } else {
-          startIndex += 2
+          startIndex = i + 2
           i++
         }
       }
