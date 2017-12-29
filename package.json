@@ -22,9 +22,9 @@
     "koa-logger": "^3.0.1",
     "koa-onerror": "^3.1.0",
     "koa-router": "^7.2.1",
-    "koa-static": "^4.0.1",
+    "koa-static": "^4.0.2",
     "maic-marked": "latest",
-    "mongoose": "^4.11.11",
+    "mongoose": "^4.13.8",
     "request": "^2.81.0",
     "spdy": "^3.4.7",
     "tracer": "^0.8.11"
@@ -33,8 +33,8 @@
     "babel-preset-env": "^1.6.0",
     "jsdoc": "^3.5.5",
     "mocha": "^3.5.3",
-    "nyc": "^11.2.1",
-    "should": "^13.1.0",
+    "nyc": "^11.4.1",
+    "should": "^13.2.0",
     "should-http": "^0.1.1",
     "supertest": "^3.0.0"
   }
