@@ -49,14 +49,16 @@
 - [x]  使用`mongoose`重写ORM部分
 - [x]  使用`koa 2`重写后端框架
 - [x]  写了简易的图片上传中间件
-- [ ]  重构API，尽量使用语义化的 HTTP Method，尽量实践RESTful API
+- [x]  重构API，尽量使用语义化的 HTTP Method，尽量实践RESTful API
 - [ ]  弄一个完整的JSDoc
 - [ ]  使用`supertest`, `mocha`, `should`写测试用例，覆盖率
-- [ ]  使用Typescript重构
-- [ ]  使用`helmet`添加了SCP、HSTS
+- [x]  使用Typescript重构
+- [x]  使用`helmet`添加了SCP、HSTS
 - [ ]  使用OAuth
 - [ ]  使用JWT
 - [ ]  网站访问频率控制
 
 ## 其他
+
+- [x] 熟悉一些git命令
 
