@@ -8,12 +8,13 @@ import * as helmet from "koa-helmet"
 import * as compress from "koa-compress"
 import * as  staticServer from "koa-static";
 
+import router from "./backEnd/routers";
+import {ports, credentials, env} from "./env";
+
 const onerror = require("koa-onerror");
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-import router from "./backEnd/routers";
-import {ports, credentials, env} from "./env";
 const spdyOption = {
     key: credentials.key,
     // cert: credentials.chain,

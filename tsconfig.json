@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "esnext",
+    "target": "es2017",
     "sourceMap": true,
     "moduleResolution": "node",
+    "removeComments": false,
     "allowJs": true,
     "noImplicitAny": true,
     "strict": true,

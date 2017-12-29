@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "NODE_ENV=test ./node_modules/.bin/mocha --compilers js:babel-core/register",
-    "doc": "node ./node_modules/.bin/jsdoc -c .jsdoc.json"
+    "doc": "node ./node_modules/.bin/jsdoc -c .jsdoc.json",
+    "run": "node_modules/.bin/tsc -p . && node ."
   },
   "repository": {
     "type": "git",
@@ -27,8 +28,7 @@
     "mongoose": "^4.11.11",
     "request": "^2.81.0",
     "spdy": "^3.4.7",
-    "tracer": "^0.8.11",
-    "ts-node": "^3.3.0"
+    "tracer": "^0.8.11"
   },
   "devDependencies": {
     "@types/koa": "^2.0.40",

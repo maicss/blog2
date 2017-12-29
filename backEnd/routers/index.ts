@@ -5,10 +5,10 @@ import * as Koa from "koa"
 const router = new Router();
 
 // routers
-const indexImage = require("./koaIndexImage");
-const user = require("./koaUser");
-const moments = require("./koaMoments");
-const blog = require("./koaBlog");
+import indexImage from "./indexImage";
+import user from "./user";
+import moments from "./moments";
+import blog from "./blog";
 import weather from "./weather";
 import githubHook from "./githubHook";
 
