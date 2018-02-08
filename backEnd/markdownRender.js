@@ -12,9 +12,17 @@ const path = require('path')
 
 const marked = require('maic-marked')
 
-const {getBlogHash, saveBlogHash, saveBlog} = require('./database')
-const {logger} = require('./utils')
-const {MD_DIR} = require('../env')
+const {
+  getBlogHash,
+  saveBlogHash,
+  saveBlog
+} = require('./database')
+const {
+  logger
+} = require('./utils')
+const {
+  MD_DIR
+} = require('../env')
 const ALGORITHM = 'sha256'
 const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/
 
@@ -27,15 +35,15 @@ const singleRender = async (fileInfo) => {
     const MDContent = await readFile(filePath)
     let renderResult = new marked().exec(MDContent.toString())
     if (!renderResult.date) {
-      return new Error(fileName + ' has no date')
-    } else if (!renderResult.toc.length) {
-      return new Error(fileName + ' has no toc')
+      throw new TypeError(fileName + ' has no date')
+    } else if (!renderResult.toc) {
+      throw new TypeError(fileName + ' has no toc')
     } else if (!renderResult.abstract) {
-      return new Error(fileName + ' has no abstract')
+      throw new TypeError(fileName + ' has no abstract')
     } else if (!renderResult.tags.length) {
-      return new Error(fileName + ' has no tags')
+      throw new TypeError(fileName + ' has no tags')
     } else if (!renderResult.title) {
-      return new Error(fileName + ' has no title')
+      throw new TypeError(fileName + ' has no title')
     }
     return renderResult
   } else {
@@ -97,31 +105,32 @@ const renderAll = async (forceRender) => {
         let renderResult
         try {
           renderResult = await singleRender(filesInfoCopy[i])
+
+          let blogInfo = {
+            originalFileName: filesInfoCopy[i].originalFileName,
+            escapeName: filesInfoCopy[i].escapeName,
+            isPublic: true
+          }
+          // private parse
+          if (renderResult.title.startsWith('pre-')) {
+            blogInfo.isPublic = false
+            renderResult.title = renderResult.title.substring('pre-'.length)
+          }
+          blogInfo = Object.assign(blogInfo, renderResult)
+          if (filesInfoCopy[i].isNewFile) {
+            blogInfo.readCount = 0
+            blogInfo.commentCount = 0
+          }
+          delete filesInfoCopy[i].isNewFile
+          try {
+            await saveBlog(blogInfo)
+            await saveBlogHash(filesInfoCopy[i])
+          } catch (e) {
+            logger.error('save info/hash to db error: ', e)
+          }
+
         } catch (e) {
           logger.error('parse single markdown error: ', e)
-        }
-
-        let blogInfo = {
-          originalFileName: filesInfoCopy[i].originalFileName,
-          escapeName: filesInfoCopy[i].escapeName,
-          isPublic: true
-        }
-        // private parse
-        if (renderResult.title.startsWith('pre-')) {
-          blogInfo.isPublic = false
-          renderResult.title = renderResult.title.substring('pre-'.length)
-        }
-        blogInfo = Object.assign(blogInfo, renderResult)
-        if (filesInfoCopy[i].isNewFile) {
-          blogInfo.readCount = 0
-          blogInfo.commentCount = 0
-        }
-        delete filesInfoCopy[i].isNewFile
-        try {
-          await saveBlog(blogInfo)
-          await saveBlogHash(filesInfoCopy[i])
-        } catch (e) {
-          logger.error('save info/hash to db error: ', e)
         }
       }
     } else {
