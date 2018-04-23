@@ -12,17 +12,9 @@ const path = require('path')
 
 const marked = require('maic-marked')
 
-const {
-  getBlogHash,
-  saveBlogHash,
-  saveBlog
-} = require('./database')
-const {
-  logger
-} = require('./utils')
-const {
-  MD_DIR
-} = require('../env')
+const {getBlogHash, saveBlogHash, saveBlog} = require('./database')
+const {logger} = require('./utils')
+const {MD_DIR} = require('../env')
 const ALGORITHM = 'sha256'
 const fileNameRegExp = /[\u4e00-\u9fa5\w()（） -]+\.md/
 
@@ -47,7 +39,7 @@ const singleRender = async (fileInfo) => {
     }
     return renderResult
   } else {
-    throw new TypeError(fileInfo.originalFileName, 'is not a file.')
+    throw new TypeError(fileInfo.originalFileName + 'is not a file.')
   }
 }
 

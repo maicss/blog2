@@ -14,41 +14,49 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
 const router = require('./backEnd/routers/koaIndex')
 const {ports, credentials, env} = require('./env')
-const spdyOption = {
-  key: credentials.key,
-  // cert: credentials.chain,
-  cert: credentials.cert,
-  spdy: {
-    protocols: ['h2', 'spdy/3.1', 'http/1.1'],
-    plain: false,
-    'x-forwarded-for': true,
-    connection: {
-      windowSize: 1024 * 1024, // Server's window size
 
-      // **optional** if true - server will send 3.1 frames on 3.0 *plain* spdy
-      autoSpdy31: false
+let app
+
+if (credentials.cert) {
+  const spdyOption = {
+    key: credentials.key,
+    // cert: credentials.chain,
+    cert: credentials.cert,
+    spdy: {
+      protocols: ['h2', 'spdy/3.1', 'http/1.1'],
+      plain: false,
+      'x-forwarded-for': true,
+      connection: {
+        windowSize: 1024 * 1024, // Server's window size
+
+        // **optional** if true - server will send 3.1 frames on 3.0 *plain* spdy
+        autoSpdy31: false
+      }
     }
   }
-}
 
-if (env === 'product' && credentials.chain) {
-  spdyOption.cert = credentials.chain
-}
-
-class KoaOnHttps extends Koa {
-  constructor () {
-    super()
+  if (env === 'product' && credentials.chain) {
+    spdyOption.cert = credentials.chain
   }
 
-  listen () {
-    const server = spdy.createServer(spdyOption, this.callback())
-    return server.listen.apply(server, arguments)
+  class KoaOnHttps extends Koa {
+    constructor () {
+      super()
+    }
+
+    listen () {
+      const server = spdy.createServer(spdyOption, this.callback())
+      return server.listen.apply(server, arguments)
+    }
   }
+
+  app = new KoaOnHttps()
+} else {
+  app = new Koa()
 }
 
-const app = new KoaOnHttps()
 app.use((ctx, next) => {
-  if (!ctx.secure && ctx.method === 'GET') {
+  if (!ctx.secure && ctx.method === 'GET' && credentials.cert) {
     ctx.status = 302
     return ctx.redirect('https://' + ctx.hostname + ':' + ports.secure + ctx.path)
   }
@@ -106,7 +114,7 @@ app.use(async (ctx, next) => {
 })
 
 if (!module.parent) {
-  app.listen(ports.secure)
+  if (credentials.cert) app.listen(ports.secure)
   http.createServer(app.callback()).listen(ports['non-secure'])
 }
 

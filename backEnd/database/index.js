@@ -1,4 +1,4 @@
-const url = require('../../env').mongoUrl
+const url = require('../../env').mongoConfig.url
 const mongoose = require('mongoose')
 
 const {
