@@ -14,41 +14,46 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
 const router = require('./backEnd/routers/koaIndex')
 const {ports, credentials, env} = require('./env')
-const spdyOption = {
-  key: credentials.key,
-  // cert: credentials.chain,
-  cert: credentials.cert,
-  spdy: {
-    protocols: ['h2', 'spdy/3.1', 'http/1.1'],
-    plain: false,
-    'x-forwarded-for': true,
-    connection: {
-      windowSize: 1024 * 1024, // Server's window size
+let app = new Koa()
+const product = env === 'product'
+if (product) {
+  const spdyOption = {
+    key: credentials.key,
+    // cert: credentials.chain,
+    cert: credentials.cert,
+    spdy: {
+      protocols: ['h2', 'spdy/3.1', 'http/1.1'],
+      plain: false,
+      'x-forwarded-for': true,
+      connection: {
+        windowSize: 1024 * 1024, // Server's window size
 
-      // **optional** if true - server will send 3.1 frames on 3.0 *plain* spdy
-      autoSpdy31: false
+        // **optional** if true - server will send 3.1 frames on 3.0 *plain* spdy
+        autoSpdy31: false
+      }
     }
   }
-}
 
-if (env === 'product' && credentials.chain) {
-  spdyOption.cert = credentials.chain
-}
-
-class KoaOnHttps extends Koa {
-  constructor () {
-    super()
+  if (credentials.chain) {
+    spdyOption.cert = credentials.chain
   }
 
-  listen () {
-    const server = spdy.createServer(spdyOption, this.callback())
-    return server.listen.apply(server, arguments)
+  class KoaOnHttps extends Koa {
+    constructor () {
+      super()
+    }
+
+    listen () {
+      const server = spdy.createServer(spdyOption, this.callback())
+      return server.listen.apply(server, arguments)
+    }
   }
+
+  app = new KoaOnHttps()
 }
 
-const app = new KoaOnHttps()
 app.use((ctx, next) => {
-  if (!ctx.secure && ctx.method === 'GET') {
+  if (product && !ctx.secure && ctx.method === 'GET') {
     ctx.status = 302
     return ctx.redirect('https://' + ctx.hostname + ':' + ports.secure + ctx.path)
   }
@@ -62,7 +67,7 @@ app.use((ctx, next) => {
 // const app = new Koa()
 app.use(bodyParser({multipart: true}))
 // app.use(koaLogger())
-if (env === 'product') {
+if (product) {
   app.use(helmet())
   // {
     // contentSecurityPolicy: {
@@ -106,11 +111,11 @@ app.use(async (ctx, next) => {
 })
 
 if (!module.parent) {
-  app.listen(ports.secure)
+  if (product) app.listen(ports.secure)
   http.createServer(app.callback()).listen(ports['non-secure'])
 }
 
-// app.on('error', err => console.log(err))
-console.log('server on https://localhost:' + ports.secure)
+app.on('error', err => console.log(err))
+console.log(product ? ('server on https://localhost:' + ports.secure) : 'server on http://localhost:' + ports['non-secure'])
 
 module.exports = app
