@@ -24,7 +24,7 @@
     "koa-router": "^7.2.1",
     "koa-static": "^4.0.2",
     "maic-marked": "latest",
-    "mongoose": "^4.13.8",
+    "mongoose": "^5.7.5",
     "request": "^2.81.0",
     "spdy": "^3.4.7",
     "tracer": "^0.8.11"
